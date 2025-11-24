@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>LFJC - Live Exam Monitor</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #1a1a1a; color: white; }
+        .monitor-container { max-width: 1400px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin: 20px 0; }
+        .stat-card { background: #2d2d2d; padding: 20px; border-radius: 8px; text-align: center; border-left: 4px solid #4B0082; }
+        .stat-number { font-size: 28px; font-weight: bold; color: #4B0082; }
+        .live-students { background: #2d2d2d; padding: 20px; border-radius: 8px; margin: 20px 0; }
+        .student-card { background: #3d3d3d; padding: 15px; margin: 10px 0; border-radius: 5px; border-left: 4px solid #00ff00; }
+        .student-card.warning { border-left-color: #ff9900; }
+        .student-card.danger { border-left-color: #ff4444; }
+    </style>
+</head>
+<body>
+    <div class="monitor-container">
+        <div class="header">
+            <h1>📡 LFJC Live Exam Monitor</h1>
+            <p>Real-time tracking of active exam sessions</p>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div>Active Sessions</div>
+                <div class="stat-number" id="activeSessions">0</div>
+            </div>
+            <div class="stat-card">
+                <div>Completed</div>
+                <div class="stat-number" id="completedExams">0</div>
+            </div>
+            <div class="stat-card">
+                <div>Time Critical</div>
+                <div class="stat-number" id="timeCritical">0</div>
+            </div>
+            <div class="stat-card">
+                <div>Issues</div>
+                <div class="stat-number" id="issuesCount">0</div>
+            </div>
+        </div>
+
+        <div class="live-students">
+            <h3>🎯 Active Student Sessions</h3>
+            <div id="studentsContainer">
+                <div style="text-align: center; padding: 40px; color: #888;">
+                    No active sessions detected
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function scanActiveSessions() {
+            const now = Date.now();
+            let activeCount = 0;
+            let completedCount = 0;
+            let timeCriticalCount = 0;
+            let issuesCount = 0;
+            
+            // Clear container
+            const container = document.getElementById('studentsContainer');
+            container.innerHTML = '';
+            
+            // Scan localStorage for active exams
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                
+                // Look for exam progress keys
+                if (key.includes('|') && !key.includes('backup') && !key.includes('registry')) {
+                    try {
+                        const examData = JSON.parse(localStorage.getItem(key));
+                        if (examData && examData.examStartTime) {
+                            const elapsed = now - examData.examStartTime;
+                            const timeLeft = (115 * 60 * 1000) - elapsed; // 115 minutes in ms
+                            
+                            if (timeLeft > 0) {
+                                activeCount++;
+                                
+                                const minutesLeft = Math.floor(timeLeft / 60000);
+                                const secondsLeft = Math.floor((timeLeft % 60000) / 1000);
+                                
+                                const studentCard = document.createElement('div');
+                                studentCard.className = 'student-card';
+                                
+                                if (minutesLeft < 5) {
+                                    studentCard.classList.add('danger');
+                                    timeCriticalCount++;
+                                } else if (minutesLeft < 15) {
+                                    studentCard.classList.add('warning');
+                                }
+                                
+                                studentCard.innerHTML = `
+                                    <strong>${examData.student?.name || 'Unknown'}</strong> | 
+                                    ${examData.student?.sec || 'N/A'} | 
+                                    Roll: ${examData.student?.roll || 'N/A'} |
+                                    Time Left: ${minutesLeft}:${secondsLeft.toString().padStart(2, '0')} |
+                                    Progress: ${examData.answers ? examData.answers.filter(a => a !== null).length : 0}/60
+                                `;
+                                
+                                container.appendChild(studentCard);
+                            } else {
+                                completedCount++;
+                            }
+                        }
+                    } catch (e) {
+                        issuesCount++;
+                        console.error('Error parsing exam data:', e);
+                    }
+                }
+            }
+            
+            // Update counters
+            document.getElementById('activeSessions').textContent = activeCount;
+            document.getElementById('completedExams').textContent = completedCount;
+            document.getElementById('timeCritical').textContent = timeCriticalCount;
+            document.getElementById('issuesCount').textContent = issuesCount;
+            
+            // Show message if no active sessions
+            if (activeCount === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 40px; color: #888;">No active sessions detected</div>';
+            }
+        }
+        
+        // Scan every 10 seconds
+        setInterval(scanActiveSessions, 10000);
+        
+        // Initial scan
+        scanActiveSessions();
+    </script>
+</body>
+</html>
