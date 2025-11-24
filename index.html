@@ -1029,7 +1029,7 @@ table td, table th {
 <script>
 // ===== CONFIGURATION =====
 const MARK_PER_CORRECT = 4, MARK_PER_WRONG = -1;
-const EXAM_DURATION_MINUTES = 115; // 5 minutes for testing
+const EXAM_DURATION_MINUTES = 1; // 5 minutes for testing
 const EXAM_DURATION_MS = EXAM_DURATION_MINUTES * 60 * 1000;
 const STORAGE_KEY_PREFIX = "lfjc_exam_";
 const MAX_QUESTIONS = 60; // Maximum expected questions
@@ -1339,7 +1339,7 @@ async function sendAllSubjectsToGoogleSheet(subjData) {
     hasSubmitted = true;
     
     // Implement retry logic with proper error handling
-    let retries = 3;
+    let retries = 5;
     let success = false;
     
     for (let attempt = 1; attempt <= retries; attempt++) {
@@ -1604,34 +1604,29 @@ function showConfirm(msg, cb) {
 
 // ===== INITIALIZATION =====
 // Fetch the answer key file from Answers/Key on page load
-fetch('Answers/Key')
-  .then(res => {
-    if (!res.ok) throw new Error('Key file not found or not accessible');
-    return res.text();
-  })
-  .then(text => {
-    // Expecting 5 answers per line, no commas
-    answerKey = text.trim().split('\n').map(line => line.trim().split('')).flat();
-    
-    // Build image paths - MODIFIED FOR BETTER COMPATIBILITY
-    console.log("Building image paths for", answerKey.length, "questions");
-    for (let i = 1; i <= answerKey.length; i++) {
-      // Try multiple possible image formats - you can modify this based on your actual file names
-      images.push(`questions/${i}.png`);  // Default: 1.png, 2.png, etc.
+// ===== SIMPLE KEY UPLOAD SYSTEM =====
+function loadExamSystem() {
+    // Try to load saved key first
+    const savedKey = localStorage.getItem('uploadedAnswerKey');
+    if (savedKey) {
+        answerKey = JSON.parse(savedKey);
+        keyLoaded = true;
+        
+        // Build image paths
+        for (let i = 1; i <= 60; i++) {
+            images.push(`questions/${i}.png`);
+        }
+        
+        console.log('✅ Saved answer key loaded');
+        validateStudentInputs();
+    } else {
+        console.log("📁 Please upload answer key file when ready");
+        // Student can click upload button when they want to load a key
     }
-    
-    keyLoaded = true;
-    clearErrors();
-    validateStudentInputs();
-    console.log('Loaded answer key:', answerKey);
-    console.log('Image paths:', images);
-  })
-  .catch(err => {
-    console.error('Failed to load Answers/Key:', err);
-    showError("Answer key not loaded - exam disabled. Contact administrator.");
-    validateStudentInputs();
-  });
+}
 
+// Initialize the system
+loadExamSystem();
 function shuffleArray(arr) {
     const c = arr.slice();
     for (let i = c.length - 1; i > 0; i--) {
