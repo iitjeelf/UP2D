@@ -1037,19 +1037,18 @@ const MAX_QUESTIONS = 60; // Maximum expected questions
 // ===== GOOGLE FORMS CONFIGURATION =====
 const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdHX1y45XtO1uXfxb7xQfQxmpTvcbVCUuMs8VdhSCHdxuGJgA/formResponse";
 
-// Form field mapping for YOUR Google Form
+// CORRECTED Form field mapping - Based on timestamp working
 const FORM_FIELDS = {
-    STUDENT_NAME: "entry.2005620554",      // Student Name
-    SECTION: "entry.1166974658",           // Section
-    ROLL_NUMBER: "entry.1045781291",       // Roll Number
-    ADMISSION_NUMBER: "entry.1065046570",  // Admission Number
-    MATHS_MARKS: "entry.839337160",        // Maths Marks
-    PHYSICS_MARKS: "entry.1974223913",     // Physics Marks
-    CHEMISTRY_MARKS: "entry.1321373433",   // Chemistry Marks
-    TOTAL_MARKS: "entry.2139100252",       // Total Marks
-    TIMESTAMP: "entry.1012522659"          // Timestamp
+    STUDENT_NAME: "entry.1012522659",      // This might be your timestamp field
+    SECTION: "entry.2005620554",           // Try swapping these
+    ROLL_NUMBER: "entry.1166974658",       
+    ADMISSION_NUMBER: "entry.1045781291",  
+    MATHS_MARKS: "entry.1065046570",       
+    PHYSICS_MARKS: "entry.839337160",      
+    CHEMISTRY_MARKS: "entry.1974223913",   
+    TOTAL_MARKS: "entry.1321373433",       
+    TIMESTAMP: "entry.2139100252"          // This is currently working
 };
-
 // ===== GLOBAL VARIABLES =====
 let images = [];
 let answerKey = [];
