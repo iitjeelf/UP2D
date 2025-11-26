@@ -1,0 +1,66 @@
+// ADD TO YOUR CODE:
+let autoBackupInterval = null;
+const AUTO_BACKUP_INTERVAL = 30000; // 30 seconds
+let lastBackupState = null;
+let backupVersion = 0;
+
+function startPeriodicBackup() {
+    if (autoBackupInterval) {
+        clearInterval(autoBackupInterval);
+    }
+    
+    autoBackupInterval = setInterval(() => {
+        if (progress && progress.student) {
+            incrementalBackup(); // Use smart incremental backup
+        }
+    }, AUTO_BACKUP_INTERVAL);
+}
+
+function incrementalBackup() {
+    const backupKey = `exam_backup_${progress.student.roll}`;
+    const backup = JSON.parse(localStorage.getItem(backupKey) || '{}');
+    
+    let changesDetected = false;
+    
+    // Initialize backup structure if needed
+    if (!backup.answers) {
+        backup.answers = {};
+        backup.studentInfo = progress.student;
+        backup.examStartTime = examStartTime;
+        backup.assignedForm = assignedForm;
+        changesDetected = true; // Force first backup
+    }
+    
+    // Check each answer for changes
+    progress.answers.forEach((answer, index) => {
+        if (answer !== null) {
+            const existing = backup.answers[index];
+            
+            // Only backup if answer changed or is new
+            if (!existing || existing.answer !== answer) {
+                backup.answers[index] = {
+                    answer: answer,
+                    timestamp: new Date().toISOString(),
+                    questionFile: examData.files[index],
+                    subject: examData.subjectNames[index],
+                    version: backupVersion
+                };
+                changesDetected = true;
+                console.log(`💾 Backup Q${index+1}: ${answer}`);
+            }
+        }
+    });
+    
+    if (changesDetected) {
+        backupVersion++;
+        backup.lastBackup = new Date().toISOString();
+        backup.backupVersion = backupVersion;
+        localStorage.setItem(backupKey, JSON.stringify(backup));
+        console.log(`🔄 Smart backup v${backupVersion} - ${Object.keys(backup.answers).length} answers`);
+        updateBackupStatus();
+    } else {
+        console.log(`⏰ No changes - skipping backup (v${backupVersion})`);
+    }
+    
+    return changesDetected;
+}
