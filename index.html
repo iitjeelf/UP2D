@@ -1459,8 +1459,11 @@ function enableBrowserLockdown() {
     console.log('✅ Browser lockdown enabled');
 }
 
-// 🚨 DETECT DEVELOPER TOOLS
+// 🚨 DETECT DEVELOPER TOOLS - DISABLED FOR TESTING
 function detectDeveloperTools() {
+    console.log('🔧 Developer tools detection disabled for testing');
+    // Comment out the actual detection code during development
+    /*
     let devToolsOpen = false;
     
     const devToolsChecker = setInterval(() => {
@@ -1474,6 +1477,22 @@ function detectDeveloperTools() {
             devToolsOpen = false;
         }
     }, 1000);
+    
+    // Override console methods
+    const originalConsole = {
+        log: console.log,
+        warn: console.warn,
+        error: console.error
+    };
+    
+    console.log = function() {
+        if (examInProgress) {
+            logSecurityViolation('Console access attempted');
+        }
+        originalConsole.log.apply(console, arguments);
+    };
+    */
+}
     
     // Override console methods
     const originalConsole = {
