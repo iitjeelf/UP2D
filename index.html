@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LFJC Online Examination System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(to right, #1a2a6c, #b21f1f);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 5px solid #fdbb2d;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .exam-info {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 20px;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .timer {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #b21f1f;
+            background-color: #fff;
+            padding: 5px 15px;
+            border-radius: 30px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .main-content {
+            display: flex;
+            min-height: 500px;
+        }
+
+        .question-palette {
+            width: 20%;
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-right: 1px solid #dee2e6;
+        }
+
+        .palette-title {
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #1a2a6c;
+            text-align: center;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #fdbb2d;
+        }
+
+        .question-numbers {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .q-number {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #e9ecef;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            border: 2px solid transparent;
+        }
+
+        .q-number:hover {
+            transform: scale(1.1);
+            background-color: #1a2a6c;
+            color: white;
+        }
+
+        .q-number.active {
+            background-color: #1a2a6c;
+            color: white;
+            border-color: #fdbb2d;
+        }
+
+        .q-number.answered {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .q-number.review {
+            background-color: #ffc107;
+            color: #212529;
+        }
+
+        .question-section {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #fdbb2d;
+        }
+
+        .subject-qno {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #1a2a6c;
+        }
+
+        .question-text {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            border-left: 5px solid #1a2a6c;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .option {
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .option:hover {
+            background-color: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .option.selected {
+            background-color: #1a2a6c;
+            color: white;
+            border-color: #fdbb2d;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: auto;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 30px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(to right, #1a2a6c, #b21f1f);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .btn-warning {
+            background-color: #ffc107;
+            color: #212529;
+        }
+
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .login-form {
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 30px;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #1a2a6c;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #1a2a6c;
+            box-shadow: 0 0 0 3px rgba(26, 42, 108, 0.2);
+        }
+
+        input.error {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.2);
+            animation: glowRed 0.5s alternate infinite;
+        }
+
+        @keyframes glowRed {
+            0% { box-shadow: 0 0 5px rgba(220, 53, 69, 0.5); }
+            100% { box-shadow: 0 0 15px rgba(220, 53, 69, 0.8); }
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 0.9rem;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .security-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(220, 53, 69, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            color: white;
+            text-align: center;
+        }
+
+        .security-message {
+            background-color: white;
+            color: #333;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .security-message h2 {
+            color: #dc3545;
+            margin-bottom: 15px;
+        }
+
+        .violation-count {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #dc3545;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            display: none;
+            z-index: 1000;
+        }
+
+        .tab-warning {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #dc3545;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            display: none;
+            z-index: 1000;
+        }
+
+        .results-container {
+            padding: 30px;
+            text-align: center;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .results-table th, .results-table td {
+            padding: 12px 15px;
+            text-align: center;
+            border: 1px solid #dee2e6;
+        }
+
+        .results-table th {
+            background-color: #1a2a6c;
+            color: white;
+        }
+
+        .results-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .question-palette {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid #dee2e6;
+            }
+            
+            .question-numbers {
+                justify-content: center;
+            }
+            
+            .actions {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>LFJC Online Examination System</h1>
+            <div class="subtitle">Secure Testing Environment</div>
+        </header>
+        
+        <div class="violation-count" id="violationCount">Violations: 0</div>
+        <div class="tab-warning" id="tabWarning">Warning: Tab switching detected! This will result in automatic submission.</div>
+        
+        <div id="loginSection">
+            <div class="login-form">
+                <h2 style="text-align: center; margin-bottom: 20px; color: #1a2a6c;">Student Login</h2>
+                
+                <div class="form-group">
+                    <label for="studentName">Name</label>
+                    <input type="text" id="studentName" placeholder="Enter your name">
+                    <div class="error-message" id="nameError">Only letters and spaces allowed</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="studentRoll">Roll Number</label>
+                    <input type="text" id="studentRoll" placeholder="Enter roll number">
+                    <div class="error-message" id="rollError">Only digits allowed</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="studentAdmission">Admission Number</label>
+                    <input type="text" id="studentAdmission" placeholder="Enter admission number">
+                    <div class="error-message" id="admissionError">Only digits allowed</div>
+                </div>
+                
+                <button class="btn btn-primary" id="startExamBtn" style="width: 100%;">Start Exam</button>
+            </div>
+        </div>
+        
+        <div id="examSection" style="display: none;">
+            <div class="exam-info">
+                <div id="studentInfo"></div>
+                <div class="timer" id="timer">Time: 60:00</div>
+                <div id="subjectInfo"></div>
+            </div>
+            
+            <div class="main-content">
+                <div class="question-palette">
+                    <div class="palette-title">Question Palette</div>
+                    <div class="question-numbers" id="questionPalette"></div>
+                </div>
+                
+                <div class="question-section">
+                    <div class="question-header">
+                        <div class="subject-qno" id="questionHeader">Question 1</div>
+                        <div id="reviewStatus"></div>
+                    </div>
+                    
+                    <div class="question-text" id="questionText">
+                        This is a sample question. In the actual implementation, questions would be loaded from a database.
+                    </div>
+                    
+                    <div class="options" id="optionsContainer">
+                        <div class="option" data-option="A">Option A</div>
+                        <div class="option" data-option="B">Option B</div>
+                        <div class="option" data-option="C">Option C</div>
+                        <div class="option" data-option="D">Option D</div>
+                    </div>
+                    
+                    <div class="actions">
+                        <button class="btn btn-secondary" id="prevBtn">Previous</button>
+                        <button class="btn btn-warning" id="reviewBtn">Review</button>
+                        <button class="btn btn-primary" id="nextBtn">Next</button>
+                        <button class="btn btn-danger" id="submitBtn">Submit Exam</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="resultsSection" style="display: none;">
+            <div class="results-container">
+                <h2 style="color: #1a2a6c; margin-bottom: 20px;">Exam Results</h2>
+                <div id="studentResultsInfo"></div>
+                
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th>Correct Answers</th>
+                            <th>Wrong Answers</th>
+                            <th>Not Attempted</th>
+                            <th>Score</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultsBody">
+                    </tbody>
+                </table>
+                
+                <div id="totalScore" style="font-size: 1.2rem; font-weight: bold; margin: 20px 0;"></div>
+                
+                <button class="btn btn-primary" id="restartBtn">Take Another Exam</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="security-overlay" id="securityOverlay">
+        <div class="security-message">
+            <h2>Security Violation Detected</h2>
+            <p>You have attempted to switch tabs/windows during the exam.</p>
+            <p>Your exam has been automatically submitted.</p>
+            <button class="btn btn-danger" id="closeOverlayBtn">View Results</button>
+        </div>
+    </div>
+
+    <script>
+        // Exam configuration
+        const EXAM_DURATION = 60 * 60; // 60 minutes in seconds
+        const QUESTIONS_PER_SUBJECT = 5;
+        const SUBJECTS = ['Mathematics', 'Physics', 'Chemistry'];
+        
+        // Global variables
+        let currentQuestion = 0;
+        let timeLeft = EXAM_DURATION;
+        let timerInterval;
+        let examStarted = false;
+        let tabSwitches = 0;
+        let maxTabSwitches = 3;
+        let answers = [];
+        let reviewStatus = [];
+        let questions = [];
+        let shuffledQuestions = [];
+        
+        // DOM elements
+        const loginSection = document.getElementById('loginSection');
+        const examSection = document.getElementById('examSection');
+        const resultsSection = document.getElementById('resultsSection');
+        const securityOverlay = document.getElementById('securityOverlay');
+        const violationCount = document.getElementById('violationCount');
+        const tabWarning = document.getElementById('tabWarning');
+        
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeEventListeners();
+            generateQuestions();
+            shuffleQuestions();
+        });
+        
+        // Set up event listeners
+        function initializeEventListeners() {
+            // Login form validation
+            document.getElementById('studentName').addEventListener('input', validateName);
+            document.getElementById('studentRoll').addEventListener('input', validateRoll);
+            document.getElementById('studentAdmission').addEventListener('input', validateAdmission);
+            
+            // Start exam button
+            document.getElementById('startExamBtn').addEventListener('click', startExam);
+            
+            // Navigation buttons
+            document.getElementById('prevBtn').addEventListener('click', previousQuestion);
+            document.getElementById('nextBtn').addEventListener('click', nextQuestion);
+            document.getElementById('reviewBtn').addEventListener('click', toggleReview);
+            document.getElementById('submitBtn').addEventListener('click', submitExam);
+            
+            // Results section
+            document.getElementById('restartBtn').addEventListener('click', restartExam);
+            
+            // Security overlay
+            document.getElementById('closeOverlayBtn').addEventListener('click', closeSecurityOverlay);
+            
+            // Tab switching detection
+            document.addEventListener('visibilitychange', handleVisibilityChange);
+            
+            // Prevent right-click context menu
+            document.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+            });
+            
+            // Prevent keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                if (examStarted && (
+                    e.ctrlKey || e.metaKey || 
+                    e.key === 'F12' || 
+                    (e.shiftKey && e.key === 'F5') ||
+                    e.key === 'PrintScreen'
+                )) {
+                    e.preventDefault();
+                }
+            });
+        }
+        
+        // Input validation functions
+        function validateName() {
+            const nameInput = document.getElementById('studentName');
+            const errorElement = document.getElementById('nameError');
+            const name = nameInput.value.trim();
+            
+            // Only allow letters and spaces
+            if (/^[A-Za-z\s]+$/.test(name) || name === '') {
+                nameInput.classList.remove('error');
+                errorElement.style.display = 'none';
+                return true;
+            } else {
+                nameInput.classList.add('error');
+                errorElement.style.display = 'block';
+                return false;
+            }
+        }
+        
+        function validateRoll() {
+            const rollInput = document.getElementById('studentRoll');
+            const errorElement = document.getElementById('rollError');
+            const roll = rollInput.value.trim();
+            
+            // Only allow digits
+            if (/^\d*$/.test(roll) || roll === '') {
+                rollInput.classList.remove('error');
+                errorElement.style.display = 'none';
+                return true;
+            } else {
+                rollInput.classList.add('error');
+                errorElement.style.display = 'block';
+                return false;
+            }
+        }
+        
+        function validateAdmission() {
+            const admissionInput = document.getElementById('studentAdmission');
+            const errorElement = document.getElementById('admissionError');
+            const admission = admissionInput.value.trim();
+            
+            // Only allow digits
+            if (/^\d*$/.test(admission) || admission === '') {
+                admissionInput.classList.remove('error');
+                errorElement.style.display = 'none';
+                return true;
+            } else {
+                admissionInput.classList.add('error');
+                errorElement.style.display = 'block';
+                return false;
+            }
+        }
+        
+        // Generate sample questions
+        function generateQuestions() {
+            questions = [];
+            let questionId = 1;
+            
+            SUBJECTS.forEach(subject => {
+                for (let i = 0; i < QUESTIONS_PER_SUBJECT; i++) {
+                    questions.push({
+                        id: questionId,
+                        subject: subject,
+                        text: `This is question ${questionId} from ${subject}. What is the correct answer?`,
+                        options: ['Option A', 'Option B', 'Option C', 'Option D'],
+                        correctAnswer: ['A', 'B', 'C', 'D'][Math.floor(Math.random() * 4)]
+                    });
+                    questionId++;
+                }
+            });
+            
+            // Initialize answers and review status arrays
+            answers = new Array(questions.length).fill(null);
+            reviewStatus = new Array(questions.length).fill(false);
+        }
+        
+        // Shuffle questions and subjects
+        function shuffleQuestions() {
+            // Create a copy of questions
+            shuffledQuestions = [...questions];
+            
+            // Shuffle subjects
+            const shuffledSubjects = [...SUBJECTS].sort(() => Math.random() - 0.5);
+            
+            // Assign shuffled subjects to questions
+            let subjectIndex = 0;
+            for (let i = 0; i < shuffledQuestions.length; i++) {
+                if (i > 0 && i % QUESTIONS_PER_SUBJECT === 0) {
+                    subjectIndex++;
+                }
+                shuffledQuestions[i].subject = shuffledSubjects[subjectIndex];
+            }
+            
+            // Shuffle questions within each subject
+            for (let i = 0; i < shuffledSubjects.length; i++) {
+                const subjectStart = i * QUESTIONS_PER_SUBJECT;
+                const subjectEnd = subjectStart + QUESTIONS_PER_SUBJECT;
+                const subjectQuestions = shuffledQuestions.slice(subjectStart, subjectEnd);
+                
+                // Shuffle the questions for this subject
+                for (let j = subjectQuestions.length - 1; j > 0; j--) {
+                    const k = Math.floor(Math.random() * (j + 1));
+                    [subjectQuestions[j], subjectQuestions[k]] = [subjectQuestions[k], subjectQuestions[j]];
+                }
+                
+                // Put them back
+                for (let j = 0; j < subjectQuestions.length; j++) {
+                    shuffledQuestions[subjectStart + j] = subjectQuestions[j];
+                }
+            }
+        }
+        
+        // Start the exam
+        function startExam() {
+            // Validate inputs
+            if (!validateName() || !validateRoll() || !validateAdmission()) {
+                alert('Please fix the validation errors before starting the exam.');
+                return;
+            }
+            
+            const studentName = document.getElementById('studentName').value.trim();
+            const studentRoll = document.getElementById('studentRoll').value.trim();
+            const studentAdmission = document.getElementById('studentAdmission').value.trim();
+            
+            if (!studentName || !studentRoll || !studentAdmission) {
+                alert('Please fill in all fields before starting the exam.');
+                return;
+            }
+            
+            // Update student info
+            document.getElementById('studentInfo').textContent = 
+                `Student: ${studentName} | Roll: ${studentRoll} | Admission: ${studentAdmission}`;
+            
+            // Hide login, show exam
+            loginSection.style.display = 'none';
+            examSection.style.display = 'block';
+            
+            // Initialize question palette
+            initializeQuestionPalette();
+            
+            // Start timer
+            startTimer();
+            
+            // Show first question
+            showQuestion(0);
+            
+            // Set exam as started
+            examStarted = true;
+            
+            // Show violation counter
+            violationCount.style.display = 'block';
+        }
+        
+        // Initialize question palette
+        function initializeQuestionPalette() {
+            const palette = document.getElementById('questionPalette');
+            palette.innerHTML = '';
+            
+            for (let i = 0; i < shuffledQuestions.length; i++) {
+                const qNumber = document.createElement('div');
+                qNumber.className = 'q-number';
+                qNumber.textContent = i + 1;
+                qNumber.addEventListener('click', () => showQuestion(i));
+                
+                palette.appendChild(qNumber);
+            }
+        }
+        
+        // Start the exam timer
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                
+                document.getElementById('timer').textContent = 
+                    `Time: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    submitExam();
+                }
+            }, 1000);
+        }
+        
+        // Show a specific question
+        function showQuestion(index) {
+            if (index < 0 || index >= shuffledQuestions.length) return;
+            
+            currentQuestion = index;
+            const question = shuffledQuestions[index];
+            
+            // Update question header
+            document.getElementById('questionHeader').textContent = 
+                `${question.subject} - Question ${index + 1}`;
+            
+            // Update question text
+            document.getElementById('questionText').textContent = question.text;
+            
+            // Update options
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = '';
+            
+            question.options.forEach((option, i) => {
+                const optionElement = document.createElement('div');
+                optionElement.className = 'option';
+                optionElement.textContent = option;
+                optionElement.dataset.option = ['A', 'B', 'C', 'D'][i];
+                
+                if (answers[index] === optionElement.dataset.option) {
+                    optionElement.classList.add('selected');
+                }
+                
+                optionElement.addEventListener('click', () => selectOption(optionElement.dataset.option));
+                optionsContainer.appendChild(optionElement);
+            });
+            
+            // Update review status
+            updateReviewStatus();
+            
+            // Update question palette
+            updateQuestionPalette();
+            
+            // Update navigation buttons
+            updateNavigationButtons();
+        }
+        
+        // Select an option
+        function selectOption(option) {
+            answers[currentQuestion] = option;
+            updateQuestionPalette();
+            
+            // Update UI to show selected option
+            const options = document.querySelectorAll('.option');
+            options.forEach(opt => {
+                if (opt.dataset.option === option) {
+                    opt.classList.add('selected');
+                } else {
+                    opt.classList.remove('selected');
+                }
+            });
+        }
+        
+        // Toggle review status for current question
+        function toggleReview() {
+            reviewStatus[currentQuestion] = !reviewStatus[currentQuestion];
+            updateReviewStatus();
+            updateQuestionPalette();
+        }
+        
+        // Update review status display
+        function updateReviewStatus() {
+            const reviewBtn = document.getElementById('reviewBtn');
+            const reviewStatusElement = document.getElementById('reviewStatus');
+            
+            if (reviewStatus[currentQuestion]) {
+                reviewBtn.textContent = 'Unreview';
+                reviewStatusElement.textContent = 'Marked for Review';
+                reviewStatusElement.style.color = '#ffc107';
+                reviewStatusElement.style.fontWeight = 'bold';
+            } else {
+                reviewBtn.textContent = 'Review';
+                reviewStatusElement.textContent = '';
+            }
+        }
+        
+        // Update question palette
+        function updateQuestionPalette() {
+            const qNumbers = document.querySelectorAll('.q-number');
+            
+            qNumbers.forEach((qNumber, index) => {
+                // Remove all classes
+                qNumber.classList.remove('active', 'answered', 'review');
+                
+                // Add appropriate classes
+                if (index === currentQuestion) {
+                    qNumber.classList.add('active');
+                }
+                
+                if (answers[index] !== null) {
+                    qNumber.classList.add('answered');
+                }
+                
+                if (reviewStatus[index]) {
+                    qNumber.classList.add('review');
+                }
+            });
+        }
+        
+        // Update navigation buttons
+        function updateNavigationButtons() {
+            document.getElementById('prevBtn').disabled = currentQuestion === 0;
+            document.getElementById('nextBtn').disabled = currentQuestion === shuffledQuestions.length - 1;
+        }
+        
+        // Navigate to previous question
+        function previousQuestion() {
+            if (currentQuestion > 0) {
+                showQuestion(currentQuestion - 1);
+            }
+        }
+        
+        // Navigate to next question
+        function nextQuestion() {
+            if (currentQuestion < shuffledQuestions.length - 1) {
+                showQuestion(currentQuestion + 1);
+            }
+        }
+        
+        // Handle tab/window switching
+        function handleVisibilityChange() {
+            if (examStarted && document.hidden) {
+                tabSwitches++;
+                violationCount.textContent = `Violations: ${tabSwitches}`;
+                
+                // Show warning
+                tabWarning.style.display = 'block';
+                setTimeout(() => {
+                    tabWarning.style.display = 'none';
+                }, 3000);
+                
+                // Submit exam if max violations reached
+                if (tabSwitches >= maxTabSwitches) {
+                    clearInterval(timerInterval);
+                    securityOverlay.style.display = 'flex';
+                    examStarted = false;
+                }
+            }
+        }
+        
+        // Submit the exam
+        function submitExam() {
+            clearInterval(timerInterval);
+            examStarted = false;
+            
+            // Calculate results
+            const results = calculateResults();
+            
+            // Display results
+            displayResults(results);
+            
+            // Hide exam, show results
+            examSection.style.display = 'none';
+            resultsSection.style.display = 'block';
+        }
+        
+        // Calculate exam results
+        function calculateResults() {
+            const results = {
+                subjects: {},
+                total: {
+                    correct: 0,
+                    wrong: 0,
+                    notAttempted: 0,
+                    score: 0
+                }
+            };
+            
+            // Initialize subject results
+            SUBJECTS.forEach(subject => {
+                results.subjects[subject] = {
+                    correct: 0,
+                    wrong: 0,
+                    notAttempted: 0,
+                    score: 0
+                };
+            });
+            
+            // Calculate results for each question
+            shuffledQuestions.forEach((question, index) => {
+                const subject = question.subject;
+                
+                if (answers[index] === null) {
+                    results.subjects[subject].notAttempted++;
+                    results.total.notAttempted++;
+                } else if (answers[index] === question.correctAnswer) {
+                    results.subjects[subject].correct++;
+                    results.subjects[subject].score += 4; // 4 marks for correct answer
+                    results.total.correct++;
+                    results.total.score += 4;
+                } else {
+                    results.subjects[subject].wrong++;
+                    results.subjects[subject].score -= 1; // -1 mark for wrong answer
+                    results.total.wrong++;
+                    results.total.score -= 1;
+                }
+            });
+            
+            return results;
+        }
+        
+        // Display results
+        function displayResults(results) {
+            const studentName = document.getElementById('studentName').value.trim();
+            const studentRoll = document.getElementById('studentRoll').value.trim();
+            const studentAdmission = document.getElementById('studentAdmission').value.trim();
+            
+            document.getElementById('studentResultsInfo').textContent = 
+                `Student: ${studentName} | Roll: ${studentRoll} | Admission: ${studentAdmission}`;
+            
+            const resultsBody = document.getElementById('resultsBody');
+            resultsBody.innerHTML = '';
+            
+            // Add subject-wise results
+            SUBJECTS.forEach(subject => {
+                const row = document.createElement('tr');
+                const subjectResult = results.subjects[subject];
+                
+                row.innerHTML = `
+                    <td>${subject}</td>
+                    <td>${subjectResult.correct}</td>
+                    <td>${subjectResult.wrong}</td>
+                    <td>${subjectResult.notAttempted}</td>
+                    <td>${subjectResult.score}</td>
+                `;
+                
+                resultsBody.appendChild(row);
+            });
+            
+            // Add total row
+            const totalRow = document.createElement('tr');
+            totalRow.style.fontWeight = 'bold';
+            totalRow.style.backgroundColor = '#e9ecef';
+            
+            totalRow.innerHTML = `
+                <td>Total</td>
+                <td>${results.total.correct}</td>
+                <td>${results.total.wrong}</td>
+                <td>${results.total.notAttempted}</td>
+                <td>${results.total.score}</td>
+            `;
+            
+            resultsBody.appendChild(totalRow);
+            
+            // Display total score
+            document.getElementById('totalScore').textContent = 
+                `Total Score: ${results.total.score} out of ${shuffledQuestions.length * 4}`;
+        }
+        
+        // Close security overlay and show results
+        function closeSecurityOverlay() {
+            securityOverlay.style.display = 'none';
+            submitExam();
+        }
+        
+        // Restart the exam
+        function restartExam() {
+            // Reset variables
+            currentQuestion = 0;
+            timeLeft = EXAM_DURATION;
+            tabSwitches = 0;
+            answers = new Array(questions.length).fill(null);
+            reviewStatus = new Array(questions.length).fill(false);
+            
+            // Shuffle questions again for different pattern
+            shuffleQuestions();
+            
+            // Hide results, show login
+            resultsSection.style.display = 'none';
+            loginSection.style.display = 'block';
+            
+            // Reset form
+            document.getElementById('studentName').value = '';
+            document.getElementById('studentRoll').value = '';
+            document.getElementById('studentAdmission').value = '';
+            
+            // Hide violation counter
+            violationCount.style.display = 'none';
+        }
+    </script>
+</body>
+</html>
