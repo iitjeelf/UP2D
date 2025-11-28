@@ -1,0 +1,3227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>LFJC Online Exam System</title>
+<style>
+/* ===== BASE STYLES ===== */
+:root {
+  --primary-color: #4B0082;
+  --secondary-color: #D8BFD8;
+  --light-purple: #E6E6FA;
+  --white: #fff;
+  --black: #000;
+  --success: #32CD32;
+  --warning: #ff9900;
+  --danger: #ff6666;
+  --shadow: 0 5px 15px rgba(0,0,0,0.1);
+  --transition: all 0.3s ease;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "SF Pro Display", Arial, sans-serif;
+  margin: 0;
+  background: var(--white);
+  color: var(--black);
+  line-height: 1.6;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Disable right-click context menu */
+body {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Enhanced Screenshot protection */
+#screenshotProtection {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  z-index: 2147483647;
+  pointer-events: none;
+}
+
+.screenshot-dots {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: 
+    radial-gradient(circle at 10% 20%, rgba(255,255,255,0.02) 1px, transparent 1px),
+    radial-gradient(circle at 30% 40%, rgba(255,255,255,0.02) 1px, transparent 1px),
+    radial-gradient(circle at 50% 60%, rgba(255,255,255,0.02) 1px, transparent 1px),
+    radial-gradient(circle at 70% 80%, rgba(255,255,255,0.02) 1px, transparent 1px),
+    radial-gradient(circle at 90% 10%, rgba(255,255,255,0.02) 1px, transparent 1px);
+  background-size: 200px 200px;
+  animation: flicker 0.5s infinite;
+}
+
+@keyframes flicker {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 0.9; }
+}
+
+/* Additional screenshot protection */
+#screenshotBlock {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  z-index: 2147483646;
+  pointer-events: none;
+}
+
+/* ===== HEADER & FOOTER ===== */
+header {
+  background: linear-gradient(145deg, var(--light-purple), var(--secondary-color));
+  color: var(--primary-color);
+  text-align: center;
+  padding: 20px;
+  font-size: 36px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  box-shadow: var(--shadow);
+  text-shadow: 0 1px 2px var(--white);
+}
+
+footer {
+  background: var(--light-purple);
+  color: var(--primary-color);
+  padding: 10px;
+  text-align: center;
+  font-weight: bold;
+  position: fixed;
+  width: 100%;
+  bottom: 0;
+}
+
+/* ===== STUDENT ENTRY SECTION ===== */
+#studentEntry {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 140px);
+  padding: 16px;
+  text-align: center;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 60px;
+  width: 100%;
+  max-width: 500px;
+}
+
+.form-group label {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-right: 10px;
+  color: var(--primary-color);
+  width: 180px;
+  text-align: right;
+}
+
+input[type="text"] {
+  padding: 12px 14px;
+  font-size: 1.1rem;
+  border-radius: 10px;
+  border: 1.5px solid var(--primary-color);
+  outline: none;
+  min-width: 250px;
+  transition: var(--transition);
+  text-transform: uppercase;
+}
+
+input[type="text"]:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(75, 0, 130, 0.2);
+}
+
+input.error {
+  animation: glowRed 0.5s alternate infinite;
+  border-color: var(--danger);
+  background-color: #ffe6e6;
+}
+
+@keyframes glowRed {
+  0% { box-shadow: 0 0 5px var(--danger); }
+  100% { box-shadow: 0 0 15px var(--danger); }
+}
+
+/* ===== BUTTON STYLES ===== */
+button {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  border: none;
+  border-radius: 12px;
+  transition: var(--transition);
+  box-shadow: 0 6px #aaa;
+  background: linear-gradient(to bottom, #fafaff, #dcd6f7);
+  color: var(--primary-color);
+  font-weight: 600;
+  padding: 12px 24px;
+  font-size: 18px;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px rgba(0,0,0,.28);
+}
+
+button:active {
+  transform: translateY(3px) scale(.98);
+}
+
+button:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+.optBtn {
+  font-size: 16px;
+  padding: 8px 18px;
+  margin: 6px;
+  border: 2px solid var(--primary-color);
+  background: var(--white);
+  border-radius: 8px;
+  box-shadow: 0 5px #aaa;
+}
+
+.optBtn.selected {
+  background: var(--success);
+  color: var(--white);
+  border-color: #2fa92f;
+}
+
+.optBtn.correct {
+  background: #32CD32;
+  color: white;
+  border-color: #228B22;
+}
+
+.optBtn.wrong {
+  background: #FF6B6B;
+  color: white;
+  border-color: #DC143C;
+}
+
+.optBtn.not-attempted {
+  background: #B0B0B0;
+  color: white;
+  border-color: #808080;
+}
+
+.navBtn {
+  font-size: 16px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  color: var(--white);
+  font-weight: bold;
+  cursor: pointer;
+  background: linear-gradient(145deg, #1E90FF, #4682B4);
+  margin: 0 15px;
+}
+
+#markReviewBtn {
+  background: linear-gradient(145deg, #ffb84d, var(--warning));
+}
+
+#markReviewBtn.reviewed {
+  background: linear-gradient(145deg, #ffd700, #ffcc00) !important;
+  color: var(--black);
+}
+
+#submitBtn {
+  background: linear-gradient(145deg, #c8b88a, #b49e60);
+}
+
+/* ===== TIMER STYLES ===== */
+#timerEl {
+  font-size: 20px;
+  font-weight: bold;
+  color: var(--primary-color);
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: #f0f0ff;
+  display: inline-block;
+  transition: var(--transition);
+}
+
+#timerEl.blink {
+  animation: blinkTimer 1s infinite;
+}
+
+@keyframes blinkTimer {
+  0% { background: var(--danger); color: var(--white); }
+  50% { background: var(--white); color: var(--primary-color); }
+  100% { background: var(--danger); color: var(--white); }
+}
+
+/* ===== PALETTE STYLES ===== */
+#paletteContainer {
+  display: grid;
+  gap: 8px;
+  margin: 20px auto;
+  max-width: 100%;
+  padding: 0 10px;
+  justify-content: center;
+}
+
+#paletteContainer button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 14px;
+  margin: 2px;
+  border: 1px solid var(--primary-color);
+  background: var(--light-purple);
+  color: var(--primary-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#paletteContainer button.selected {
+  background: var(--success);
+  color: var(--white);
+  border-color: #2fa92f;
+}
+
+#paletteContainer button.reviewed {
+  background: yellow;
+  color: var(--black);
+}
+
+#paletteContainer button.current {
+  border: 3px solid red;
+}
+
+#paletteContainer button.correct-answer {
+  background: #32CD32;
+  color: white;
+}
+
+#paletteContainer button.wrong-answer {
+  background: #FF6B6B;
+  color: white;
+}
+
+#paletteContainer button.not-attempted-answer {
+  background: #B0B0B0;
+  color: white;
+}
+
+/* ===== EXAM AREA STYLES ===== */
+#examArea {
+  padding: 16px;
+  text-align: center;
+  display: none;
+}
+
+#examHeader {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+#stuInfo {
+  flex: 0 0 auto;
+  text-align: left;
+  white-space: nowrap;
+}
+
+#stuQInfo {
+  flex: 1;
+  text-align: center;
+  white-space: nowrap;
+  font-size: 18px;
+  font-weight: bold;
+  color: var(--primary-color);
+}
+
+.sectionTitle {
+  font-size: 22px;
+  color: var(--primary-color);
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+img.questionImg {
+  max-width: 95vw;
+  width: auto;
+  height: auto;
+  border-radius: 10px;
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+  user-drag: none;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  transition: opacity 0.3s ease;
+}
+
+/* ===== ANIMATIONS ===== */
+.glow {
+  animation: glowPulse 1.6s infinite alternate;
+  box-shadow: 0 8px 18px rgba(75,0,130,0.12);
+}
+
+@keyframes glowPulse {
+  0% { box-shadow: 0 6px 10px rgba(75,0,130,0.06); transform: translateY(0); }
+  50% { box-shadow: 0 12px 30px rgba(75,0,130,0.14); transform: translateY(-2px); }
+  100% { box-shadow: 0 6px 10px rgba(75,0,130,0.06); transform: translateY(0); }
+}
+
+/* ===== SECURITY OVERLAY STYLES ===== */
+#fullRedOverlay {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  display: none;
+  background: red;
+  z-index: 9999;
+  pointer-events: auto;
+}
+
+#accessDeniedBox {
+  position: fixed;
+  left: 50%;
+  top: 40%;
+  transform: translate(-50%, -50%);
+  z-index: 10000;
+  color: var(--white);
+  text-align: center;
+  display: none;
+  pointer-events: auto;
+}
+
+#accessDeniedBox h1 {
+  font-size: 48px;
+  font-weight: 900;
+  margin: 0 0 18px 0;
+  color: var(--white);
+  text-shadow: 0 2px 6px rgba(0,0,0,0.4);
+}
+
+#callAdminBtn {
+  padding: 12px 22px;
+  border-radius: 12px;
+  font-weight: 800;
+}
+
+/* ===== MODAL STYLES ===== */
+.confirmModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.45);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 10001;
+}
+
+.confirmBox {
+  background: var(--white);
+  padding: 20px;
+  border-radius: 12px;
+  min-width: 280px;
+  text-align: center;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.confirmBox p {
+  font-size: 18px;
+  color: var(--primary-color);
+  margin-bottom: 15px;
+}
+
+.confirmBox button {
+  margin: 0 10px;
+  padding: 8px 16px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+#adminPassModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 20000;
+}
+
+#adminPassBox {
+  background: var(--white);
+  padding: 20px;
+  text-align: center;
+  width: 260px;
+  border-radius: 12px;
+}
+
+#adminPassBox input {
+  width: 90%;
+  padding: 10px;
+  border: 1px solid var(--primary-color);
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+/* ===== TIMER WARNING STYLES ===== */
+.blinkLine {
+  animation: blinkLineAnim 1s infinite;
+}
+
+@keyframes blinkLineAnim {
+  0% { background: #ffcccc; }
+  50% { background: var(--white); }
+  100% { background: #ffcccc; }
+}
+
+/* ===== FONT SIZE ADJUSTMENTS ===== */
+#stuInfo, #stuQInfo, #timerEl {
+  font-size: 20px !important;
+}
+
+/* Increase table row height vertically */
+table td, table th {
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+
+/* ===== RESPONSIVE STYLES ===== */
+@media (max-width: 600px) {
+  #accessDeniedBox h1 {
+    font-size: 28px;
+  }
+  
+  #callAdminBtn {
+    padding: 10px 14px;
+  }
+  
+  .form-group {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .form-group label {
+    text-align: left;
+    width: auto;
+    margin-bottom: 5px;
+  }
+  
+  #examHeader {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  #stuInfo, #stuQInfo {
+    text-align: center;
+  }
+  
+  .navContainer {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .navBtn {
+    width: 80%;
+    margin-bottom: 10px;
+    margin-left: 0;
+    margin-right: 0;
+  }
+  
+  #paletteContainer {
+    grid-template-columns: repeat(5, 1fr) !important;
+    gap: 6px;
+  }
+  
+  #paletteContainer button {
+    width: 35px;
+    height: 35px;
+    font-size: 12px;
+  }
+}
+
+@media (min-width: 601px) and (max-width: 900px) {
+  #paletteContainer {
+    grid-template-columns: repeat(10, 1fr) !important;
+  }
+}
+
+@media (min-width: 901px) and (max-width: 1200px) {
+  #paletteContainer {
+    grid-template-columns: repeat(15, 1fr) !important;
+  }
+}
+
+@media (min-width: 1201px) {
+  #paletteContainer {
+    grid-template-columns: repeat(20, 1fr) !important;
+  }
+}
+
+/* ===== ERROR MESSAGE STYLES ===== */
+.error-message {
+  color: #ff3333;
+  font-weight: 600;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 6px;
+  background: rgba(255, 102, 102, 0.1);
+  border: 1px solid #ff6666;
+  animation: blinkRed 1s infinite;
+}
+
+@keyframes blinkRed {
+  0% { opacity: 1; }
+  50% { opacity: 0.6; }
+  100% { opacity: 1; }
+}
+
+/* ===== RESULTS TABLE STYLES ===== */
+.results-table {
+  width: 100%;
+  max-width: 900px;
+  margin: 20px auto;
+  border-collapse: collapse;
+  font-size: 18px;
+  text-align: center;
+}
+
+.results-table th {
+  background: #E6E6FA;
+  padding: 15px;
+  border: 1px solid var(--primary-color);
+}
+
+.results-table td {
+  padding: 15px;
+  border: 1px solid var(--primary-color);
+}
+
+.results-table tr:nth-child(even) {
+  background: #f9f9f9;
+}
+
+.results-table tr:hover {
+  background: #f0f0ff;
+}
+
+/* ===== REVIEW MODE STYLES ===== */
+.answer-status {
+  margin: 10px 0;
+  padding: 10px;
+  border-radius: 8px;
+  font-weight: bold;
+}
+
+.answer-status.correct {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.answer-status.wrong {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.answer-status.not-attempted {
+  background: #e2e3e5;
+  color: #383d41;
+  border: 1px solid #d6d8db;
+}
+
+.correct-answer {
+  color: #155724;
+  font-weight: bold;
+}
+
+.wrong-answer {
+  color: #721c24;
+  font-weight: bold;
+}
+
+/* ===== AREA STYLES ===== */
+#summaryArea, #reviewArea {
+  display: none;
+  padding: 20px;
+}
+
+.area-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.area-header h2 {
+  color: #4B0082;
+  margin-bottom: 10px;
+}
+
+/* ===== VERTICAL GAP STYLES ===== */
+.options-container {
+  margin-bottom: 60px;
+}
+
+.navContainer {
+  margin-top: 40px;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+/* ===== SECURITY MESSAGE STYLES ===== */
+.security-message {
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  color: #856404;
+  padding: 15px;
+  border-radius: 8px;
+  margin: 20px 0;
+  text-align: center;
+  font-weight: bold;
+}
+
+/* ===== AUTO TRANSITION STYLES ===== */
+.auto-transition-message {
+  background: #d4edda;
+  border: 1px solid #c3e6cb;
+  color: #155724;
+  padding: 15px;
+  border-radius: 8px;
+  margin: 20px 0;
+  text-align: center;
+  font-weight: bold;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+.waiting-message {
+  background: #d1ecf1;
+  border: 1px solid #bee5eb;
+  color: #0c5460;
+  padding: 20px;
+  border-radius: 8px;
+  margin: 30px 0;
+  text-align: center;
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.waiting-timer {
+  font-size: 24px;
+  font-weight: bold;
+  color: #4B0082;
+  margin: 10px 0;
+}
+
+/* ===== LOADING STYLES ===== */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  text-align: center;
+}
+
+.spinner {
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #4B0082;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ===== WARNING BANNER STYLES ===== */
+.warning-banner {
+  background: #ffcccc;
+  color: #721c24;
+  padding: 15px;
+  text-align: center;
+  font-weight: bold;
+  border: 1px solid #f5c6cb;
+  border-radius: 8px;
+  margin: 20px 0;
+}
+
+/* ===== IMAGE ERROR STYLES ===== */
+.image-error {
+  background: #ffebee;
+  border: 2px solid #ffcdd2;
+  color: #c62828;
+  padding: 20px;
+  border-radius: 8px;
+  margin: 20px 0;
+  text-align: center;
+  font-weight: bold;
+}
+
+.image-error h3 {
+  margin: 0 0 10px 0;
+  color: #c62828;
+}
+
+.loading-message {
+  background: #e3f2fd;
+  border: 2px solid #bbdefb;
+  color: #1565c0;
+  padding: 15px;
+  border-radius: 8px;
+  margin: 10px 0;
+  text-align: center;
+  font-weight: bold;
+}
+
+/* ===== SUCCESS MESSAGE STYLES ===== */
+.success-message {
+  background: #d4edda;
+  color: #155724;
+  padding: 20px;
+  border-radius: 8px;
+  margin: 20px 0;
+  text-align: center;
+  font-weight: bold;
+  border: 1px solid #c3e6cb;
+}
+
+.success-message h3 {
+  margin: 0 0 10px 0;
+  color: #155724;
+}
+
+/* ===== SMOOTH TRANSITION STYLES ===== */
+.question-transition {
+  transition: all 0.3s ease-in-out;
+}
+
+.question-fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== PRELOADING STYLES ===== */
+.preload-image {
+  position: absolute;
+  left: -9999px;
+  top: -9999px;
+  opacity: 0;
+}
+
+/* ===== DETAILED RESULTS TABLE STYLES ===== */
+.detailed-results-table {
+  width: 100%;
+  max-width: 900px;
+  margin: 30px auto;
+  border-collapse: collapse;
+  font-size: 18px;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.detailed-results-table th {
+  background: #4B0082;
+  color: white;
+  padding: 18px;
+  border: 1px solid var(--primary-color);
+  font-weight: bold;
+}
+
+.detailed-results-table td {
+  padding: 18px;
+  border: 1px solid var(--primary-color);
+}
+
+.detailed-results-table tr:nth-child(even) {
+  background: #f8f6ff;
+}
+
+.detailed-results-table tr:hover {
+  background: #f0f0ff;
+  transform: scale(1.01);
+  transition: transform 0.2s ease;
+}
+
+.detailed-results-table .total-row {
+  background: #E6E6FA !important;
+  font-weight: bold;
+  font-size: 20px;
+}
+
+.detailed-results-table .highlight {
+  background: #d4edda;
+  font-weight: bold;
+}
+
+/* ===== FORM ASSIGNMENT STYLES ===== */
+.form-assignment {
+  background: #e8f4fd;
+  border: 2px solid #4B0082;
+  border-radius: 10px;
+  padding: 15px;
+  margin: 15px 0;
+  text-align: center;
+}
+
+.form-assignment h3 {
+  color: #4B0082;
+  margin: 0 0 10px 0;
+}
+
+.assigned-form {
+  font-size: 24px;
+  font-weight: bold;
+  color: #4B0082;
+  background: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  display: inline-block;
+  margin: 10px 0;
+}
+
+/* ===== SECURITY WARNING STYLES ===== */
+.security-warning {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: linear-gradient(145deg, #ff6b6b, #dc143c);
+  color: white;
+  text-align: center;
+  padding: 15px;
+  font-weight: bold;
+  z-index: 10000;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  animation: pulseWarning 2s infinite;
+}
+
+@keyframes pulseWarning {
+  0% { opacity: 1; }
+  50% { opacity: 0.8; }
+  100% { opacity: 1; }
+}
+
+.network-status {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  padding: 8px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+  z-index: 9999;
+}
+
+.network-online {
+  background: var(--success);
+  color: white;
+}
+
+.network-offline {
+  background: var(--warning);
+  color: white;
+  animation: blinkOffline 1s infinite;
+}
+
+@keyframes blinkOffline {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0.5; }
+}
+
+/* ===== TERMINATION SCREEN STYLES ===== */
+.termination-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(145deg, #ff6b6b, #dc143c);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+  color: white;
+  text-align: center;
+}
+
+.termination-content {
+  background: rgba(0,0,0,0.9);
+  padding: 40px;
+  border-radius: 15px;
+  max-width: 600px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+/* ===== DATA INTEGRITY STYLES ===== */
+.data-integrity-check {
+  background: #e8f5e8;
+  border: 2px solid #4CAF50;
+  border-radius: 8px;
+  padding: 15px;
+  margin: 15px 0;
+  text-align: center;
+}
+
+.duplicate-warning {
+  background: #fff3cd;
+  border: 2px solid #ffc107;
+  border-radius: 8px;
+  padding: 15px;
+  margin: 15px 0;
+  text-align: center;
+  font-weight: bold;
+}
+
+/* ===== SUBJECT DISPLAY STYLES ===== */
+.subject-display {
+  background: linear-gradient(145deg, #4B0082, #6A0DAD);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: bold;
+  margin: 10px 0;
+  display: inline-block;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.current-subject {
+  font-size: 18px;
+  text-align: center;
+  margin: 15px 0;
+  padding: 10px;
+  background: #f0f0ff;
+  border-radius: 8px;
+  border-left: 4px solid #4B0082;
+}
+
+/* ===== ACCESS DENIED STYLES ===== */
+.access-denied-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #ff0000;
+  z-index: 99999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  text-align: center;
+}
+
+.access-denied-content {
+  background: rgba(0,0,0,0.9);
+  padding: 40px;
+  border-radius: 15px;
+  max-width: 500px;
+}
+
+.access-denied-content h1 {
+  font-size: 48px;
+  margin-bottom: 20px;
+  color: #ff6b6b;
+}
+
+.access-denied-content p {
+  font-size: 18px;
+  margin-bottom: 30px;
+}
+</style>
+</head>
+
+<body>
+
+<header>LFJC ONLINE EXAMINATION - 10 FORM SYSTEM</header>
+
+<div id="studentEntry">
+  <div class="warning-banner" id="examWarning" style="display:none;">
+    <p>⚠️ WARNING: Exam in progress. Do not refresh or close this window!</p>
+  </div>
+  
+  <div class="form-group"><label>NAME</label><input type="text" id="stuName" placeholder="Only letters & spaces" autocomplete="off"></div>
+  <div class="form-group"><label>SECTION</label><input type="text" id="stuSection" placeholder="Letters & digits" autocomplete="off"></div>
+  <div class="form-group"><label>ROLL NUMBER</label><input type="text" id="stuRoll" placeholder="Digits only" autocomplete="off"></div>
+  <div class="form-group"><label>ADMISSION NUMBER</label><input type="text" id="stuAdm" placeholder="Digits only" autocomplete="off"></div>
+  
+  <div class="form-group"><button id="stuStartBtn" style="display:none;">Start Exam</button></div>
+  <p id="studentMsg"></p>
+  <div id="errorMessages"></div>
+  
+  <div id="resumeExamSection" style="display:none; margin-top: 20px;">
+    <div class="security-message">
+      <p>You have an exam in progress. Would you like to resume?</p>
+      <button id="resumeExamBtn" class="navBtn">Resume Exam</button>
+    </div>
+  </div>
+
+  <!-- Duplicate Submission Warning -->
+  <div id="duplicateWarning" class="duplicate-warning" style="display:none;">
+    <h3>⚠️ Previous Submission Detected</h3>
+    <p>It appears you have already submitted an exam. Starting a new exam will create a duplicate entry.</p>
+    <button id="forceStartBtn" class="navBtn" style="background:linear-gradient(145deg, #dc3545, #c82333);">Start New Exam Anyway</button>
+  </div>
+</div>
+
+<div id="examArea" style="display:none;">
+  <div id="examHeader" style="display:flex;align-items:center;width:100%;font-weight:bold;">
+    <div id="stuInfo" style="flex:0 0 auto;text-align:left; white-space:nowrap;"></div>
+    <div id="stuQInfo" style="flex:1;text-align:center; white-space:nowrap;"></div>
+    <div style="flex:0 0 auto;text-align:right; white-space:nowrap;">
+        <span id="timerEl">🕒 00:00</span>
+    </div>
+  </div>
+
+  <div id="questionContainer" style="text-align:center;margin-top:10px;"></div>
+
+  <div class="navContainer">
+    <button class="navBtn" id="prevBtn">⬅ Previous</button>
+    <button class="navBtn" id="markReviewBtn">Mark Review</button>
+    <button class="navBtn" id="nextBtn">Next ➡</button>
+    <button class="navBtn" id="submitBtn">Submit Exam</button>
+  </div>
+
+  <div id="paletteContainer"></div>
+</div>
+
+<!-- Summary Area -->
+<div id="summaryArea">
+  <div class="area-header">
+    <h2>📊 Exam Summary - <span id="summaryStudentName"></span></h2>
+    <div>
+      <b>Section:</b> <span id="summarySection"></span> | 
+      <b>Roll:</b> <span id="summaryRoll"></span> | 
+      <b>Admission No:</b> <span id="summaryAdm"></span> |
+      <b>Form:</b> <span id="summaryForm"></span>
+    </div>
+  </div>
+  
+  <div id="summaryTableContainer" style="overflow-x:auto;display:flex;justify-content:center;width:100%;"></div>
+  
+  <div style="text-align:center; margin:30px 0;">
+    <div id="waitingMessage" class="waiting-message">
+      <div>⏳ Waiting for Exam Time to Complete</div>
+      <div class="waiting-timer" id="waitingTimer">00:00</div>
+      <div>Detailed solutions will be available automatically when the exam time is over.</div>
+    </div>
+    <div id="autoTransitionMessage" class="auto-transition-message" style="display:none;">
+      🔄 Auto-transitioning to detailed solutions in <span id="countdown">5</span> seconds...
+    </div>
+    <button id="closeSummaryBtn" class="navBtn" style="background:linear-gradient(145deg, #dc3545, #c82333);">Close</button>
+  </div>
+</div>
+
+<!-- Review Area -->
+<div id="reviewArea">
+  <div class="area-header">
+    <h2>📝 Detailed Solutions - <span id="reviewStudentName"></span></h2>
+    <div>
+      <b>Section:</b> <span id="reviewSection"></span> | 
+      <b>Roll:</b> <span id="reviewRoll"></span> | 
+      <b>Admission No:</b> <span id="reviewAdm"></span> |
+      <b>Form:</b> <span id="reviewForm"></span>
+    </div>
+  </div>
+  
+  <!-- Results Table in Detailed Solutions -->
+  <div id="detailedResultsContainer" style="overflow-x:auto;display:flex;justify-content:center;width:100%;margin:30px 0;"></div>
+  
+  <div id="reviewQuestionsContainer"></div>
+  
+  <div style="text-align:center; margin:30px 0;">
+    <button id="closeReviewBtn" class="navBtn" style="background:linear-gradient(145deg, #dc3545, #c82333);">Close</button>
+  </div>
+</div>
+
+<footer>LFJC@2025 All rights reserved - 10 Form System</footer>
+
+<div id="fullRedOverlay"></div>
+<div id="accessDeniedBox">
+  <h1>ACCESS DENIED</h1>
+  <button id="callAdminBtn" class="glow">Enter Password</button>
+</div>
+
+<div class="confirmModal" id="confirmModal">
+  <div class="confirmBox">
+    <p id="confirmText">Confirm?</p>
+    <button id="confirmYes">Yes</button>
+    <button id="confirmNo">No</button>
+  </div>
+</div>
+
+<div id="adminPassModal">
+  <div id="adminPassBox">
+    <h3>Enter Admin Password</h3>
+    <input type="password" id="adminPassInput">
+    <br><br>
+    <button id="adminPassSubmit">Submit</button>
+  </div>
+</div>
+
+<!-- Enhanced Screenshot Protection -->
+<div id="screenshotProtection">
+  <div class="screenshot-dots"></div>
+</div>
+<div id="screenshotBlock"></div>
+
+<!-- Access Denied Overlay -->
+<div id="accessDeniedOverlay" class="access-denied-overlay" style="display:none;">
+  <div class="access-denied-content">
+    <h1>🚫 ACCESS DENIED</h1>
+    <p>You have already taken an exam within the last 24 hours.</p>
+    <p>Please contact administrator for assistance.</p>
+    <div style="margin-top: 30px;">
+      <input type="password" id="adminOverridePass" placeholder="Enter Admin Password" style="padding: 10px; width: 200px; border-radius: 5px; border: none;">
+      <button id="adminOverrideBtn" style="padding: 10px 20px; margin-left: 10px; background: #4B0082; color: white; border: none; border-radius: 5px; cursor: pointer;">Submit</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== CONFIGURATION =====
+const MARK_PER_CORRECT = 4, MARK_PER_WRONG = -1;
+const EXAM_DURATION_MINUTES = 1; // 5 minutes for testing
+const EXAM_DURATION_MS = EXAM_DURATION_MINUTES * 60 * 1000;
+const STORAGE_KEY_PREFIX = "lfjc_exam_";
+const MAX_QUESTIONS = 60; // Maximum expected questions
+const ADMIN_PASSWORD = "lfjc2025"; // Admin password for override
+const COOLDOWN_HOURS = 24; // 24-hour cooldown period
+
+// ===== 10-FORM CONFIGURATION =====
+const GOOGLE_FORMS = {
+    'A': "https://docs.google.com/forms/d/e/1FAIpQLSe4uuphhY4-p5jdTZqxG_ZZUKAhQZF1ytyNizPXb0n3L85JIw/formResponse",
+    'B': "https://docs.google.com/forms/d/e/1FAIpQLSc3JIcnUysvUtH12QWpHG9wAF4vd1NgEYqeyHwNP0UEkPqi5w/formResponse", 
+    'C': "https://docs.google.com/forms/d/e/1FAIpQLScqYdTGoD4l0jJvzYw0tdBNRSMPepnGtOOowOXYwDFov43KHg/formResponse",
+    'D': "https://docs.google.com/forms/d/e/1FAIpQLSfjAyDlY-5BAF5rPvzQS0AeTI6Vs2Rkri0V6_miA0mRivZAEg/formResponse",
+    'E': "https://docs.google.com/forms/d/e/1FAIpQLSfK6Skl6Uxj8VyGnhhqfdPHcJ8mbcgpzIKLpWFElzdeQSKMgA/formResponse",
+    'F': "https://docs.google.com/forms/d/e/1FAIpQLSeP-Gx2XnUg_Q17asOOeYzkoGtLykVIcQ2W006YTqTpE7xY6g/formResponse",
+    'G': "https://docs.google.com/forms/d/e/1FAIpQLSe1vg_I5XR3ljr-UNFi-MXxUgjdTDyrVbHxqi_dkvtmYGUTEA/formResponse",
+    'H': "https://docs.google.com/forms/d/e/1FAIpQLScyv8cps4StN2UXrsXqNdLu5UBR7t0Vwk8WSnynU2tvracs1g/formResponse",
+    'I': "https://docs.google.com/forms/d/e/1FAIpQLSeyen2hSdhRwztpWnH6lyuL91ZROqwDMKIaa4gN_e-Xvyvb_g/formResponse",
+    'J': "https://docs.google.com/forms/d/e/1FAIpQLSelbDi1n1EKWu7G0I92hTML6vWUO2c55p2dqrEOQ7cWflaSNg/formResponse"
+};
+
+// DYNAMIC STUDENT DISTRIBUTION - CHANGE THIS NUMBER FOR DIFFERENT CLASS SIZES
+const TOTAL_STUDENTS = 150; // Set this to 100, 150, 200, etc.
+
+// Form field mappings - FROM YOUR PRE-FILL URL
+const FORM_FIELDS = {
+    STUDENT_NAME: "entry.217666919",
+    SECTION: "entry.2006392966",
+    ROLL_NUMBER: "entry.547275105",
+    ADMISSION_NUMBER: "entry.1234063852",
+    MATHS_MARKS: "entry.1989859216",
+    PHYSICS_MARKS: "entry.1953974928",
+    CHEMISTRY_MARKS: "entry.296331194",
+    TOTAL_MARKS: "entry.1289040887",
+    TIMESTAMP: "entry.2139100252"
+};
+
+// ===== GLOBAL VARIABLES =====
+let images = [];
+let answerKey = [];
+let keyLoaded = false;
+let hasSubmitted = false;
+let examStartTime = null;
+let waitingTimerInterval = null;
+let autoTransitionTimer = null;
+let examInProgress = false;
+let preloadedImages = {}; // Cache for preloaded images
+let currentSubjData = null; // Store subject data for detailed solutions
+let assignedForm = 'A'; // Default form assignment
+
+const subjects = ["Maths", "Physics", "Chemistry"];
+
+let examData = {files: [], subjectNames: [], keys: [], originalOrder: []};
+let progress = null, timerInterval = null;
+
+// ===== ENHANCED INPUT VALIDATION =====
+function validateNameInput(input) {
+    const value = input.value.toUpperCase();
+    input.value = value;
+    
+    // Allow only letters, spaces, and digits
+    const isValid = /^[A-Z0-9\s\.]*$/.test(value) && value.length >= 2;
+    
+    if (!isValid && value !== '') {
+        input.classList.add('error');
+    } else {
+        input.classList.remove('error');
+    }
+    
+    return isValid;
+}
+
+function validateSectionInput(input) {
+    const value = input.value.toUpperCase();
+    input.value = value;
+    
+    // Allow only letters and digits
+    const isValid = /^[A-Z0-9]*$/.test(value) && value.length >= 1;
+    
+    if (!isValid && value !== '') {
+        input.classList.add('error');
+    } else {
+        input.classList.remove('error');
+    }
+    
+    return isValid;
+}
+
+function validateRollInput(input) {
+    const value = input.value;
+    
+    // Allow only digits
+    const isValid = /^\d*$/.test(value) && value.length >= 1;
+    
+    if (!isValid && value !== '') {
+        input.classList.add('error');
+    } else {
+        input.classList.remove('error');
+    }
+    
+    return isValid;
+}
+
+function validateAdmInput(input) {
+    const value = input.value;
+    
+    // Allow only digits
+    const isValid = /^\d*$/.test(value) && value.length >= 1;
+    
+    if (!isValid && value !== '') {
+        input.classList.add('error');
+    } else {
+        input.classList.remove('error');
+    }
+    
+    return isValid;
+}
+
+// ===== ENHANCED SECURITY: 24-HOUR COOLDOWN =====
+function check24HourCooldown(studentData) {
+    const studentId = generateStudentId(studentData);
+    const lastSubmission = localStorage.getItem(`last_submission_${studentId}`);
+    
+    if (lastSubmission) {
+        const lastSubmissionTime = parseInt(lastSubmission);
+        const currentTime = Date.now();
+        const hoursSinceLastSubmission = (currentTime - lastSubmissionTime) / (1000 * 60 * 60);
+        
+        if (hoursSinceLastSubmission < COOLDOWN_HOURS) {
+            return false; // Cooldown active
+        }
+    }
+    
+    return true; // No cooldown or cooldown expired
+}
+
+function showAccessDeniedOverlay() {
+    document.getElementById('accessDeniedOverlay').style.display = 'flex';
+}
+
+function hideAccessDeniedOverlay() {
+    document.getElementById('accessDeniedOverlay').style.display = 'none';
+}
+
+// ===== ENHANCED QUESTION SHUFFLING =====
+function shuffleArray(array) {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+}
+
+function createSubjectPermutation() {
+    // Create different subject orders
+    const subjectOrders = [
+        ['Maths', 'Physics', 'Chemistry'],
+        ['Physics', 'Chemistry', 'Maths'],
+        ['Chemistry', 'Maths', 'Physics'],
+        ['Maths', 'Chemistry', 'Physics'],
+        ['Physics', 'Maths', 'Chemistry'],
+        ['Chemistry', 'Physics', 'Maths']
+    ];
+    
+    return subjectOrders[Math.floor(Math.random() * subjectOrders.length)];
+}
+
+function shuffleQuestionsForStudent(studentData) {
+    // Use student data to create a unique seed for shuffling
+    const seed = generateStudentId(studentData);
+    const shuffledData = {
+        files: [],
+        keys: [],
+        subjectNames: [],
+        originalOrder: []
+    };
+    
+    // Define question ranges for each subject
+    const mathsQuestions = Array.from({length: 30}, (_, i) => i);
+    const physicsQuestions = Array.from({length: 20}, (_, i) => i + 30);
+    const chemistryQuestions = Array.from({length: 10}, (_, i) => i + 50);
+    
+    // Shuffle questions within each subject
+    const shuffledMaths = shuffleArray(mathsQuestions);
+    const shuffledPhysics = shuffleArray(physicsQuestions);
+    const shuffledChemistry = shuffleArray(chemistryQuestions);
+    
+    // Get subject order permutation
+    const subjectOrder = createSubjectPermutation();
+    
+    // Combine questions according to subject order
+    let currentIndex = 0;
+    subjectOrder.forEach(subject => {
+        let subjectQuestions = [];
+        let subjectKeys = [];
+        
+        switch(subject) {
+            case 'Maths':
+                subjectQuestions = shuffledMaths;
+                break;
+            case 'Physics':
+                subjectQuestions = shuffledPhysics;
+                break;
+            case 'Chemistry':
+                subjectQuestions = shuffledChemistry;
+                break;
+        }
+        
+        subjectQuestions.forEach(qIndex => {
+            shuffledData.files[currentIndex] = images[qIndex];
+            shuffledData.keys[currentIndex] = answerKey[qIndex];
+            shuffledData.subjectNames[currentIndex] = subject;
+            shuffledData.originalOrder[currentIndex] = qIndex;
+            currentIndex++;
+        });
+    });
+    
+    return shuffledData;
+}
+
+// ===== BULLETPROOF SINGLE SUBMISSION SYSTEM =====
+let submissionInProgress = new Set(); // Track ongoing submissions
+let submissionHistory = new Map(); // Track all submissions
+
+// ===== ENHANCED SECURITY VARIABLES =====
+let powerFailureBackupInterval = null;
+let networkMonitorInterval = null;
+let securityMonitorInterval = null;
+let realTimeBackup = null;
+let backupVerificationInterval = null;
+let isOnline = true;
+let focusLossCount = 0;
+let clipboardAccessAttempts = 0;
+let submissionQueue = [];
+let verifiedSubmissions = new Set();
+let formHealthStatus = {};
+
+// ===== PERFECT FORM ASSIGNMENT FUNCTIONS =====
+function getAssignedForm(studentData) {
+    const forms = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+    const formsCount = forms.length;
+    
+    // Method 1: Perfect roll number based distribution
+    if (studentData.roll && !isNaN(studentData.roll)) {
+        const rollNumber = parseInt(studentData.roll);
+        
+        // Dynamic calculation based on actual total students
+        const studentsPerForm = Math.ceil(TOTAL_STUDENTS / formsCount);
+        
+        // Perfect distribution formula
+        const formIndex = Math.floor((rollNumber - 1) / studentsPerForm) % formsCount;
+        return forms[formIndex];
+    }
+    
+    // Method 2: Consistent hash-based fallback
+    const hashString = `${studentData.name}|${studentData.roll}|${studentData.adm}`;
+    let hash = 0;
+    for (let i = 0; i < hashString.length; i++) {
+        hash = ((hash << 5) - hash) + hashString.charCodeAt(i);
+        hash = hash & hash; // Convert to 32-bit integer
+    }
+    return forms[Math.abs(hash) % formsCount];
+}
+
+// ===== FIXED ANSWER KEY LOADING =====
+fetch('Answers/Key')
+  .then(res => {
+    if (!res.ok) throw new Error('Key file not found or not accessible');
+    return res.text();
+  })
+  .then(text => {
+    // Process 5-answers-per-line format correctly
+    const lines = text.trim().split('\n');
+    const answers = [];
+    
+    console.log("Processing key file with", lines.length, "lines");
+    
+    lines.forEach((line, lineIndex) => {
+      const trimmedLine = line.trim();
+      console.log(`Line ${lineIndex + 1}: "${trimmedLine}"`);
+      
+      if (trimmedLine) {
+        // Take exactly 5 characters from each line
+        for (let i = 0; i < 5 && i < trimmedLine.length; i++) {
+          const char = trimmedLine[i].toUpperCase();
+          
+          if (['A', 'B', 'C', 'D'].includes(char)) {
+            answers.push(char);
+          } else {
+            console.warn(`⚠️ Invalid answer "${trimmedLine[i]}" at line ${lineIndex + 1}, position ${i + 1}`);
+          }
+        }
+      }
+    });
+    
+    answerKey = answers;
+    console.log(`✅ Processed ${answerKey.length} answers`);
+    
+    // Build image paths
+    console.log("Building image paths for", answerKey.length, "questions");
+    for (let i = 1; i <= answerKey.length; i++) {
+      images.push(`questions/${i}.png`);
+    }
+    
+    keyLoaded = true;
+    clearErrors();
+    validateStudentInputs(); // THIS IS THE KEY FIX - CALL VALIDATION AFTER KEY LOADS
+    console.log('✅ Answer key loaded successfully');
+    console.log('First 10 answers:', answerKey.slice(0, 10));
+    console.log('Total questions:', answerKey.length);
+  })
+  .catch(err => {
+    console.error('❌ Failed to load Answers/Key:', err);
+    showError("Answer key not loaded - exam disabled. Contact administrator.");
+    validateStudentInputs(); // ALSO CALL VALIDATION ON ERROR
+  });
+
+// ===== BULLETPROOF SINGLE SUBMISSION FUNCTIONS =====
+
+// 🚨 ULTRA-STRONG SINGLE SUBMISSION GUARANTEE
+async function sendToGoogleFormWithGuarantee(subjData, studentData) {
+    const studentId = generateStudentId(studentData);
+    const submissionId = generateSubmissionId(studentData);
+    
+    console.log(`🚀 Starting submission for: ${studentData.name}`);
+    
+    // 🚨 CRITICAL: Check if submission is already in progress
+    if (submissionInProgress.has(studentId)) {
+        console.warn(`🚨 Submission already in progress for: ${studentData.name}`);
+        return true; // Return true to prevent retries
+    }
+    
+    // 🚨 CRITICAL: Check if already successfully submitted
+    if (hasStudentAlreadySubmitted(studentData)) {
+        console.warn(`🚨 Student already submitted: ${studentData.name}`);
+        showDuplicateInSummary();
+        return true; // Return true to prevent further attempts
+    }
+    
+    try {
+        // 🚨 ACQUIRE SUBMISSION LOCK
+        submissionInProgress.add(studentId);
+        
+        // Double-check duplicate prevention
+        if (hasStudentAlreadySubmitted(studentData)) {
+            console.warn(`🚨 Duplicate detected after lock: ${studentData.name}`);
+            return true;
+        }
+        
+        console.log(`📤 Attempting submission for: ${studentData.name}`);
+        
+        // Single submission attempt (no retries for duplicates)
+        const success = await submitToSingleForm(subjData, studentData);
+        
+        if (success) {
+            // 🚨 CRITICAL: Mark as submitted IMMEDIATELY
+            markAsSubmittedPermanently(studentData, submissionId);
+            console.log(`✅ SINGLE SUBMISSION SUCCESS: ${studentData.name}`);
+            return true;
+        } else {
+            console.error(`❌ Submission failed for: ${studentData.name}`);
+            return false;
+        }
+        
+    } catch (error) {
+        console.error(`💥 Submission error for ${studentData.name}:`, error);
+        return false;
+    } finally {
+        // 🚨 RELEASE SUBMISSION LOCK (with delay to prevent rapid resubmission)
+        setTimeout(() => {
+            submissionInProgress.delete(studentId);
+        }, 5000); // 5 second cooldown
+    }
+}
+
+// 🚨 ENHANCED: Check if student already submitted
+function hasStudentAlreadySubmitted(studentData) {
+    const studentId = generateStudentId(studentData);
+    
+    // Check multiple storage locations
+    const checks = [
+        localStorage.getItem(`submitted_${studentId}`),
+        sessionStorage.getItem(`submitted_${studentId}`),
+        localStorage.getItem(`final_submission_${studentId}`)
+    ];
+    
+    return checks.some(check => check !== null && check !== 'false');
+}
+
+// 🚨 ENHANCED: Permanent submission marker
+function markAsSubmittedPermanently(studentData, submissionId) {
+    const studentId = generateStudentId(studentData);
+    const timestamp = Date.now();
+    
+    try {
+        // 🚨 MULTIPLE LAYERS OF DUPLICATE PREVENTION
+        
+        // Layer 1: Primary marker
+        localStorage.setItem(`submitted_${studentId}`, timestamp.toString());
+        
+        // Layer 2: Final submission marker
+        localStorage.setItem(`final_submission_${studentId}`, timestamp.toString());
+        
+        // Layer 3: Session storage
+        sessionStorage.setItem(`submitted_${studentId}`, timestamp.toString());
+        
+        // Layer 4: 24-hour cooldown marker
+        localStorage.setItem(`last_submission_${studentId}`, timestamp.toString());
+        
+        // Layer 5: Submission history
+        const submissionRecord = {
+            studentId: studentId,
+            submissionId: submissionId,
+            timestamp: timestamp,
+            studentData: studentData,
+            assignedForm: assignedForm,
+            status: 'completed'
+        };
+        
+        // Store in submission history
+        const history = JSON.parse(localStorage.getItem('submission_history') || '[]');
+        history.push(submissionRecord);
+        
+        // Keep only recent history (last 20 submissions)
+        if (history.length > 20) {
+            history.splice(0, history.length - 20);
+        }
+        
+        localStorage.setItem('submission_history', JSON.stringify(history));
+        
+        console.log(`✅ PERMANENTLY MARKED AS SUBMITTED: ${studentData.name}`);
+        
+    } catch (error) {
+        console.error('Failed to mark permanent submission:', error);
+    }
+}
+
+// 🚨 ENHANCED: Student ID generation
+function generateStudentId(studentData) {
+    return `${studentData.name}_${studentData.sec}_${studentData.roll}_${studentData.adm}`
+        .toLowerCase()
+        .replace(/\s+/g, '_')
+        .replace(/[^a-z0-9_]/g, '');
+}
+
+// 🚨 ENHANCED: Submission ID with better uniqueness
+function generateSubmissionId(studentData) {
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substr(2, 9);
+    return `sub_${generateStudentId(studentData)}_${timestamp}_${random}`;
+}
+
+// 🚨 SIMPLIFIED: Single form submission (no retries for duplicates)
+async function submitToSingleForm(subjData, studentData) {
+    const FORM_URL = GOOGLE_FORMS[assignedForm];
+    
+    if (!FORM_URL) {
+        console.error(`No form URL for ${assignedForm}`);
+        return false;
+    }
+
+    // Calculate marks
+    const marks = calculateMarks(subjData);
+    
+    // Create form payload
+    const formData = new URLSearchParams();
+    formData.append(FORM_FIELDS.STUDENT_NAME, studentData.name);
+    formData.append(FORM_FIELDS.SECTION, studentData.sec);
+    formData.append(FORM_FIELDS.ROLL_NUMBER, studentData.roll);
+    formData.append(FORM_FIELDS.ADMISSION_NUMBER, studentData.adm);
+    formData.append(FORM_FIELDS.MATHS_MARKS, marks.mathsMarks.toFixed(2));
+    formData.append(FORM_FIELDS.PHYSICS_MARKS, marks.physicsMarks.toFixed(2));
+    formData.append(FORM_FIELDS.CHEMISTRY_MARKS, marks.chemistryMarks.toFixed(2));
+    formData.append(FORM_FIELDS.TOTAL_MARKS, marks.totalMarks.toFixed(2));
+    formData.append(FORM_FIELDS.TIMESTAMP, new Date().toLocaleString());
+
+    try {
+        console.log(`📝 Submitting to Form ${assignedForm}: ${FORM_URL}`);
+        
+        // Use no-cors to avoid network issues
+        await fetch(FORM_URL, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: formData
+        });
+        
+        console.log(`✅ Form submission completed for: ${studentData.name}`);
+        return true;
+        
+    } catch (error) {
+        console.error(`❌ Form submission error for ${studentData.name}:`, error);
+        return false;
+    }
+}
+
+function calculateMarks(subjData) {
+    let mathsMarks = 0, physicsMarks = 0, chemistryMarks = 0, totalMarks = 0;
+    
+    for (let subject in subjData) {
+        const subjectLower = subject.toLowerCase().trim();
+        const marks = subjData[subject].marks;
+        
+        if (subjectLower.includes('math')) {
+            mathsMarks = marks;
+        } else if (subjectLower.includes('phys')) {
+            physicsMarks = marks;
+        } else if (subjectLower.includes('chem')) {
+            chemistryMarks = marks;
+        }
+        totalMarks += marks;
+    }
+    
+    return { mathsMarks, physicsMarks, chemistryMarks, totalMarks };
+}
+
+// 🚨 NEW: Cleanup after submission
+function cleanupAfterSubmission() {
+    try {
+        localStorage.removeItem('exam_backup_data');
+        localStorage.removeItem('exam_primary_backup');
+        sessionStorage.removeItem('exam_secondary_backup');
+        localStorage.removeItem('submission_queue');
+        
+        console.log('✅ Cleaned up after submission');
+    } catch (error) {
+        console.error('Cleanup error:', error);
+    }
+}
+
+// 🚨 NEW: Show submission error message
+function showSubmissionError() {
+    const errorDiv = document.createElement('div');
+    errorDiv.innerHTML = `
+        <div style="background: #f8d7da; border: 2px solid #f5c6cb; border-radius: 8px; 
+                   padding: 15px; margin: 20px 0; text-align: center; font-weight: bold;">
+            ⚠️ Submission Error: Your results may not have been recorded. 
+            Please contact the administrator.
+        </div>
+    `;
+    
+    const summaryArea = document.getElementById('summaryArea');
+    if (summaryArea) {
+        summaryArea.prepend(errorDiv);
+    }
+}
+
+// 🚨 ENHANCED: Show duplicate warning in summary
+function showDuplicateInSummary() {
+    const duplicateWarning = document.createElement('div');
+    duplicateWarning.innerHTML = `
+        <div style="background: #fff3cd; border: 2px solid #ffc107; border-radius: 8px; 
+                   padding: 15px; margin: 20px 0; text-align: center; font-weight: bold;">
+            ✅ Your exam has already been submitted and recorded. 
+            This is a duplicate submission attempt.
+        </div>
+    `;
+    
+    const summaryArea = document.getElementById('summaryArea');
+    if (summaryArea) {
+        summaryArea.prepend(duplicateWarning);
+    }
+}
+
+function checkForDuplicateSubmission(studentData) {
+    const studentId = generateStudentId(studentData);
+    const submissionId = generateSubmissionId(studentData);
+    
+    // Check multiple storage locations
+    const checks = [
+        localStorage.getItem(`submitted_${studentId}`),
+        localStorage.getItem(`submitted_${submissionId}`),
+        sessionStorage.getItem(`submitted_${studentId}`)
+    ];
+    
+    return checks.some(check => check !== null);
+}
+
+function showDuplicateWarning(studentData) {
+    const duplicateWarning = document.getElementById('duplicateWarning');
+    const forceStartBtn = document.getElementById('forceStartBtn');
+    
+    duplicateWarning.style.display = 'block';
+    
+    forceStartBtn.onclick = () => {
+        duplicateWarning.style.display = 'none';
+        startWithSecurity(true);
+    };
+}
+
+// ===== ENHANCED SCREENSHOT PROTECTION =====
+function setupScreenshotProtection() {
+    const protection = document.getElementById('screenshotProtection');
+    const block = document.getElementById('screenshotBlock');
+    
+    // Create multiple protection layers
+    protection.innerHTML = '<div class="screenshot-dots"></div>';
+    
+    // Additional protection: detect and block screenshot tools
+    const style = document.createElement('style');
+    style.textContent = `
+        /* Block common screenshot tools */
+        body * {
+            -webkit-user-select: none !important;
+            -moz-user-select: none !important;
+            -ms-user-select: none !important;
+            user-select: none !important;
+        }
+        
+        /* Disable text selection */
+        ::selection {
+            background: transparent !important;
+        }
+        ::-moz-selection {
+            background: transparent !important;
+        }
+        
+        /* Anti-screenshot patterns */
+        @media print {
+            body * {
+                visibility: hidden !important;
+            }
+        }
+        
+        /* Disable right-click context menu */
+        body {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // Detect screenshot attempts
+    document.addEventListener('keydown', function(e) {
+        if ((e.ctrlKey && e.key === 'PrintScreen') || e.key === 'PrintScreen' || 
+            (e.ctrlKey && e.shiftKey && e.key === 'S') || 
+            (e.metaKey && e.shiftKey && e.key === '4')) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Flash protection
+            protection.style.background = 'rgba(255,0,0,0.3)';
+            setTimeout(() => {
+                protection.style.background = 'transparent';
+            }, 500);
+            
+            return false;
+        }
+    });
+    
+    // Additional protection for right-click and drag
+    document.addEventListener('dragstart', function(e) {
+        e.preventDefault();
+        return false;
+    });
+    
+    document.addEventListener('selectstart', function(e) {
+        e.preventDefault();
+        return false;
+    });
+    
+    // Disable right-click context menu
+    document.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+        return false;
+    });
+}
+
+// ===== POWER FAILURE SECURITY =====
+function setupPowerFailureProtection() {
+    // Backup progress every 30 seconds
+    powerFailureBackupInterval = setInterval(() => {
+        if (progress && examInProgress) {
+            backupExamProgress();
+        }
+    }, 30000);
+
+    // Detect power/browser shutdown
+    window.addEventListener('beforeunload', (e) => {
+        if (progress && examInProgress && !hasSubmitted) {
+            e.preventDefault();
+            e.returnValue = 'Your exam progress will be saved. You can resume when you return.';
+            backupExamProgress();
+            return e.returnValue;
+        }
+    });
+
+    // Detect page visibility changes (tab switching)
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden && progress && examInProgress) {
+            handleTabSwitchWarning();
+        }
+    });
+}
+
+function backupExamProgress() {
+    if (!progress) return;
+    
+    const backupData = {
+        progress: progress,
+        examData: examData,
+        startTime: examStartTime,
+        currentTime: Date.now(),
+        assignedForm: assignedForm,
+        timestamp: new Date().toISOString()
+    };
+    
+    try {
+        localStorage.setItem('exam_backup_data', JSON.stringify(backupData));
+        localStorage.setItem('exam_backup_timestamp', Date.now().toString());
+        console.log('✅ Exam progress backed up');
+    } catch (error) {
+        console.error('❌ Backup failed:', error);
+    }
+}
+
+function restoreExamProgress() {
+    try {
+        const backupData = localStorage.getItem('exam_backup_data');
+        const backupTimestamp = localStorage.getItem('exam_backup_timestamp');
+        
+        if (!backupData || !backupTimestamp) return false;
+        
+        // Check if backup is recent (within 5 minutes)
+        const backupAge = Date.now() - parseInt(backupTimestamp);
+        if (backupAge > 300000) { // 5 minutes
+            console.log('Backup too old, ignoring');
+            return false;
+        }
+        
+        const parsedData = JSON.parse(backupData);
+        progress = parsedData.progress;
+        examData = parsedData.examData;
+        examStartTime = parsedData.startTime;
+        assignedForm = parsedData.assignedForm;
+        
+        // Calculate remaining time
+        const elapsed = Date.now() - examStartTime;
+        progress.timeLeftSec = Math.max(0, EXAM_DURATION_MS - elapsed) / 1000;
+        
+        console.log('✅ Exam progress restored');
+        return true;
+        
+    } catch (error) {
+        console.error('❌ Restore failed:', error);
+        return false;
+    }
+}
+
+function handleTabSwitchWarning() {
+    if (!progress || hasSubmitted) return;
+    
+    // Show warning message
+    const warningMsg = document.createElement('div');
+    warningMsg.innerHTML = `
+        <div style="position:fixed; top:20px; left:50%; transform:translateX(-50%); 
+                   background:#ff6b6b; color:white; padding:15px; border-radius:8px; 
+                   z-index:10000; box-shadow:0 4px 12px rgba(0,0,0,0.3);">
+            ⚠️ WARNING: Tab switching detected! This may result in exam termination.
+        </div>
+    `;
+    document.body.appendChild(warningMsg);
+    
+    setTimeout(() => {
+        if (warningMsg.parentNode) {
+            warningMsg.parentNode.removeChild(warningMsg);
+        }
+    }, 3000);
+    
+    // Backup immediately
+    backupExamProgress();
+}
+
+// ===== NETWORK FAILURE SECURITY =====
+function setupNetworkMonitoring() {
+    // Monitor online/offline status
+    window.addEventListener('online', handleNetworkRestored);
+    window.addEventListener('offline', handleNetworkLost);
+    
+    // Periodic network check
+    networkMonitorInterval = setInterval(checkNetworkStatus, 10000);
+}
+
+function handleNetworkLost() {
+    isOnline = false;
+    console.log('🌐 Network connection lost');
+    
+    if (progress && examInProgress) {
+        showNetworkWarning();
+        // Backup more frequently during network issues
+        clearInterval(powerFailureBackupInterval);
+        powerFailureBackupInterval = setInterval(backupExamProgress, 10000);
+    }
+}
+
+function handleNetworkRestored() {
+    isOnline = true;
+    console.log('🌐 Network connection restored');
+    
+    if (progress && examInProgress) {
+        hideNetworkWarning();
+        // Submit any pending offline submissions
+        processOfflineSubmissions();
+        // Restore normal backup interval
+        clearInterval(powerFailureBackupInterval);
+        powerFailureBackupInterval = setInterval(backupExamProgress, 30000);
+    }
+}
+
+function checkNetworkStatus() {
+    if (!navigator.onLine && isOnline) {
+        handleNetworkLost();
+    } else if (navigator.onLine && !isOnline) {
+        handleNetworkRestored();
+    }
+}
+
+function showNetworkWarning() {
+    const warningDiv = document.createElement('div');
+    warningDiv.id = 'networkWarning';
+    warningDiv.innerHTML = `
+        <div style="position:fixed; top:0; left:0; width:100%; background:#ff9900; 
+                   color:white; text-align:center; padding:10px; z-index:10000;
+                   font-weight:bold; box-shadow:0 2px 10px rgba(0,0,0,0.3);">
+            ⚠️ NETWORK CONNECTION LOST - Working offline. Your progress is being saved locally.
+        </div>
+    `;
+    document.body.appendChild(warningDiv);
+}
+
+function hideNetworkWarning() {
+    const warningDiv = document.getElementById('networkWarning');
+    if (warningDiv) {
+        warningDiv.remove();
+    }
+}
+
+function processOfflineSubmissions() {
+    if (submissionQueue.length > 0 && isOnline) {
+        console.log(`📤 Processing ${submissionQueue.length} offline submissions`);
+        submissionQueue.forEach(submission => {
+            sendToGoogleFormWithGuarantee(submission.subjData, submission.studentData);
+        });
+    }
+}
+
+// ===== ENHANCED ANTI-CHEATING SECURITY =====
+function setupEnhancedSecurity() {
+    // Monitor focus loss
+    document.addEventListener('visibilitychange', trackFocusLoss);
+    
+    // Monitor clipboard access attempts
+    document.addEventListener('copy', preventClipboardAccess);
+    document.addEventListener('cut', preventClipboardAccess);
+    document.addEventListener('paste', preventClipboardAccess);
+    
+    // Monitor developer tools
+    monitorDeveloperTools();
+    
+    // Periodic security checks
+    securityMonitorInterval = setInterval(performSecurityChecks, 5000);
+}
+
+function trackFocusLoss() {
+    if (document.hidden && progress && examInProgress) {
+        focusLossCount++;
+        console.log(`⚠️ Focus loss detected: ${focusLossCount} times`);
+        
+        if (focusLossCount >= 3) {
+            showSecurityWarning("Multiple focus losses detected. Further violations may result in exam termination.");
+        }
+        
+        if (focusLossCount >= 5) {
+            terminateExamForViolation("Excessive focus loss - possible cheating attempt");
+        }
+    }
+}
+
+function preventClipboardAccess(e) {
+    if (progress && examInProgress) {
+        e.preventDefault();
+        clipboardAccessAttempts++;
+        console.log(`⚠️ Clipboard access attempted: ${clipboardAccessAttempts} times`);
+        
+        if (clipboardAccessAttempts >= 2) {
+            showSecurityWarning("Clipboard access is prohibited during exam.");
+        }
+        
+        return false;
+    }
+}
+
+function monitorDeveloperTools() {
+    let devToolsOpen = false;
+    
+    const devToolsChecker = setInterval(() => {
+        const widthThreshold = window.outerWidth - window.innerWidth > 160;
+        const heightThreshold = window.outerHeight - window.innerHeight > 160;
+        
+        if (widthThreshold || heightThreshold) {
+            if (!devToolsOpen && progress && examInProgress) {
+                devToolsOpen = true;
+                terminateExamForViolation("Developer tools detected - exam terminated");
+            }
+        } else {
+            devToolsOpen = false;
+        }
+    }, 1000);
+}
+
+function performSecurityChecks() {
+    if (!progress || !examInProgress) return;
+    
+    // Check for multiple tabs/windows
+    if (window.opener || window.top !== window.self) {
+        terminateExamForViolation("Multiple windows/tabs detected");
+    }
+    
+    // Check for iframe embedding
+    if (window.location !== window.parent.location) {
+        terminateExamForViolation("Page embedding detected");
+    }
+}
+
+function showSecurityWarning(message) {
+    const warningDiv = document.createElement('div');
+    warningDiv.innerHTML = `
+        <div style="position:fixed; top:50%; left:50%; transform:translate(-50%, -50%);
+                   background:#ff6b6b; color:white; padding:20px; border-radius:10px;
+                   z-index:10000; text-align:center; box-shadow:0 4px 20px rgba(0,0,0,0.4);
+                   border:3px solid #ff3333;">
+            <h3 style="margin:0 0 10px 0;">⚠️ SECURITY WARNING</h3>
+            <p style="margin:0; font-size:16px;">${message}</p>
+        </div>
+    `;
+    document.body.appendChild(warningDiv);
+    
+    setTimeout(() => {
+        if (warningDiv.parentNode) {
+            warningDiv.parentNode.removeChild(warningDiv);
+        }
+    }, 5000);
+}
+
+function terminateExamForViolation(reason) {
+    if (hasSubmitted) return;
+    
+    console.log(`🚫 Exam terminated: ${reason}`);
+    
+    // Calculate marks up to termination point
+    const subjData = {};
+    examData.subjectNames.forEach((s, i) => {
+        const subjectName = identifySubject(s);
+        if (!subjData[subjectName]) subjData[subjectName] = {correct: 0, wrong: 0, blank: 0, total: 0, marks: 0};
+        
+        const ans = progress.answers[i];
+        if (ans === null) {
+            subjData[subjectName].blank++;
+        } else if (ans === examData.keys[i]) {
+            subjData[subjectName].correct++;
+            subjData[subjectName].marks += MARK_PER_CORRECT;
+        } else {
+            subjData[subjectName].wrong++;
+            subjData[subjectName].marks += MARK_PER_WRONG;
+        }
+        subjData[subjectName].total++;
+    });
+    
+    // Mark as terminated
+    subjData.terminated = true;
+    subjData.terminationReason = reason;
+    
+    // Submit terminated exam
+    sendToGoogleFormWithGuarantee(subjData, progress.student);
+    
+    // Show termination message
+    document.getElementById('examArea').style.display = 'none';
+    document.getElementById('studentEntry').style.display = 'none';
+    
+    const terminationDiv = document.createElement('div');
+    terminationDiv.innerHTML = `
+        <div style="position:fixed; top:0; left:0; width:100%; height:100%; 
+                   background:linear-gradient(145deg, #ff6b6b, #dc143c); 
+                   display:flex; justify-content:center; align-items:center; 
+                   z-index:10000; color:white; text-align:center;">
+            <div style="background:rgba(0,0,0,0.8); padding:40px; border-radius:15px; max-width:600px;">
+                <h1 style="font-size:48px; margin:0 0 20px 0;">🚫 EXAM TERMINATED</h1>
+                <h2 style="color:#ff6b6b; margin:0 0 20px 0;">Security Violation Detected</h2>
+                <p style="font-size:18px; margin:0 0 20px 0;">Reason: ${reason}</p>
+                <p style="font-size:16px; opacity:0.8;">
+                    Your exam has been terminated due to violation of exam rules.<br>
+                    Partial marks have been recorded up to the point of termination.
+                </p>
+                <button onclick="window.close()" style="
+                    background:#ff6b6b; color:white; border:none; padding:12px 24px; 
+                    border-radius:8px; font-size:16px; cursor:pointer; margin-top:20px;">
+                    Close Window
+                </button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(terminationDiv);
+    
+    hasSubmitted = true;
+}
+
+// ===== BULLETPROOF DATA INTEGRITY SYSTEM =====
+function setupBulletproofDataIntegrity() {
+    // Real-time backup every 15 seconds
+    realTimeBackup = setInterval(() => {
+        if (progress && examInProgress) {
+            dualBackupExamData();
+        }
+    }, 15000);
+}
+
+function dualBackupExamData() {
+    if (!progress) return;
+    
+    const backupData = {
+        progress: JSON.parse(JSON.stringify(progress)), // Deep clone
+        examData: JSON.parse(JSON.stringify(examData)),
+        startTime: examStartTime,
+        currentTime: Date.now(),
+        assignedForm: assignedForm,
+        backupId: generateBackupId(),
+        checksum: generateChecksum(progress)
+    };
+    
+    // Backup to MULTIPLE locations
+    const backupPromises = [
+        backupToLocalStorage(backupData),
+        backupToSessionStorage(backupData)
+    ];
+    
+    Promise.allSettled(backupPromises).then(results => {
+        const successCount = results.filter(r => r.status === 'fulfilled').length;
+        console.log(`✅ Backed up to ${successCount}/2 locations`);
+    });
+}
+
+function backupToLocalStorage(data) {
+    return new Promise((resolve, reject) => {
+        try {
+            localStorage.setItem('exam_primary_backup', JSON.stringify(data));
+            localStorage.setItem('exam_backup_timestamp', Date.now().toString());
+            resolve();
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
+
+function backupToSessionStorage(data) {
+    return new Promise((resolve, reject) => {
+        try {
+            sessionStorage.setItem('exam_secondary_backup', JSON.stringify(data));
+            resolve();
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
+
+function generateBackupId() {
+    return 'backup_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+}
+
+function generateChecksum(data) {
+    const str = JSON.stringify(data);
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash; // Convert to 32-bit integer
+    }
+    return hash.toString();
+}
+
+// ===== TIMER FUNCTIONS =====
+function startTimer() {
+    if (timerInterval) clearInterval(timerInterval);
+    
+    timerInterval = setInterval(() => {
+        if (!progress) return;
+        
+        progress.timeLeftSec--;
+        
+        // Update timer display
+        const minutes = Math.floor(progress.timeLeftSec / 60);
+        const seconds = Math.floor(progress.timeLeftSec % 60);
+        const timerEl = document.getElementById('timerEl');
+        timerEl.textContent = `🕒 ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        
+        // Warning when 5 minutes left
+        if (progress.timeLeftSec === 300) {
+            showTimeWarning('5 minutes remaining!');
+        }
+        
+        // Blink when 1 minute left
+        if (progress.timeLeftSec <= 60) {
+            timerEl.classList.add('blink');
+        }
+        
+        // Auto-submit when time's up
+        if (progress.timeLeftSec <= 0) {
+            clearInterval(timerInterval);
+            autoSubmitExam();
+        }
+    }, 1000);
+}
+
+function showTimeWarning(message) {
+    const warningDiv = document.createElement('div');
+    warningDiv.innerHTML = `
+        <div style="position:fixed; top:50%; left:50%; transform:translate(-50%, -50%);
+                   background:#ff9900; color:white; padding:20px; border-radius:10px;
+                   z-index:10000; text-align:center; box-shadow:0 4px 20px rgba(0,0,0,0.4);">
+            <h3 style="margin:0 0 10px 0;">⏰ TIME WARNING</h3>
+            <p style="margin:0; font-size:16px;">${message}</p>
+        </div>
+    `;
+    document.body.appendChild(warningDiv);
+    
+    setTimeout(() => {
+        if (warningDiv.parentNode) {
+            warningDiv.parentNode.removeChild(warningDiv);
+        }
+    }, 5000);
+}
+
+function autoSubmitExam() {
+    if (hasSubmitted) return;
+    
+    console.log('⏰ Time up! Auto-submitting exam...');
+    calculateAndShowResults();
+}
+
+// ===== QUESTION DISPLAY FUNCTIONS =====
+function getCurrentSubject(qIndex) {
+    return examData.subjectNames[qIndex] || "Unknown";
+}
+
+function showQuestion(qIndex) {
+    if (!progress || qIndex < 0 || qIndex >= examData.files.length) return;
+    
+    progress.currentQ = qIndex;
+    
+    const container = document.getElementById('questionContainer');
+    container.innerHTML = '';
+    
+    // Add question transition effect
+    container.classList.add('question-transition');
+    
+    // Question number info with subject
+    const qInfo = document.getElementById('stuQInfo');
+    const currentSubject = getCurrentSubject(qIndex);
+    qInfo.textContent = `${currentSubject} Question ${qIndex + 1}/${examData.files.length}`;
+    
+    // Create question image
+    const img = new Image();
+    img.src = examData.files[qIndex];
+    img.className = 'questionImg';
+    img.alt = `Question ${qIndex + 1}`;
+    
+    // Loading states
+    img.onload = function() {
+        container.classList.remove('question-transition');
+        container.classList.add('question-fade-in');
+        setTimeout(() => {
+            container.classList.remove('question-fade-in');
+        }, 300);
+    };
+    
+    img.onerror = function() {
+        container.innerHTML = `
+            <div class="image-error">
+                <h3>❌ Image Load Error</h3>
+                <p>Failed to load question ${qIndex + 1}. Please contact administrator.</p>
+                <p>Image path: ${examData.files[qIndex]}</p>
+            </div>
+        `;
+    };
+    
+    container.appendChild(img);
+    
+    // Create options (removed "Select your answer" and "Clear Response")
+    const optionsContainer = document.createElement('div');
+    optionsContainer.className = 'options-container';
+    optionsContainer.innerHTML = `
+        <button class="optBtn" data-opt="A">A</button>
+        <button class="optBtn" data-opt="B">B</button>
+        <button class="optBtn" data-opt="C">C</button>
+        <button class="optBtn" data-opt="D">D</button>
+    `;
+    
+    container.appendChild(optionsContainer);
+    
+    // Set current selected option
+    const currentAnswer = progress.answers[qIndex];
+    if (currentAnswer !== null) {
+        const selectedBtn = optionsContainer.querySelector(`[data-opt="${currentAnswer}"]`);
+        if (selectedBtn) selectedBtn.classList.add('selected');
+    }
+    
+    // Add event listeners to options
+    const optBtns = optionsContainer.querySelectorAll('.optBtn');
+    optBtns.forEach(btn => {
+        btn.addEventListener('click', () => selectOption(qIndex, btn.dataset.opt));
+    });
+    
+    // Update palette
+    updatePalette();
+    
+    // Update navigation buttons
+    updateNavigationButtons();
+}
+
+function selectOption(qIndex, option) {
+    if (!progress || hasSubmitted) return;
+    
+    progress.answers[qIndex] = option;
+    
+    // Update button states
+    const optBtns = document.querySelectorAll('.optBtn');
+    optBtns.forEach(btn => {
+        btn.classList.remove('selected');
+        if (btn.dataset.opt === option) {
+            btn.classList.add('selected');
+        }
+    });
+    
+    // Update palette - make answered questions green
+    updatePalette();
+    
+    // Auto-save progress
+    backupExamProgress();
+}
+
+// ===== PALETTE FUNCTIONS =====
+function initPalette() {
+    const palette = document.getElementById('paletteContainer');
+    palette.innerHTML = '';
+    
+    // Determine grid columns based on screen size
+    let columns = 20;
+    if (window.innerWidth <= 600) columns = 5;
+    else if (window.innerWidth <= 900) columns = 10;
+    else if (window.innerWidth <= 1200) columns = 15;
+    
+    palette.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
+    
+    for (let i = 0; i < examData.files.length; i++) {
+        const btn = document.createElement('button');
+        btn.textContent = i + 1;
+        btn.dataset.qIndex = i;
+        
+        btn.addEventListener('click', () => {
+            if (!hasSubmitted) {
+                showQuestion(i);
+            }
+        });
+        
+        palette.appendChild(btn);
+    }
+    
+    updatePalette();
+}
+
+function updatePalette() {
+    if (!progress) return;
+    
+    const paletteBtns = document.querySelectorAll('#paletteContainer button');
+    paletteBtns.forEach(btn => {
+        const qIndex = parseInt(btn.dataset.qIndex);
+        
+        // Remove all state classes
+        btn.classList.remove('selected', 'reviewed', 'current', 
+                           'answered', 'not-answered', 'marked-review');
+        
+        // Current question
+        if (qIndex === progress.currentQ) {
+            btn.classList.add('current');
+        }
+        
+        // Answered questions - MAKE THEM GREEN
+        if (progress.answers[qIndex] !== null) {
+            btn.classList.add('selected'); // This makes it green
+        }
+        
+        // Marked for review - MAKE THEM YELLOW
+        if (progress.markedReview.has(qIndex)) {
+            btn.classList.add('reviewed');
+        }
+    });
+}
+
+// ===== NAVIGATION FUNCTIONS =====
+function updateNavigationButtons() {
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const markReviewBtn = document.getElementById('markReviewBtn');
+    
+    // Previous button
+    prevBtn.disabled = progress.currentQ === 0;
+    
+    // Next button
+    nextBtn.disabled = progress.currentQ === examData.files.length - 1;
+    
+    // Mark review button - YELLOW when marked
+    if (progress.markedReview.has(progress.currentQ)) {
+        markReviewBtn.textContent = 'Unmark Review';
+        markReviewBtn.classList.add('reviewed');
+    } else {
+        markReviewBtn.textContent = 'Mark Review';
+        markReviewBtn.classList.remove('reviewed');
+    }
+}
+
+// Navigation event listeners
+document.getElementById('prevBtn').addEventListener('click', () => {
+    if (progress.currentQ > 0) {
+        showQuestion(progress.currentQ - 1);
+    }
+});
+
+document.getElementById('nextBtn').addEventListener('click', () => {
+    if (progress.currentQ < examData.files.length - 1) {
+        showQuestion(progress.currentQ + 1);
+    }
+});
+
+document.getElementById('markReviewBtn').addEventListener('click', () => {
+    if (!progress) return;
+    
+    const currentQ = progress.currentQ;
+    if (progress.markedReview.has(currentQ)) {
+        progress.markedReview.delete(currentQ);
+    } else {
+        progress.markedReview.add(currentQ);
+    }
+    
+    updatePalette();
+    updateNavigationButtons();
+    backupExamProgress();
+});
+
+// ===== EXAM SUBMISSION FUNCTIONS =====
+document.getElementById('submitBtn').addEventListener('click', () => {
+    showConfirmModal(
+        'Are you sure you want to submit the exam?',
+        calculateAndShowResults
+    );
+});
+
+function showConfirmModal(message, confirmCallback) {
+    const modal = document.getElementById('confirmModal');
+    const confirmText = document.getElementById('confirmText');
+    const confirmYes = document.getElementById('confirmYes');
+    const confirmNo = document.getElementById('confirmNo');
+    
+    confirmText.textContent = message;
+    
+    // Remove existing event listeners
+    confirmYes.replaceWith(confirmYes.cloneNode(true));
+    confirmNo.replaceWith(confirmNo.cloneNode(true));
+    
+    // Get new references
+    const newConfirmYes = document.getElementById('confirmYes');
+    const newConfirmNo = document.getElementById('confirmNo');
+    
+    newConfirmYes.onclick = () => {
+        modal.style.display = 'none';
+        confirmCallback();
+    };
+    
+    newConfirmNo.onclick = () => {
+        modal.style.display = 'none';
+    };
+    
+    modal.style.display = 'flex';
+}
+
+// 🚨 ENHANCED: Calculate and show results with single submission
+function calculateAndShowResults() {
+    if (hasSubmitted) {
+        console.warn('🚨 Attempted to submit already submitted exam');
+        return;
+    }
+    
+    hasSubmitted = true;
+    examInProgress = false;
+    
+    console.log('📊 Calculating results and submitting...');
+    
+    // Clear timers and intervals
+    clearInterval(timerInterval);
+    clearInterval(powerFailureBackupInterval);
+    clearInterval(networkMonitorInterval);
+    clearInterval(securityMonitorInterval);
+    clearInterval(realTimeBackup);
+    
+    // Calculate subject-wise marks
+    const subjData = calculateSubjectMarks();
+    currentSubjData = subjData; // Store for detailed solutions
+    
+    // 🚨 SINGLE SUBMISSION CALL
+    const studentData = progress.student;
+    const submissionPromise = sendToGoogleFormWithGuarantee(subjData, studentData);
+    
+    // Show summary immediately (don't wait for submission)
+    showSummary(subjData);
+    
+    // Monitor submission status
+    submissionPromise.then(success => {
+        if (success) {
+            console.log('🎉 Exam submitted successfully!');
+            // Clear backup data after successful submission
+            cleanupAfterSubmission();
+        } else {
+            console.error('💥 Exam submission failed!');
+            showSubmissionError();
+        }
+    });
+}
+
+function calculateSubjectMarks() {
+    const subjData = {};
+    const totalQuestions = examData.files.length;
+    
+    for (let i = 0; i < totalQuestions; i++) {
+        const subjectName = examData.subjectNames[i];
+        
+        if (!subjData[subjectName]) {
+            subjData[subjectName] = {
+                correct: 0,
+                wrong: 0,
+                blank: 0,
+                total: 0,
+                marks: 0
+            };
+        }
+        
+        const answer = progress.answers[i];
+        const correctAnswer = examData.keys[i];
+        
+        if (answer === null) {
+            subjData[subjectName].blank++;
+        } else if (answer === correctAnswer) {
+            subjData[subjectName].correct++;
+            subjData[subjectName].marks += MARK_PER_CORRECT;
+        } else {
+            subjData[subjectName].wrong++;
+            subjData[subjectName].marks += MARK_PER_WRONG;
+        }
+        
+        subjData[subjectName].total++;
+    }
+    
+    return subjData;
+}
+
+// ===== SUMMARY AND REVIEW FUNCTIONS =====
+function showSummary(subjData) {
+    document.getElementById('examArea').style.display = 'none';
+    document.getElementById('summaryArea').style.display = 'block';
+    
+    // Update student info in summary
+    const student = progress.student;
+    document.getElementById('summaryStudentName').textContent = student.name;
+    document.getElementById('summarySection').textContent = student.sec;
+    document.getElementById('summaryRoll').textContent = student.roll;
+    document.getElementById('summaryAdm').textContent = student.adm;
+    document.getElementById('summaryForm').textContent = assignedForm;
+    
+    // Create summary table
+    const tableContainer = document.getElementById('summaryTableContainer');
+    tableContainer.innerHTML = createSummaryTable(subjData);
+    
+    // Start waiting timer if exam time not completed
+    const timeUsed = EXAM_DURATION_MS - (progress.timeLeftSec * 1000);
+    const timeRemaining = EXAM_DURATION_MS - timeUsed;
+    
+    if (timeRemaining > 0) {
+        startWaitingTimer(timeRemaining);
+    } else {
+        showAutoTransition();
+    }
+}
+
+function createSummaryTable(subjData) {
+    let tableHTML = `
+        <table class="results-table">
+            <thead>
+                <tr>
+                    <th>Subject</th>
+                    <th>Correct</th>
+                    <th>Wrong</th>
+                    <th>Blank</th>
+                    <th>Total</th>
+                    <th>Marks</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    let totalCorrect = 0, totalWrong = 0, totalBlank = 0, totalMarks = 0;
+    
+    for (const [subject, data] of Object.entries(subjData)) {
+        tableHTML += `
+            <tr>
+                <td>${subject}</td>
+                <td>${data.correct}</td>
+                <td>${data.wrong}</td>
+                <td>${data.blank}</td>
+                <td>${data.total}</td>
+                <td>${data.marks.toFixed(2)}</td>
+            </tr>
+        `;
+        
+        totalCorrect += data.correct;
+        totalWrong += data.wrong;
+        totalBlank += data.blank;
+        totalMarks += data.marks;
+    }
+    
+    tableHTML += `
+            <tr class="total-row">
+                <td><strong>Total</strong></td>
+                <td><strong>${totalCorrect}</strong></td>
+                <td><strong>${totalWrong}</strong></td>
+                <td><strong>${totalBlank}</strong></td>
+                <td><strong>${totalCorrect + totalWrong + totalBlank}</strong></td>
+                <td><strong>${totalMarks.toFixed(2)}</strong></td>
+            </tr>
+        </tbody>
+        </table>
+    `;
+    
+    return tableHTML;
+}
+
+function startWaitingTimer(timeRemaining) {
+    let remainingMs = timeRemaining;
+    
+    waitingTimerInterval = setInterval(() => {
+        remainingMs -= 1000;
+        
+        const minutes = Math.floor(remainingMs / 60000);
+        const seconds = Math.floor((remainingMs % 60000) / 1000);
+        
+        document.getElementById('waitingTimer').textContent = 
+            `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        
+        if (remainingMs <= 0) {
+            clearInterval(waitingTimerInterval);
+            showAutoTransition();
+        }
+    }, 1000);
+}
+
+function showAutoTransition() {
+    document.getElementById('waitingMessage').style.display = 'none';
+    document.getElementById('autoTransitionMessage').style.display = 'block';
+    
+    let countdown = 5;
+    document.getElementById('countdown').textContent = countdown;
+    
+    autoTransitionTimer = setInterval(() => {
+        countdown--;
+        document.getElementById('countdown').textContent = countdown;
+        
+        if (countdown <= 0) {
+            clearInterval(autoTransitionTimer);
+            showDetailedSolutions();
+        }
+    }, 1000);
+}
+
+function showDetailedSolutions() {
+    document.getElementById('summaryArea').style.display = 'none';
+    document.getElementById('reviewArea').style.display = 'block';
+    
+    // Update student info in review
+    const student = progress.student;
+    document.getElementById('reviewStudentName').textContent = student.name;
+    document.getElementById('reviewSection').textContent = student.sec;
+    document.getElementById('reviewRoll').textContent = student.roll;
+    document.getElementById('reviewAdm').textContent = student.adm;
+    document.getElementById('reviewForm').textContent = assignedForm;
+    
+    // Create detailed results table
+    const detailedContainer = document.getElementById('detailedResultsContainer');
+    detailedContainer.innerHTML = createDetailedResultsTable(currentSubjData);
+    
+    // Create question-by-question review
+    createQuestionReview();
+}
+
+function createDetailedResultsTable(subjData) {
+    let tableHTML = `
+        <table class="detailed-results-table">
+            <thead>
+                <tr>
+                    <th>Subject</th>
+                    <th>Correct</th>
+                    <th>Wrong</th>
+                    <th>Blank</th>
+                    <th>Total Questions</th>
+                    <th>Marks Obtained</th>
+                    <th>Percentage</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    let totalCorrect = 0, totalWrong = 0, totalBlank = 0, totalMarks = 0, totalQuestions = 0;
+    
+    for (const [subject, data] of Object.entries(subjData)) {
+        const percentage = ((data.marks / (data.total * MARK_PER_CORRECT)) * 100).toFixed(2);
+        const rowClass = percentage >= 40 ? 'highlight' : '';
+        
+        tableHTML += `
+            <tr class="${rowClass}">
+                <td><strong>${subject}</strong></td>
+                <td>${data.correct}</td>
+                <td>${data.wrong}</td>
+                <td>${data.blank}</td>
+                <td>${data.total}</td>
+                <td>${data.marks.toFixed(2)}</td>
+                <td>${percentage}%</td>
+            </tr>
+        `;
+        
+        totalCorrect += data.correct;
+        totalWrong += data.wrong;
+        totalBlank += data.blank;
+        totalMarks += data.marks;
+        totalQuestions += data.total;
+    }
+    
+    const overallPercentage = ((totalMarks / (totalQuestions * MARK_PER_CORRECT)) * 100).toFixed(2);
+    
+    tableHTML += `
+            <tr class="total-row">
+                <td><strong>GRAND TOTAL</strong></td>
+                <td><strong>${totalCorrect}</strong></td>
+                <td><strong>${totalWrong}</strong></td>
+                <td><strong>${totalBlank}</strong></td>
+                <td><strong>${totalQuestions}</strong></td>
+                <td><strong>${totalMarks.toFixed(2)}</strong></td>
+                <td><strong>${overallPercentage}%</strong></td>
+            </tr>
+        </tbody>
+        </table>
+    `;
+    
+    return tableHTML;
+}
+
+function createQuestionReview() {
+    const container = document.getElementById('reviewQuestionsContainer');
+    container.innerHTML = '<h3 style="text-align:center; color:#4B0082;">Question-wise Analysis</h3>';
+    
+    for (let i = 0; i < examData.files.length; i++) {
+        const questionDiv = document.createElement('div');
+        questionDiv.className = 'question-review-item';
+        questionDiv.style.cssText = `
+            border: 2px solid #E6E6FA;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        `;
+        
+        const studentAnswer = progress.answers[i];
+        const correctAnswer = examData.keys[i];
+        const isCorrect = studentAnswer === correctAnswer;
+        const isAttempted = studentAnswer !== null;
+        
+        let statusClass = '', statusText = '', statusEmoji = '';
+        
+        if (!isAttempted) {
+            statusClass = 'not-attempted';
+            statusText = 'Not Attempted';
+            statusEmoji = '⚪';
+        } else if (isCorrect) {
+            statusClass = 'correct';
+            statusText = 'Correct';
+            statusEmoji = '✅';
+        } else {
+            statusClass = 'wrong';
+            statusText = 'Wrong';
+            statusEmoji = '❌';
+        }
+        
+        questionDiv.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h4 style="margin: 0; color: #4B0082;">Question ${i + 1}</h4>
+                <div class="answer-status ${statusClass}">
+                    ${statusEmoji} ${statusText}
+                </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 15px;">
+                <div>
+                    <strong>Your Answer:</strong> 
+                    <span class="${isAttempted ? (isCorrect ? 'correct-answer' : 'wrong-answer') : ''}">
+                        ${isAttempted ? studentAnswer : 'Not Attempted'}
+                    </span>
+                </div>
+                <div>
+                    <strong>Correct Answer:</strong> 
+                    <span class="correct-answer">${correctAnswer}</span>
+                </div>
+            </div>
+            
+            <div style="text-align: center;">
+                <img src="${examData.files[i]}" 
+                     alt="Question ${i + 1}" 
+                     style="max-width: 100%; height: auto; border-radius: 8px;"
+                     onerror="this.style.display='none'">
+            </div>
+        `;
+        
+        container.appendChild(questionDiv);
+    }
+}
+
+// ===== CLOSE BUTTONS =====
+document.getElementById('closeSummaryBtn').addEventListener('click', () => {
+    if (confirm('Are you sure you want to close? Detailed solutions will not be available if you close now.')) {
+        window.close();
+    }
+});
+
+document.getElementById('closeReviewBtn').addEventListener('click', () => {
+    if (confirm('Are you sure you want to close the exam window?')) {
+        window.close();
+    }
+});
+
+// ===== ADMIN FUNCTIONS =====
+document.getElementById('callAdminBtn').addEventListener('click', () => {
+    document.getElementById('adminPassModal').style.display = 'flex';
+});
+
+document.getElementById('adminPassSubmit').addEventListener('click', () => {
+    const password = document.getElementById('adminPassInput').value;
+    // Add your admin password check here
+    if (password === 'admin123') { // Change this to your actual password
+        document.getElementById('adminPassModal').style.display = 'none';
+        document.getElementById('fullRedOverlay').style.display = 'none';
+        document.getElementById('accessDeniedBox').style.display = 'none';
+    } else {
+        alert('Incorrect password!');
+    }
+});
+
+// ===== ERROR HANDLING =====
+function showError(message) {
+    const errorDiv = document.getElementById('errorMessages');
+    errorDiv.innerHTML = `<div class="error-message">❌ ${message}</div>`;
+}
+
+function clearErrors() {
+    document.getElementById('errorMessages').innerHTML = '';
+}
+
+// ===== NETWORK STATUS DISPLAY =====
+function updateNetworkStatusDisplay() {
+    let statusDiv = document.getElementById('networkStatus');
+    if (!statusDiv) {
+        statusDiv = document.createElement('div');
+        statusDiv.id = 'networkStatus';
+        statusDiv.className = 'network-status';
+        document.body.appendChild(statusDiv);
+    }
+    
+    if (isOnline) {
+        statusDiv.textContent = '🟢 Online';
+        statusDiv.className = 'network-status network-online';
+    } else {
+        statusDiv.textContent = '🔴 Offline';
+        statusDiv.className = 'network-status network-offline';
+    }
+}
+
+// ===== INITIALIZATION =====
+document.addEventListener('DOMContentLoaded', function() {
+    setupScreenshotProtection();
+    setupPowerFailureProtection();
+    setupNetworkMonitoring();
+    setupEnhancedSecurity();
+    setupBulletproofDataIntegrity();
+    
+    // Check for existing exam progress
+    if (restoreExamProgress()) {
+        showResumeOption();
+    }
+    
+    // Initialize event listeners
+    initializeEventListeners();
+    
+    // Initialize network status
+    updateNetworkStatusDisplay();
+    setInterval(updateNetworkStatusDisplay, 5000);
+    
+    // Setup admin override for access denied
+    document.getElementById('adminOverrideBtn').addEventListener('click', function() {
+        const password = document.getElementById('adminOverridePass').value;
+        if (password === ADMIN_PASSWORD) {
+            hideAccessDeniedOverlay();
+            // Allow the student to proceed
+            document.getElementById('stuStartBtn').style.display = 'block';
+        } else {
+            alert('Incorrect admin password!');
+        }
+    });
+});
+
+function initializeEventListeners() {
+    // Student input validation with immediate feedback
+    document.getElementById('stuName').addEventListener('input', function() {
+        validateNameInput(this);
+        validateStudentInputs();
+    });
+    
+    document.getElementById('stuSection').addEventListener('input', function() {
+        validateSectionInput(this);
+        validateStudentInputs();
+    });
+    
+    document.getElementById('stuRoll').addEventListener('input', function() {
+        validateRollInput(this);
+        validateStudentInputs();
+    });
+    
+    document.getElementById('stuAdm').addEventListener('input', function() {
+        validateAdmInput(this);
+        validateStudentInputs();
+    });
+    
+    // Start button
+    document.getElementById('stuStartBtn').addEventListener('click', startWithSecurity);
+    
+    // Resume button
+    document.getElementById('resumeExamBtn').addEventListener('click', resumeExam);
+}
+
+function validateStudentInputs() {
+    const name = document.getElementById('stuName').value.trim();
+    const section = document.getElementById('stuSection').value.trim();
+    const roll = document.getElementById('stuRoll').value.trim();
+    const adm = document.getElementById('stuAdm').value.trim();
+    
+    const nameValid = validateNameInput(document.getElementById('stuName'));
+    const sectionValid = validateSectionInput(document.getElementById('stuSection'));
+    const rollValid = validateRollInput(document.getElementById('stuRoll'));
+    const admValid = validateAdmInput(document.getElementById('stuAdm'));
+    const keyValid = keyLoaded;
+    
+    const allValid = nameValid && sectionValid && rollValid && admValid && keyValid && name.length >= 2 && section.length >= 1 && roll.length >= 1 && adm.length >= 1;
+    
+    document.getElementById('stuStartBtn').style.display = allValid ? 'block' : 'none';
+    
+    // Show error message if key is not loaded
+    if (!keyLoaded) {
+        showError("Answer key not loaded - exam disabled. Contact administrator.");
+    }
+    
+    return allValid;
+}
+
+function startWithSecurity(forceStart = false) {
+    if (!validateStudentInputs() && !forceStart) return;
+    
+    const studentData = {
+        name: document.getElementById('stuName').value.trim(),
+        sec: document.getElementById('stuSection').value.trim(),
+        roll: document.getElementById('stuRoll').value.trim(),
+        adm: document.getElementById('stuAdm').value.trim()
+    };
+    
+    const studentId = generateStudentId(studentData);
+    
+    // Enhanced 24-hour cooldown check
+    if (!forceStart && !check24HourCooldown(studentData)) {
+        showAccessDeniedOverlay();
+        return;
+    }
+    
+    // Enhanced duplicate check
+    if (!forceStart && checkForDuplicateSubmission(studentData)) {
+        showDuplicateWarning(studentData);
+        return;
+    }
+    
+    // Clear any existing backup to prevent conflicts
+    localStorage.removeItem('exam_backup_data');
+    
+    startExam(studentData);
+}
+
+function startExam(studentData) {
+    examInProgress = true;
+    examStartTime = Date.now();
+    
+    // Get form assignment (but don't display it)
+    assignedForm = getAssignedForm(studentData);
+    
+    // Shuffle questions for this student
+    examData = shuffleQuestionsForStudent(studentData);
+    
+    // Initialize progress
+    progress = {
+        student: studentData,
+        answers: new Array(examData.files.length).fill(null),
+        currentQ: 0,
+        timeLeftSec: EXAM_DURATION_MS / 1000,
+        markedReview: new Set()
+    };
+    
+    // Show exam area
+    document.getElementById('studentEntry').style.display = 'none';
+    document.getElementById('examArea').style.display = 'block';
+    document.getElementById('examWarning').style.display = 'block';
+    
+    // Update student info
+    document.getElementById('stuInfo').textContent = 
+        `${studentData.name} | ${studentData.sec} | Roll: ${studentData.roll}`;
+    
+    // Start timer
+    startTimer();
+    
+    // Initialize question palette
+    initPalette();
+    
+    // Load first question
+    showQuestion(0);
+    
+    // Initial backup
+    backupExamProgress();
+}
+
+function showResumeOption() {
+    document.getElementById('resumeExamSection').style.display = 'block';
+}
+
+function resumeExam() {
+    if (progress) {
+        examInProgress = true;
+        
+        document.getElementById('studentEntry').style.display = 'none';
+        document.getElementById('examArea').style.display = 'block';
+        document.getElementById('examWarning').style.display = 'block';
+        
+        // Update student info
+        const studentData = progress.student;
+        document.getElementById('stuInfo').textContent = 
+            `${studentData.name} | ${studentData.sec} | Roll: ${studentData.roll}`;
+        
+        // Restart timer
+        startTimer();
+        
+        // Initialize question palette
+        initPalette();
+        
+        // Show current question
+        showQuestion(progress.currentQ);
+        
+        console.log('✅ Exam resumed from backup');
+    }
+}
+
+// Debug: Check key loading status every 2 seconds
+setInterval(() => {
+    console.log('Key loaded:', keyLoaded, 'Answers count:', answerKey.length);
+    console.log('Start button visible:', document.getElementById('stuStartBtn').style.display);
+}, 2000);
+
+console.log('✅ LFJC Examination System initialized successfully');
+</script>
+</body>
+</html>
