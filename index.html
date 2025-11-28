@@ -271,10 +271,13 @@ body {
 }
 
 .question-img {
-    max-width: 100%;
-    max-height: 500px;
-    border-radius: 0;
-    box-shadow: 0;
+    width: 100%; /* ← FULL WIDTH */
+    height: auto; /* ← MAINTAIN ASPECT RATIO */
+    max-width: 100%; /* ← NO MAX WIDTH RESTRICTION */
+    max-height: none; /* ← REMOVE HEIGHT RESTRICTION */
+    border-radius: 0; /* ← REMOVE BORDER RADIUS */
+    box-shadow: none; /* ← REMOVE SHADOW */
+
 }
 
 .options-container {
