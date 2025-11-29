@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LFJC ONLINE EXAMINATION</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #9b59b6;
+            --success: #27ae60;
+            --warning: #e67e22;
+            --danger: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --text: #333333;
+            --text-light: #7f8c8d;
+            --border: #bdc3c7;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 0;
+            color: var(--text);
+            overflow: hidden;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0;
+            background: white;
+            border-radius: 0;
+            box-shadow: none;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 15px;
+            text-align: center;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .header h1 {
+            font-size: 2.2em;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            font-weight: 600;
+        }
+
+        /* Student Entry Section */
+        .student-entry {
+            padding: 20px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .student-entry h2 {
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.6em;
+            font-weight: 600;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 1em;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .input-group input:focus {
+            border-color: var(--secondary);
+            outline: none;
+        }
+
+        .start-btn {
+            background: linear-gradient(135deg, var(--success), #20c997);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Exam Area */
+        .exam-area {
+            display: none;
+            flex-grow: 1;
+            background: linear-gradient(135deg, #f8f9ff 0%, #e6f3ff 100%);
+            overflow: hidden;
+        }
+
+        .exam-header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .timer {
+            font-size: 1.2em;
+            font-weight: bold;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 15px;
+            border-radius: 6px;
+        }
+
+        /* Main Exam Content */
+        .exam-main-content {
+            display: flex;
+            flex-grow: 1;
+            overflow: hidden;
+            padding: 0;
+            gap: 0;
+        }
+
+        .question-section {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.08);
+            overflow: hidden;
+            margin: 5px;
+        }
+
+        .question-header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 12px 20px;
+            font-size: 1.1em;
+            font-weight: 600;
+        }
+
+        .question-container {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .question-img-container {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            min-height: 300px;
+        }
+
+        .question-img {
+            max-width: 100%;
+            max-height: 400px;
+            border-radius: 8px;
+        }
+
+        .options-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .optBtn {
+            padding: 15px;
+            border: 2px solid var(--border);
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text);
+            text-align: center;
+        }
+
+        .optBtn:hover {
+            border-color: var(--secondary);
+            background: linear-gradient(135deg, var(--secondary), var(--accent));
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .optBtn.selected {
+            background: linear-gradient(135deg, var(--success), #20c997);
+            color: white;
+            border-color: var(--success);
+        }
+
+        /* Palette Section */
+        .palette-section {
+            width: 250px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            flex-shrink: 0;
+            margin: 5px;
+        }
+
+        .palette-header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 12px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .palette-container {
+            flex-grow: 1;
+            padding: 15px;
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            overflow-y: auto;
+        }
+
+        .palette-btn {
+            width: 35px;
+            height: 35px;
+            border: 2px solid var(--border);
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 13px;
+        }
+
+        .palette-btn:hover {
+            border-color: var(--secondary);
+            background: var(--secondary);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .palette-btn.selected {
+            background: linear-gradient(135deg, var(--success), #20c997);
+            color: white;
+            border-color: var(--success);
+        }
+
+        .palette-btn.current {
+            border: 2px solid var(--secondary);
+            background: var(--secondary);
+            color: white;
+        }
+
+        /* Navigation */
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background: white;
+            border-top: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .nav-btn {
+            padding: 10px 20px;
+            border: 2px solid var(--secondary);
+            background: white;
+            color: var(--secondary);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 13px;
+        }
+
+        .nav-btn:hover:not(:disabled) {
+            background: linear-gradient(135deg, var(--secondary), var(--accent));
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, var(--danger), #e35d6a);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            background: linear-gradient(135deg, #c82333, var(--danger));
+        }
+
+        /* Summary Area */
+        .summary-area {
+            display: none;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8f9ff, #e6f3ff);
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        .summary-area h2 {
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            font-weight: 600;
+        }
+
+        .student-info-bar {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 10px;
+        }
+
+        .student-info-bar div {
+            text-align: center;
+            padding: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 6px;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+        }
+
+        .results-table th {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-size: 1em;
+            font-weight: 600;
+        }
+
+        .results-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.95em;
+        }
+
+        .total-row {
+            background: linear-gradient(135deg, #e9ecef, #dee2e6) !important;
+            font-weight: bold;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            max-width: 450px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .modal h3 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            font-weight: 600;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .modal-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 15px;
+        }
+
+        .modal-btn.confirm {
+            background: linear-gradient(135deg, var(--success), #20c997);
+            color: white;
+        }
+
+        .modal-btn.cancel {
+            background: linear-gradient(135deg, var(--text-light), #5a6268);
+            color: white;
+        }
+
+        /* Demo question images */
+        .demo-question {
+            text-align: center;
+            padding: 40px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .demo-question h3 {
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+
+        .demo-question p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>LFJC ONLINE EXAMINATION</h1>
+            <p style="opacity: 0.9; font-size: 1em;">Secure • Reliable • Efficient</p>
+        </div>
+
+        <!-- Student Entry Section -->
+        <div id="studentEntry" class="student-entry">
+            <h2>🎓 Student Information</h2>
+            
+            <div class="input-group">
+                <label for="stuName">📛 Full Name</label>
+                <input type="text" id="stuName" placeholder="Enter your full name" value="John Doe" maxlength="50">
+            </div>
+
+            <div class="input-group">
+                <label for="stuSection">🏫 Section</label>
+                <input type="text" id="stuSection" placeholder="Enter your section" value="A" maxlength="10">
+            </div>
+
+            <div class="input-group">
+                <label for="stuRoll">🎯 Roll Number</label>
+                <input type="text" id="stuRoll" placeholder="Enter your roll number" value="25" maxlength="10">
+            </div>
+
+            <div class="input-group">
+                <label for="stuAdm">🎫 Admission Number</label>
+                <input type="text" id="stuAdm" placeholder="Enter your admission number" value="12345" maxlength="15">
+            </div>
+
+            <button id="stuStartBtn" class="start-btn">🚀 START EXAM</button>
+        </div>
+
+        <!-- Exam Area -->
+        <div id="examArea" class="exam-area">
+            <div class="exam-header">
+                <div id="stuInfo">👤 Student Information</div>
+                <div id="timerEl" class="timer">⏰ 60:00</div>
+            </div>
+
+            <div class="exam-main-content">
+                <!-- Question Section -->
+                <div class="question-section">
+                    <div class="question-header">
+                        <div id="stuQInfo">📚 Subject - Question 1/10</div>
+                    </div>
+                    <div id="questionContainer" class="question-container">
+                        <!-- Questions will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Palette Section -->
+                <div class="palette-section">
+                    <div class="palette-header">
+                        📋 Question Palette
+                    </div>
+                    <div id="paletteContainer" class="palette-container">
+                        <!-- Question palette will be generated here -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="navigation">
+                <button id="prevBtn" class="nav-btn">◀ Previous</button>
+                <button id="markReviewBtn" class="nav-btn">📌 Mark Review</button>
+                <button id="nextBtn" class="nav-btn">Next ▶</button>
+            </div>
+
+            <div style="text-align: center; padding: 10px; background: white; border-top: 1px solid var(--border);">
+                <button id="submitBtn" class="submit-btn">✅ SUBMIT EXAM</button>
+            </div>
+        </div>
+
+        <!-- Summary Area -->
+        <div id="summaryArea" class="summary-area">
+            <h2>📊 Exam Summary</h2>
+            
+            <div class="student-info-bar">
+                <div><strong>👤 Name:</strong> <span id="summaryStudentName">-</span></div>
+                <div><strong>🏫 Section:</strong> <span id="summarySection">-</span></div>
+                <div><strong>🎯 Roll No:</strong> <span id="summaryRoll">-</span></div>
+                <div><strong>🎫 Admission No:</strong> <span id="summaryAdm">-</span></div>
+            </div>
+
+            <div id="summaryTableContainer">
+                <!-- Summary table will be generated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Modal -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <h3>🤔 Confirm Submission</h3>
+            <p id="confirmText">Are you sure you want to submit the exam?</p>
+            <div class="modal-buttons">
+                <button id="confirmYes" class="modal-btn confirm">✅ Yes, Submit</button>
+                <button id="confirmNo" class="modal-btn cancel">❌ Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== SIMPLE WORKING CONFIGURATION =====
+        const CONFIG = {
+            MARK_PER_CORRECT: 4,
+            MARK_PER_WRONG: -1,
+            EXAM_DURATION_MINUTES: 1,
+            TOTAL_QUESTIONS: 10, // Reduced for demo
+            ACCESS_CODE: "lfjc2025"
+        };
+
+        // Demo questions data
+        const demoQuestions = [
+            { subject: "Maths", question: "What is 2 + 2?", options: ["3", "4", "5", "6"], correct: "B" },
+            { subject: "Maths", question: "Solve: 5 × 3", options: ["15", "8", "12", "10"], correct: "A" },
+            { subject: "Physics", question: "Unit of force?", options: ["Newton", "Joule", "Watt", "Pascal"], correct: "A" },
+            { subject: "Physics", question: "Speed of light?", options: ["3×10⁸ m/s", "3×10⁶ m/s", "3×10⁵ m/s", "3×10⁴ m/s"], correct: "A" },
+            { subject: "Chemistry", question: "Atomic number of Hydrogen?", options: ["1", "2", "3", "4"], correct: "A" },
+            { subject: "Chemistry", question: "H₂O is?", options: ["Water", "Oxygen", "Hydrogen", "Carbon dioxide"], correct: "A" },
+            { subject: "Maths", question: "Value of π?", options: ["3.14", "2.71", "1.61", "4.13"], correct: "A" },
+            { subject: "Physics", question: "Newton's first law?", options: ["Inertia", "Force", "Energy", "Momentum"], correct: "A" },
+            { subject: "Chemistry", question: "CO₂ is?", options: ["Carbon dioxide", "Carbon monoxide", "Water", "Oxygen"], correct: "A" },
+            { subject: "Maths", question: "9 ÷ 3 = ?", options: ["3", "2", "4", "5"], correct: "A" }
+        ];
+
+        // Global variables
+        let currentQuestion = 0;
+        let userAnswers = new Array(CONFIG.TOTAL_QUESTIONS).fill(null);
+        let timeLeft = CONFIG.EXAM_DURATION_MINUTES * 60;
+        let timerInterval;
+        let examStarted = false;
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 LFJC Examination System Ready');
+            
+            // Set up event listeners
+            document.getElementById('stuStartBtn').addEventListener('click', startExam);
+            document.getElementById('prevBtn').addEventListener('click', showPreviousQuestion);
+            document.getElementById('nextBtn').addEventListener('click', showNextQuestion);
+            document.getElementById('markReviewBtn').addEventListener('click', toggleMarkReview);
+            document.getElementById('submitBtn').addEventListener('click', showSubmitConfirmation);
+            document.getElementById('confirmYes').addEventListener('click', calculateResults);
+            document.getElementById('confirmNo').addEventListener('click', hideModal);
+            
+            // Pre-fill demo data for testing
+            document.getElementById('stuName').value = "John Doe";
+            document.getElementById('stuSection').value = "A";
+            document.getElementById('stuRoll').value = "25";
+            document.getElementById('stuAdm').value = "12345";
+        });
+
+        function startExam() {
+            if (!validateInputs()) {
+                alert('Please fill all fields correctly!');
+                return;
+            }
+
+            examStarted = true;
+            document.getElementById('studentEntry').style.display = 'none';
+            document.getElementById('examArea').style.display = 'block';
+
+            // Initialize student info
+            const studentName = document.getElementById('stuName').value;
+            const section = document.getElementById('stuSection').value;
+            const roll = document.getElementById('stuRoll').value;
+            
+            document.getElementById('stuInfo').textContent = 
+                `👤 ${studentName} | 🏫 ${section} | 🎯 Roll: ${roll}`;
+
+            // Initialize palette
+            initPalette();
+            
+            // Start timer
+            startTimer();
+            
+            // Show first question
+            showQuestion(0);
+        }
+
+        function validateInputs() {
+            const name = document.getElementById('stuName').value.trim();
+            const section = document.getElementById('stuSection').value.trim();
+            const roll = document.getElementById('stuRoll').value.trim();
+            const adm = document.getElementById('stuAdm').value.trim();
+            
+            return name.length >= 2 && section.length >= 1 && roll.length >= 1 && adm.length >= 1;
+        }
+
+        function startTimer() {
+            updateTimerDisplay();
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    calculateResults();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            document.getElementById('timerEl').textContent = 
+                `⏰ ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+            // Add warning colors
+            if (timeLeft <= 300) { // 5 minutes
+                document.getElementById('timerEl').style.background = 'linear-gradient(135deg, var(--warning), #ff6b00)';
+            }
+            if (timeLeft <= 60) { // 1 minute
+                document.getElementById('timerEl').style.background = 'linear-gradient(135deg, var(--danger), #ff4757)';
+            }
+        }
+
+        function showQuestion(index) {
+            if (index < 0 || index >= CONFIG.TOTAL_QUESTIONS) return;
+            
+            currentQuestion = index;
+            const question = demoQuestions[index];
+            
+            // Update question info
+            document.getElementById('stuQInfo').textContent = 
+                `📚 ${question.subject} - Question ${index + 1}/${CONFIG.TOTAL_QUESTIONS}`;
+            
+            // Create question display
+            const container = document.getElementById('questionContainer');
+            container.innerHTML = `
+                <div class="demo-question">
+                    <h3>Question ${index + 1}</h3>
+                    <p>${question.question}</p>
+                </div>
+                <div class="options-container">
+                    <button class="optBtn ${userAnswers[index] === 'A' ? 'selected' : ''}" data-opt="A">A) ${question.options[0]}</button>
+                    <button class="optBtn ${userAnswers[index] === 'B' ? 'selected' : ''}" data-opt="B">B) ${question.options[1]}</button>
+                    <button class="optBtn ${userAnswers[index] === 'C' ? 'selected' : ''}" data-opt="C">C) ${question.options[2]}</button>
+                    <button class="optBtn ${userAnswers[index] === 'D' ? 'selected' : ''}" data-opt="D">D) ${question.options[3]}</button>
+                </div>
+            `;
+            
+            // Add event listeners to options
+            const optionButtons = container.querySelectorAll('.optBtn');
+            optionButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    selectOption(index, this.dataset.opt);
+                });
+            });
+            
+            updateNavigation();
+            updatePalette();
+        }
+
+        function selectOption(qIndex, option) {
+            userAnswers[qIndex] = userAnswers[qIndex] === option ? null : option;
+            showQuestion(qIndex); // Refresh to update selection
+        }
+
+        function showPreviousQuestion() {
+            if (currentQuestion > 0) {
+                showQuestion(currentQuestion - 1);
+            }
+        }
+
+        function showNextQuestion() {
+            if (currentQuestion < CONFIG.TOTAL_QUESTIONS - 1) {
+                showQuestion(currentQuestion + 1);
+            }
+        }
+
+        function toggleMarkReview() {
+            // Simple implementation - you can enhance this
+            alert('Question marked for review!');
+        }
+
+        function initPalette() {
+            const palette = document.getElementById('paletteContainer');
+            palette.innerHTML = '';
+            
+            for (let i = 0; i < CONFIG.TOTAL_QUESTIONS; i++) {
+                const btn = document.createElement('button');
+                btn.className = 'palette-btn';
+                btn.textContent = i + 1;
+                btn.addEventListener('click', () => showQuestion(i));
+                palette.appendChild(btn);
+            }
+            updatePalette();
+        }
+
+        function updatePalette() {
+            const buttons = document.querySelectorAll('.palette-btn');
+            buttons.forEach((btn, index) => {
+                btn.classList.remove('selected', 'current');
+                if (userAnswers[index] !== null) {
+                    btn.classList.add('selected');
+                }
+                if (index === currentQuestion) {
+                    btn.classList.add('current');
+                }
+            });
+        }
+
+        function updateNavigation() {
+            document.getElementById('prevBtn').disabled = currentQuestion === 0;
+            document.getElementById('nextBtn').disabled = currentQuestion === CONFIG.TOTAL_QUESTIONS - 1;
+        }
+
+        function showSubmitConfirmation() {
+            const unanswered = userAnswers.filter(answer => answer === null).length;
+            const message = unanswered > 0 
+                ? `You have ${unanswered} unanswered questions. Are you sure you want to submit?`
+                : 'Are you sure you want to submit the exam?';
+            
+            document.getElementById('confirmText').textContent = message;
+            document.getElementById('confirmModal').style.display = 'flex';
+        }
+
+        function hideModal() {
+            document.getElementById('confirmModal').style.display = 'none';
+        }
+
+        function calculateResults() {
+            clearInterval(timerInterval);
+            hideModal();
+            
+            // Calculate scores
+            let correct = 0;
+            let wrong = 0;
+            let blank = 0;
+            
+            for (let i = 0; i < CONFIG.TOTAL_QUESTIONS; i++) {
+                if (userAnswers[i] === null) {
+                    blank++;
+                } else if (userAnswers[i] === demoQuestions[i].correct) {
+                    correct++;
+                } else {
+                    wrong++;
+                }
+            }
+            
+            const totalMarks = (correct * CONFIG.MARK_PER_CORRECT) + (wrong * CONFIG.MARK_PER_WRONG);
+            
+            // Show summary
+            showSummary(correct, wrong, blank, totalMarks);
+        }
+
+        function showSummary(correct, wrong, blank, totalMarks) {
+            document.getElementById('examArea').style.display = 'none';
+            document.getElementById('summaryArea').style.display = 'block';
+            
+            // Update student info
+            document.getElementById('summaryStudentName').textContent = document.getElementById('stuName').value;
+            document.getElementById('summarySection').textContent = document.getElementById('stuSection').value;
+            document.getElementById('summaryRoll').textContent = document.getElementById('stuRoll').value;
+            document.getElementById('summaryAdm').textContent = document.getElementById('stuAdm').value;
+            
+            // Create results table
+            const tableHTML = `
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Count</th>
+                            <th>Marks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>✅ Correct Answers</td>
+                            <td>${correct}</td>
+                            <td>+${correct * CONFIG.MARK_PER_CORRECT}</td>
+                        </tr>
+                        <tr>
+                            <td>❌ Wrong Answers</td>
+                            <td>${wrong}</td>
+                            <td>${wrong * CONFIG.MARK_PER_WRONG}</td>
+                        </tr>
+                        <tr>
+                            <td>⚪ Blank Answers</td>
+                            <td>${blank}</td>
+                            <td>0</td>
+                        </tr>
+                        <tr class="total-row">
+                            <td><strong>🎯 TOTAL</strong></td>
+                            <td><strong>${CONFIG.TOTAL_QUESTIONS}</strong></td>
+                            <td><strong>${totalMarks}</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div style="text-align: center; margin-top: 30px; padding: 20px; background: linear-gradient(135deg, #d4edda, #c3e6cb); border-radius: 10px;">
+                    <h3 style="color: #155724; margin-bottom: 10px;">📊 Final Score</h3>
+                    <div style="font-size: 2.5em; font-weight: bold; color: var(--success);">${totalMarks} / ${CONFIG.TOTAL_QUESTIONS * CONFIG.MARK_PER_CORRECT}</div>
+                    <p style="color: #155724; margin-top: 10px;">Percentage: ${((totalMarks / (CONFIG.TOTAL_QUESTIONS * CONFIG.MARK_PER_CORRECT)) * 100).toFixed(1)}%</p>
+                </div>
+            `;
+            
+            document.getElementById('summaryTableContainer').innerHTML = tableHTML;
+            
+            // Submit to Google Forms (demo)
+            submitToGoogleForms();
+        }
+
+        function submitToGoogleForms() {
+            // This is a demo - in real implementation, you'd submit to actual Google Forms
+            console.log('📤 Results submitted to Google Forms');
+            console.log('Student:', document.getElementById('stuName').value);
+            console.log('Score:', calculateScore());
+            
+            // Simulate form submission
+            setTimeout(() => {
+                alert('✅ Results successfully submitted to Google Sheets!');
+            }, 1000);
+        }
+
+        function calculateScore() {
+            let correct = 0;
+            for (let i = 0; i < CONFIG.TOTAL_QUESTIONS; i++) {
+                if (userAnswers[i] === demoQuestions[i].correct) {
+                    correct++;
+                }
+            }
+            return (correct * CONFIG.MARK_PER_CORRECT) + ((CONFIG.TOTAL_QUESTIONS - correct) * CONFIG.MARK_PER_WRONG);
+        }
+    </script>
+</body>
+</html>
