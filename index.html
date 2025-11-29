@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LFJC ONLINE EXAMINATION - MULTI-USER</title>
+    <style>
+        /* [KEEP ALL YOUR EXISTING STYLES - THEY ARE GOOD] */
+        /* Your existing CSS styles remain the same */
+    </style>
+</head>
+<body>
+    <!-- [KEEP ALL YOUR EXISTING HTML STRUCTURE] -->
+    <!-- Your existing HTML structure remains the same -->
+
+    <script>
+        // ===== ENHANCED MULTI-USER CONFIGURATION =====
+        const CONFIG = {
+            MARK_PER_CORRECT: 4,
+            MARK_PER_WRONG: -1,
+            EXAM_DURATION_MINUTES: 1,
+            MAX_QUESTIONS: 70,
+            MAX_CONCURRENT_USERS: 150,
+            ACCESS_CODE: "lfjc2025",
+            SESSION_TIMEOUT: 30 * 60 * 1000, // 30 minutes
+            IMAGE_LOAD_BATCH_SIZE: 10, // Load images in batches
+            REQUEST_DELAY: 100 // Delay between requests to avoid server overload
+        };
+
+        // ===== ENHANCED 10-FORM CONFIGURATION WITH LOAD BALANCING =====
+        const GOOGLE_FORMS = {
+            'A': { 
+                url: "https://docs.google.com/forms/d/e/1FAIpQLSe4uuphhY4-p5jdTZqxG_ZZUKAhQZF1ytyNizPXb0n3L85JIw/formResponse",
+                currentLoad: 0,
+                maxLoad: 15
+            },
+            'B': { 
+                url: "https://docs.google.com/forms/d/e/1FAIpQLSc3JIcnUysvUtH12QWpHG9wAF4vd1NgEYqeyHwNP0UEkPqi5w/formResponse",
+                currentLoad: 0,
+                maxLoad: 15
+            },
+            'C': { 
+                url: "https://docs.google.com/forms/d/e/1FAIpQLScqYdTGoD4l0jJvzYw0tdBNRSMPepnGtOOowOXYwDFov43KHg/formResponse",
+                currentLoad: 0,
+                maxLoad: 15
+            },
+            // ... Add all forms with load balancing
+            'J': { 
+                url: "https://docs.google.com/forms/d/e/1FAIpQLSelbDi1n1EKWu7G0I92hTML6vWUO2c55p2dqrEOQ7cWflaSNg/formResponse",
+                currentLoad: 0,
+                maxLoad: 15
+            }
+        };
+
+        // ===== ENHANCED MULTI-USER SESSION MANAGEMENT =====
+        class MultiUserSessionManager {
+            constructor() {
+                this.activeSessions = new Map();
+                this.userQueue = [];
+                this.maxSessions = CONFIG.MAX_CONCURRENT_USERS;
+                this.cleanupInterval = setInterval(() => this.cleanupExpiredSessions(), 60000);
+            }
+
+            createSession(userId, studentData) {
+                if (this.activeSessions.size >= this.maxSessions) {
+                    this.addToQueue(userId, studentData);
+                    return { success: false, queued: true, position: this.userQueue.length };
+                }
+
+                const session = {
+                    id: userId,
+                    studentData: studentData,
+                    startTime: Date.now(),
+                    lastActivity: Date.now(),
+                    status: 'active',
+                    assignedForm: this.getBalancedForm()
+                };
+
+                this.activeSessions.set(userId, session);
+                return { success: true, session: session };
+            }
+
+            getBalancedForm() {
+                // Load balancing algorithm
+                const forms = Object.keys(GOOGLE_FORMS);
+                let minLoad = Infinity;
+                let selectedForm = 'A';
+
+                for (const form of forms) {
+                    if (GOOGLE_FORMS[form].currentLoad < minLoad) {
+                        minLoad = GOOGLE_FORMS[form].currentLoad;
+                        selectedForm = form;
+                    }
+                }
+
+                GOOGLE_FORMS[selectedForm].currentLoad++;
+                return selectedForm;
+            }
+
+            addToQueue(userId, studentData) {
+                this.userQueue.push({ userId, studentData, queueTime: Date.now() });
+                return this.userQueue.length;
+            }
+
+            processQueue() {
+                if (this.userQueue.length > 0 && this.activeSessions.size < this.maxSessions) {
+                    const nextUser = this.userQueue.shift();
+                    return this.createSession(nextUser.userId, nextUser.studentData);
+                }
+                return null;
+            }
+
+            getSession(userId) {
+                const session = this.activeSessions.get(userId);
+                if (session) {
+                    session.lastActivity = Date.now();
+                }
+                return session;
+            }
+
+            endSession(userId) {
+                const session = this.activeSessions.get(userId);
+                if (session && session.assignedForm) {
+                    GOOGLE_FORMS[session.assignedForm].currentLoad--;
+                }
+                this.activeSessions.delete(userId);
+                this.processQueue(); // Process next in queue
+            }
+
+            cleanupExpiredSessions() {
+                const now = Date.now();
+                for (const [userId, session] of this.activeSessions) {
+                    if (now - session.lastActivity > CONFIG.SESSION_TIMEOUT) {
+                        console.log(`Cleaning up expired session: ${userId}`);
+                        this.endSession(userId);
+                    }
+                }
+            }
+
+            getQueuePosition(userId) {
+                return this.userQueue.findIndex(item => item.userId === userId) + 1;
+            }
+
+            getStats() {
+                return {
+                    activeSessions: this.activeSessions.size,
+                    queueLength: this.userQueue.length,
+                    maxSessions: this.maxSessions
+                };
+            }
+        }
+
+        // ===== ENHANCED IMAGE MANAGEMENT FOR MULTIPLE USERS =====
+        class ImageManager {
+            constructor() {
+                this.imageCache = new Map();
+                this.loadingQueues = new Map();
+                this.maxConcurrentLoads = 5;
+                this.currentLoads = 0;
+            }
+
+            async loadImage(qIndex, retryCount = 0) {
+                const imageUrl = `questions/${qIndex + 1}.png?v=${Date.now()}`;
+                
+                // Check cache first
+                if (this.imageCache.has(imageUrl)) {
+                    return this.imageCache.get(imageUrl);
+                }
+
+                // Wait if too many concurrent loads
+                if (this.currentLoads >= this.maxConcurrentLoads) {
+                    await new Promise(resolve => setTimeout(resolve, CONFIG.REQUEST_DELAY));
+                    return this.loadImage(qIndex, retryCount);
+                }
+
+                this.currentLoads++;
+                
+                try {
+                    return new Promise((resolve, reject) => {
+                        const img = new Image();
+                        img.onload = () => {
+                            this.imageCache.set(imageUrl, img.src);
+                            this.currentLoads--;
+                            resolve(img.src);
+                        };
+                        img.onerror = () => {
+                            this.currentLoads--;
+                            if (retryCount < 3) {
+                                setTimeout(() => {
+                                    resolve(this.loadImage(qIndex, retryCount + 1));
+                                }, 1000 * (retryCount + 1));
+                            } else {
+                                reject(new Error(`Failed to load image: ${imageUrl}`));
+                            }
+                        };
+                        img.src = imageUrl;
+                    });
+                } catch (error) {
+                    this.currentLoads--;
+                    throw error;
+                }
+            }
+
+            async preloadBatch(startIndex, batchSize = CONFIG.IMAGE_LOAD_BATCH_SIZE) {
+                const promises = [];
+                for (let i = startIndex; i < startIndex + batchSize && i < CONFIG.MAX_QUESTIONS; i++) {
+                    promises.push(this.loadImage(i).catch(() => null));
+                }
+                return Promise.all(promises);
+            }
+
+            clearCache() {
+                this.imageCache.clear();
+            }
+        }
+
+        // ===== ENHANCED SUBMISSION MANAGER WITH RATE LIMITING =====
+        class EnhancedSubmissionManager {
+            constructor() {
+                this.submissionLocks = new Map();
+                this.completedSubmissions = new Set();
+                this.retryQueues = new Map();
+                this.rateLimit = 10; // submissions per second
+                this.lastSubmissionTime = 0;
+                this.submissionQueue = [];
+                this.processingQueue = false;
+                this.initializeFromStorage();
+                this.cleanupOldSubmissions();
+            }
+
+            async submitWithRateLimit(studentData, subjData) {
+                return new Promise((resolve) => {
+                    this.submissionQueue.push({ studentData, subjData, resolve });
+                    if (!this.processingQueue) {
+                        this.processSubmissionQueue();
+                    }
+                });
+            }
+
+            async processSubmissionQueue() {
+                this.processingQueue = true;
+                
+                while (this.submissionQueue.length > 0) {
+                    const now = Date.now();
+                    const timeSinceLastSubmission = now - this.lastSubmissionTime;
+                    const minDelay = 1000 / this.rateLimit;
+                    
+                    if (timeSinceLastSubmission < minDelay) {
+                        await new Promise(resolve => setTimeout(resolve, minDelay - timeSinceLastSubmission));
+                    }
+
+                    const { studentData, subjData, resolve } = this.submissionQueue.shift();
+                    
+                    try {
+                        const result = await this.submitOnce(studentData, subjData);
+                        resolve(result);
+                    } catch (error) {
+                        resolve(false);
+                    }
+                    
+                    this.lastSubmissionTime = Date.now();
+                }
+                
+                this.processingQueue = false;
+            }
+
+            // [KEEP ALL YOUR EXISTING SUBMISSION METHODS]
+            // ... existing submitOnce, enhancedFormSubmission, etc.
+        }
+
+        // ===== ENHANCED GLOBAL VARIABLES =====
+        let sessionManager = new MultiUserSessionManager();
+        let imageManager = new ImageManager();
+        let submissionManager = new EnhancedSubmissionManager();
+        
+        // Remove the old images array - we'll use ImageManager instead
+        let currentUserSession = null;
+        let examData = null;
+        let progress = null;
+        let hasSubmitted = false;
+        let examInProgress = false;
+
+        // ===== ENHANCED INITIALIZATION =====
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Initializing Multi-User LFJC Examination System');
+            
+            // Initialize with minimal preloading
+            imageManager.preloadBatch(0, 5); // Preload first 5 questions
+            
+            // [KEEP ALL YOUR EXISTING EVENT LISTENERS]
+            setupEventListeners();
+            
+            // Display system stats
+            setInterval(() => {
+                const stats = sessionManager.getStats();
+                console.log(`📊 System Stats: ${stats.activeSessions}/${stats.maxSessions} active, ${stats.queueLength} in queue`);
+            }, 30000);
+        });
+
+        function setupEventListeners() {
+            // [KEEP ALL YOUR EXISTING EVENT LISTENER SETUP]
+            document.getElementById('stuName').addEventListener('input', function() {
+                validateNameInput(this);
+                validateStudentInputs();
+            });
+            
+            // ... other event listeners
+        }
+
+        // ===== ENHANCED EXAM START WITH SESSION MANAGEMENT =====
+        async function startWithSecurity(forceStart = false) {
+            if (!validateStudentInputs() && !forceStart) return;
+            
+            const studentData = {
+                name: document.getElementById('stuName').value.trim(),
+                sec: document.getElementById('stuSection').value.trim(),
+                roll: document.getElementById('stuRoll').value.trim(),
+                adm: document.getElementById('stuAdm').value.trim()
+            };
+            
+            const userId = generateStudentId(studentData);
+            
+            // Check existing session
+            const existingSession = sessionManager.getSession(userId);
+            if (existingSession) {
+                // Resume existing session
+                currentUserSession = existingSession;
+                startExam();
+                return;
+            }
+            
+            // Create new session
+            const sessionResult = sessionManager.createSession(userId, studentData);
+            
+            if (!sessionResult.success) {
+                if (sessionResult.queued) {
+                    showQueueMessage(sessionResult.position);
+                    return;
+                } else {
+                    showSystemBusyMessage();
+                    return;
+                }
+            }
+            
+            currentUserSession = sessionResult.session;
+            startExam();
+        }
+
+        function showQueueMessage(position) {
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.style.display = 'flex';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <h3>⏳ Please Wait</h3>
+                    <p>System is currently at full capacity.</p>
+                    <p>Your position in queue: <strong>${position}</strong></p>
+                    <p>You will be automatically connected when a slot becomes available.</p>
+                    <div class="modal-buttons">
+                        <button onclick="this.parentElement.parentElement.parentElement.remove()" class="modal-btn cancel">
+                            ❌ Cancel
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        function showSystemBusyMessage() {
+            alert('⚠️ System is currently busy. Please try again in a few moments.');
+        }
+
+        // ===== ENHANCED QUESTION DISPLAY WITH LAZY LOADING =====
+        async function showQuestion(qIndex) {
+            if (!progress || qIndex < 0 || qIndex >= examData.files.length) return;
+            
+            progress.currentQ = qIndex;
+            
+            const container = document.getElementById('questionContainer');
+            container.innerHTML = '<div style="text-align: center; padding: 50px;">🔄 Loading question...</div>';
+            
+            // Update question info immediately
+            const qInfo = document.getElementById('stuQInfo');
+            const currentSubject = getCurrentSubject(qIndex);
+            qInfo.textContent = `📚 ${currentSubject} - Question ${qIndex + 1}/${examData.files.length}`;
+            
+            try {
+                // Lazy load the image
+                const imageUrl = await imageManager.loadImage(qIndex);
+                
+                // Preload next few questions
+                if (qIndex < examData.files.length - 1) {
+                    imageManager.preloadBatch(qIndex + 1, 3);
+                }
+                
+                // Render the question
+                renderQuestion(qIndex, imageUrl);
+                
+            } catch (error) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 30px; color: var(--danger);">
+                        <h3>❌ Load Error</h3>
+                        <p>Failed to load question ${qIndex + 1}.</p>
+                        <button onclick="showQuestion(${qIndex})" class="nav-btn">
+                            🔄 Retry
+                        </button>
+                    </div>
+                `;
+            }
+            
+            updatePalette();
+            updateNavigationButtons();
+        }
+
+        function renderQuestion(qIndex, imageUrl) {
+            const container = document.getElementById('questionContainer');
+            container.innerHTML = '';
+            
+            const imgContainer = document.createElement('div');
+            imgContainer.className = 'question-img-container';
+            
+            const img = new Image();
+            img.src = imageUrl;
+            img.className = 'question-img';
+            img.alt = `Question ${qIndex + 1}`;
+            img.onerror = function() {
+                imgContainer.innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: var(--danger);">
+                        <h3>❌ Image Load Error</h3>
+                        <p>Failed to load question image.</p>
+                    </div>
+                `;
+            };
+            
+            imgContainer.appendChild(img);
+            container.appendChild(imgContainer);
+            
+            // [KEEP YOUR EXISTING OPTIONS CONTAINER CODE]
+            const optionsContainer = document.createElement('div');
+            optionsContainer.className = 'options-container';
+            optionsContainer.innerHTML = `
+                <button class="optBtn" data-opt="A">A</button>
+                <button class="optBtn" data-opt="B">B</button>
+                <button class="optBtn" data-opt="C">C</button>
+                <button class="optBtn" data-opt="D">D</button>
+            `;
+            
+            container.appendChild(optionsContainer);
+            
+            const currentAnswer = progress.answers[qIndex];
+            if (currentAnswer !== null) {
+                const selectedBtn = optionsContainer.querySelector(`[data-opt="${currentAnswer}"]`);
+                if (selectedBtn) selectedBtn.classList.add('selected');
+            }
+            
+            const optBtns = optionsContainer.querySelectorAll('.optBtn');
+            optBtns.forEach(btn => {
+                btn.addEventListener('click', () => selectOption(qIndex, btn.dataset.opt));
+            });
+        }
+
+        // ===== ENHANCED EXAM END AND CLEANUP =====
+        function calculateAndShowResults() {
+            if (hasSubmitted) return;
+            
+            hasSubmitted = true;
+            examInProgress = false;
+            
+            // Clear intervals
+            clearInterval(timerInterval);
+            clearInterval(waitingTimerInterval);
+            if (tabSwitchTimeout) clearInterval(tabSwitchTimeout);
+            
+            // Remove event listeners
+            document.removeEventListener('keydown', handleKeyPress);
+            
+            const subjData = calculateSubjectMarks();
+            currentSubjData = subjData;
+            
+            // Submit data with rate limiting
+            if (currentUserSession) {
+                submissionManager.submitWithRateLimit(progress.student, subjData)
+                    .then(success => {
+                        console.log(`Submission ${success ? 'successful' : 'failed'} for ${progress.student.name}`);
+                    });
+                
+                // End session
+                sessionManager.endSession(currentUserSession.id);
+            }
+            
+            showSummary(subjData);
+            
+            // Clean up resources
+            setTimeout(() => {
+                imageManager.clearCache();
+            }, 5000);
+        }
+
+        // ===== ENHANCED FORM ASSIGNMENT WITH LOAD BALANCING =====
+        function getAssignedForm(studentData) {
+            if (currentUserSession && currentUserSession.assignedForm) {
+                return currentUserSession.assignedForm;
+            }
+            
+            // Fallback to existing logic
+            const forms = Object.keys(GOOGLE_FORMS);
+            if (studentData.roll && !isNaN(studentData.roll)) {
+                const rollNumber = parseInt(studentData.roll);
+                const studentsPerForm = Math.ceil(CONFIG.MAX_CONCURRENT_USERS / forms.length);
+                const formIndex = Math.floor((rollNumber - 1) / studentsPerForm) % forms.length;
+                return forms[formIndex];
+            }
+            
+            const hashString = `${studentData.name}|${studentData.roll}|${studentData.adm}|${sessionId}`;
+            let hash = 0;
+            for (let i = 0; i < hashString.length; i++) {
+                hash = ((hash << 5) - hash) + hashString.charCodeAt(i);
+                hash = hash & hash;
+            }
+            return forms[Math.abs(hash) % forms.length];
+        }
+
+        // [KEEP ALL YOUR OTHER EXISTING FUNCTIONS]
+        // ... validateStudentInputs, startTimer, initPalette, etc.
+
+        // ===== ENHANCED SHUFFLE FOR MULTIPLE USERS =====
+        function shuffleQuestionsForStudent(studentData) {
+            const shuffledData = {
+                files: Array.from({length: CONFIG.MAX_QUESTIONS}, (_, i) => i), // Store indices only
+                keys: [...answerKey],
+                subjectNames: [],
+                originalOrder: Array.from({length: CONFIG.MAX_QUESTIONS}, (_, i) => i)
+            };
+            
+            // Assign subjects
+            for (let i = 0; i < CONFIG.MAX_QUESTIONS; i++) {
+                if (i < 30) shuffledData.subjectNames[i] = "Maths";
+                else if (i < 50) shuffledData.subjectNames[i] = "Physics";
+                else shuffledData.subjectNames[i] = "Chemistry";
+            }
+            
+            return shuffledData;
+        }
+
+        // Update the startExam function to use new session
+        function startExam() {
+            examInProgress = true;
+            examStartTime = Date.now();
+            
+            const studentData = currentUserSession.studentData;
+            
+            assignedForm = currentUserSession.assignedForm;
+            examData = shuffleQuestionsForStudent(studentData);
+            
+            progress = {
+                student: studentData,
+                answers: new Array(examData.files.length).fill(null),
+                currentQ: 0,
+                timeLeftSec: (CONFIG.EXAM_DURATION_MINUTES * 60),
+                markedReview: new Set(),
+                sessionId: currentUserSession.id
+            };
+            
+            document.getElementById('studentEntry').style.display = 'none';
+            document.getElementById('examArea').style.display = 'block';
+            
+            document.getElementById('stuInfo').textContent = 
+                `👤 ${studentData.name} | 🏫 ${studentData.sec} | 🎯 Roll: ${studentData.roll}`;
+            
+            document.addEventListener('keydown', handleKeyPress);
+            startTabMonitoring();
+            startTimer();
+            initPalette();
+            showQuestion(0);
+        }
+
+        // Add cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+            if (currentUserSession && !hasSubmitted) {
+                sessionManager.endSession(currentUserSession.id);
+            }
+        });
+    </script>
+</body>
+</html>
