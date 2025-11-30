@@ -1018,18 +1018,20 @@ table td, table th {
 /* ===== SCROLLABLE IMAGE CONTAINER ===== */
 .scrollable-image-container {
   max-width: 100%;
-  max-height: 300px;
+  max-height: 400px;
   overflow: auto;
   border: 1px solid #ddd;
   border-radius: 8px;
   padding: 10px;
   background-color: #f9f9f9;
   margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
 }
 
 img.questionImg {
-  max-width: none; /* Allow image to be larger than container */
-  width: auto;
+  max-width: 100%;
   height: auto;
   border-radius: 10px;
   -webkit-user-drag: none;
@@ -1038,9 +1040,6 @@ img.questionImg {
   -o-user-drag: none;
   user-drag: none;
   display: block;
-  margin-left: auto;
-  margin-right: auto;
-  transition: opacity 0.3s ease;
 }
 
 /* ===== ACCESS DENIED SCREEN ===== */
@@ -1206,6 +1205,17 @@ img.questionImg {
 .download-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 8px rgba(0,0,0,0.15);
+}
+
+/* ===== QUESTION TEXT STYLES ===== */
+.question-text {
+  font-size: 18px;
+  margin-bottom: 20px;
+  text-align: center;
+  color: #333;
+  font-weight: 500;
+  line-height: 1.5;
+  padding: 0 10px;
 }
 </style>
 </head>
@@ -1407,44 +1417,6 @@ const ADMIN_PASSWORD = "admin2025";
 const RESUBMISSION_PASSWORD = "resubmit2025";
 const RESUBMISSION_WINDOW_HOURS = 24;
 
-// ===== GOOGLE FORMS INTEGRATION =====
-const GOOGLE_FORMS = {
-    'A': "https://docs.google.com/forms/d/e/1FAIpQLSe4uuphhY4-p5jdTZqxG_ZZUKAhQZF1ytyNizPXb0n3L85JIw/formResponse",
-    'B': "https://docs.google.com/forms/d/e/1FAIpQLSc3JIcnUysvUtH12QWpHG9wAF4vd1NgEYqeyHwNP0UEkPqi5w/formResponse", 
-    'C': "https://docs.google.com/forms/d/e/1FAIpQLScqYdTGoD4l0jJvzYw0tdBNRSMPepnGtOOowOXYwDFov43KHg/formResponse",
-    'D': "https://docs.google.com/forms/d/e/1FAIpQLSfjAyDlY-5BAF5rPvzQS0AeTI6Vs2Rkri0V6_miA0mRivZAEg/formResponse",
-    'E': "https://docs.google.com/forms/d/e/1FAIpQLSfK6Skl6Uxj8VyGnhhqfdPHcJ8mbcgpzIKLpWFElzdeQSKMgA/formResponse",
-    'F': "https://docs.google.com/forms/d/e/1FAIpQLSeP-Gx2XnUg_Q17asOOeYzkoGtLykVIcQ2W006YTqTpE7xY6g/formResponse",
-    'G': "https://docs.google.com/forms/d/e/1FAIpQLSe1vg_I5XR3ljr-UNFi-MXxUgjdTDyrVbHxqi_dkvtmYGUTEA/formResponse",
-    'H': "https://docs.google.com/forms/d/e/1FAIpQLScyv8cps4StN2UXrsXqNdLu5UBR7t0Vwk8WSnynU2tvracs1g/formResponse",
-    'I': "https://docs.google.com/forms/d/e/1FAIpQLSeyen2hSdhRwztpWnH6lyuL91ZROqwDMKIaa4gN_e-Xvyvb_g/formResponse",
-    'J': "https://docs.google.com/forms/d/e/1FAIpQLSelbDi1n1EKWu7G0I92hTML6vWUO2c55p2dqrEOQ7cWflaSNg/formResponse"
-};
-
-const FORM_FIELDS = {
-    STUDENT_NAME: "entry.217666919",
-    SECTION: "entry.2006392966",
-    ROLL_NUMBER: "entry.547275105",
-    ADMISSION_NUMBER: "entry.1234063852",
-    MATHS_MARKS: "entry.1989859216",
-    PHYSICS_MARKS: "entry.1953974928",
-    CHEMISTRY_MARKS: "entry.296331194",
-    TOTAL_MARKS: "entry.1289040887",
-    TIMESTAMP: "entry.2139100252",
-    RESUBMISSION_FLAG: "entry.999999999",
-    
-    ALL_ANSWERS_A: "entry.224183536",
-    ALL_ANSWERS_B: "entry.2135062491",
-    ALL_ANSWERS_C: "entry.66262823",
-    ALL_ANSWERS_D: "entry.762314240",
-    ALL_ANSWERS_E: "entry.109746612",
-    ALL_ANSWERS_F: "entry.813348755",
-    ALL_ANSWERS_G: "entry.1184321804",
-    ALL_ANSWERS_H: "entry.64526224",
-    ALL_ANSWERS_I: "entry.1618336199",
-    ALL_ANSWERS_J: "entry.1279707071"
-};
-
 // ===== GLOBAL VARIABLES =====
 let images = [];
 let answerKey = [];
@@ -1465,499 +1437,27 @@ const subjects = ["Maths", "Physics", "Chemistry"];
 let examData = {files: [], subjectNames: [], keys: [], originalOrder: []};
 let progress = null, timerInterval = null;
 
-// ===== TAB SWITCH DETECTION =====
-let tabSwitchCount = 0;
-let lastTabSwitchTime = 0;
-const MAX_TAB_SWITCHES = 3;
-const TAB_SWITCH_WINDOW_MS = 30000; // 30 seconds
-
-document.addEventListener('visibilitychange', function() {
-    if (document.hidden && examInProgress) {
-        // User switched to another tab
-        const currentTime = Date.now();
-        
-        // Reset count if outside the time window
-        if (currentTime - lastTabSwitchTime > TAB_SWITCH_WINDOW_MS) {
-            tabSwitchCount = 0;
-        }
-        
-        tabSwitchCount++;
-        lastTabSwitchTime = currentTime;
-        
-        console.log(`Tab switch detected: ${tabSwitchCount}/${MAX_TAB_SWITCHES}`);
-        
-        if (tabSwitchCount >= MAX_TAB_SWITCHES) {
-            // Auto-submit exam after too many tab switches
-            alert('⚠️ Multiple tab switches detected. Exam will be submitted automatically for security.');
-            submitExam();
-        } else {
-            // Show warning for first few switches
-            alert(`⚠️ Warning: Tab switching detected (${tabSwitchCount}/${MAX_TAB_SWITCHES}). Multiple switches may result in automatic submission.`);
-        }
-    }
-});
-
-// ===== RESUBMISSION FUNCTIONALITY =====
-function checkResubmission(studentData) {
-    const studentId = generateStudentId(studentData);
-    const previousSubmission = localStorage.getItem(`submission_${studentId}`);
-    
-    if (previousSubmission) {
-        const submissionData = JSON.parse(previousSubmission);
-        const submissionTime = new Date(submissionData.timestamp);
-        const currentTime = new Date();
-        const hoursSinceSubmission = (currentTime - submissionTime) / (1000 * 60 * 60);
-        
-        if (hoursSinceSubmission < RESUBMISSION_WINDOW_HOURS) {
-            document.getElementById('resubmissionSection').style.display = 'block';
-            document.getElementById('stuStartBtn').style.display = 'none';
-            return true;
-        }
-    }
-    
-    document.getElementById('resubmissionSection').style.display = 'none';
-    document.getElementById('stuStartBtn').style.display = 'inline-block';
-    return false;
-}
-
-function verifyResubmissionPassword() {
-    const enteredPassword = document.getElementById('resubmissionPassword').value.trim();
-    
-    if (enteredPassword === RESUBMISSION_PASSWORD) {
-        isResubmission = true;
-        document.getElementById('resubmissionSection').style.display = 'none';
-        document.getElementById('stuStartBtn').style.display = 'inline-block';
-        document.getElementById('errorMessages').innerHTML = '<div class="success-message">✅ Password verified. You can now start the exam.</div>';
-        return true;
-    } else {
-        document.getElementById('errorMessages').innerHTML = '<div class="error-message">❌ Incorrect password. Please try again.</div>';
-        document.getElementById('resubmissionPassword').value = '';
-        document.getElementById('resubmissionPassword').focus();
-        return false;
-    }
-}
-
-function cancelResubmission() {
-    document.getElementById('resubmissionSection').style.display = 'none';
-    document.getElementById('resubmissionPassword').value = '';
-    document.getElementById('errorMessages').innerHTML = '';
-    isResubmission = false;
-}
-
-// ===== AUTOMATIC FORM DISTRIBUTION =====
-function getAssignedForm(studentData) {
-    const forms = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
-    const formsCount = forms.length;
-    
-    if (studentData.roll && !isNaN(studentData.roll)) {
-        const rollNumber = parseInt(studentData.roll);
-        const formIndex = (rollNumber - 1) % formsCount;
-        return forms[formIndex];
-    }
-    
-    const hashString = `${studentData.name}|${studentData.roll}|${studentData.adm}`;
-    let hash = 0;
-    for (let i = 0; i < hashString.length; i++) {
-        hash = ((hash << 5) - hash) + hashString.charCodeAt(i);
-        hash = hash & hash;
-    }
-    return forms[Math.abs(hash) % formsCount];
-}
-
-function updateFormAssignmentDisplay(studentData) {
-    assignedForm = getAssignedForm(studentData);
-    document.getElementById('assignedFormDisplay').textContent = `FORM ${assignedForm}`;
-    document.getElementById('formAssignment').style.display = 'block';
-}
-
-// ===== ENHANCED DATA CAPTURE & EXPORT SYSTEM =====
-function generateExamId() {
-    return `exam_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-}
-
-function createResultDataWithAllAnswers(subjData) {
-    const originalOrderAnswers = [];
-    
-    examData.originalOrder.forEach((originalIndex, shuffledIndex) => {
-        originalOrderAnswers[originalIndex] = {
-            question: originalIndex + 1,
-            studentAnswer: progress.answers[shuffledIndex],
-            correctAnswer: examData.keys[shuffledIndex],
-            subject: examData.subjectNames[shuffledIndex],
-            isCorrect: progress.answers[shuffledIndex] === examData.keys[shuffledIndex],
-            shuffledPosition: shuffledIndex + 1
-        };
-    });
-    
-    const resultData = {
-        student: {
-            name: progress.student.name,
-            section: progress.student.sec,
-            roll: progress.student.roll,
-            admission: progress.student.adm
-        },
-        marks: {
-            maths: subjData.Mathematics ? subjData.Mathematics.marks.toFixed(2) : "0.00",
-            physics: subjData.Physics ? subjData.Physics.marks.toFixed(2) : "0.00", 
-            chemistry: subjData.Chemistry ? subjData.Chemistry.marks.toFixed(2) : "0.00",
-            total: (subjData.Mathematics?.marks + subjData.Physics?.marks + subjData.Chemistry?.marks).toFixed(2)
-        },
-        answers: originalOrderAnswers,
-        summary: subjData,
-        examConfig: {
-            totalQuestions: examData.files.length,
-            shuffledOrder: examData.originalOrder,
-            timestamp: new Date().toISOString(),
-            examId: generateExamId(),
-            assignedForm: assignedForm,
-            isResubmission: isResubmission
-        }
-    };
-    
-    return resultData;
-}
-
-// ===== FIXED GOOGLE FORM SUBMISSION =====
-async function submitDetailedResults(resultData) {
-    const FORM_URL = GOOGLE_FORMS[assignedForm];
-    
-    if (!FORM_URL) {
-        console.error(`No form URL for ${assignedForm}`);
-        return false;
-    }
-
-    const formData = new URLSearchParams();
-    
-    // Basic student info
-    formData.append(FORM_FIELDS.STUDENT_NAME, resultData.student.name);
-    formData.append(FORM_FIELDS.SECTION, resultData.student.section);
-    formData.append(FORM_FIELDS.ROLL_NUMBER, resultData.student.roll);
-    formData.append(FORM_FIELDS.ADMISSION_NUMBER, resultData.student.admission);
-    
-    // Marks summary
-    formData.append(FORM_FIELDS.MATHS_MARKS, resultData.marks.maths);
-    formData.append(FORM_FIELDS.PHYSICS_MARKS, resultData.marks.physics);
-    formData.append(FORM_FIELDS.CHEMISTRY_MARKS, resultData.marks.chemistry);
-    formData.append(FORM_FIELDS.TOTAL_MARKS, resultData.marks.total);
-    
-    // RESUBMISSION FLAG - FIXED: Use actual field ID
-    formData.append(FORM_FIELDS.RESUBMISSION_FLAG, resultData.examConfig.isResubmission ? "YES" : "NO");
-    
-    // ALL 60 ANSWERS IN ONE FIELD
-    const allAnswersString = resultData.answers.map(answer => 
-        answer.studentAnswer || 'N'
-    ).join(',');
-    
-    const allAnswersFieldId = FORM_FIELDS[`ALL_ANSWERS_${assignedForm}`];
-    formData.append(allAnswersFieldId, allAnswersString);
-    formData.append(FORM_FIELDS.TIMESTAMP, new Date().toLocaleString());
-    
-    console.log("🎯 SUBMITTING TO GOOGLE FORM:");
-    console.log("Form:", assignedForm);
-    console.log("Student:", resultData.student.name);
-    console.log("Re-submission:", resultData.examConfig.isResubmission);
-    console.log("Answers:", allAnswersString);
-    
-    try {
-        // Use fetch with proper error handling
-        const response = await fetch(FORM_URL, {
-            method: "POST",
-            mode: "no-cors",
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            body: formData
-        });
-        
-        console.log("✅ Form submission initiated (no-cors mode)");
-        return true;
-        
-    } catch (error) {
-        console.error("❌ Google Forms submission failed:", error);
-        return false;
-    }
-}
-
-// ===== BULLETPROOF SUBMISSION FUNCTIONS =====
-let submissionInProgress = new Set();
-
-async function sendToGoogleFormWithGuarantee(resultData, studentData) {
-    const studentId = generateStudentId(studentData);
-    
-    console.log(`🚀 Starting submission for: ${studentData.name}`);
-    console.log(`🔄 Re-submission: ${isResubmission}`);
-    
-    if (submissionInProgress.has(studentId)) {
-        console.warn(`🚨 Submission already in progress for: ${studentData.name}`);
-        return true;
-    }
-    
-    try {
-        submissionInProgress.add(studentId);
-        
-        console.log(`📤 Attempting Google Forms submission...`);
-        const success = await submitDetailedResults(resultData);
-        
-        if (success) {
-            markAsSubmittedPermanently(studentData);
-            storeCompleteResultLocally(resultData);
-            console.log(`✅ SUBMISSION SUCCESS: ${studentData.name}`);
-            return true;
-        } else {
-            console.error(`❌ Submission failed for: ${studentData.name}`);
-            storeCompleteResultLocally(resultData);
-            return false;
-        }
-        
-    } catch (error) {
-        console.error(`💥 Submission error for ${studentData.name}:`, error);
-        return false;
-    } finally {
-        setTimeout(() => {
-            submissionInProgress.delete(studentId);
-        }, 5000);
-    }
-}
-
-function markAsSubmittedPermanently(studentData) {
-    const studentId = generateStudentId(studentData);
-    const timestamp = Date.now();
-    
-    try {
-        localStorage.setItem(`submitted_${studentId}`, timestamp.toString());
-        localStorage.setItem(`final_submission_${studentId}`, timestamp.toString());
-        sessionStorage.setItem(`submitted_${studentId}`, timestamp.toString());
-        
-        // Store submission for re-submission checking
-        const submissionData = {
-            name: studentData.name,
-            roll: studentData.roll,
-            section: studentData.sec,
-            adm: studentData.adm,
-            timestamp: timestamp,
-            isResubmission: isResubmission
-        };
-        localStorage.setItem(`submission_${studentId}`, JSON.stringify(submissionData));
-        
-        console.log(`✅ PERMANENTLY MARKED AS SUBMITTED: ${studentData.name}`);
-        
-    } catch (error) {
-        console.error('Failed to mark permanent submission:', error);
-    }
-}
-
-function generateStudentId(studentData) {
-    return `${studentData.name}_${studentData.sec}_${studentData.roll}_${studentData.adm}`
-        .toLowerCase()
-        .replace(/\s+/g, '_')
-        .replace(/[^a-z0-9_]/g, '');
-}
-
-function storeCompleteResultLocally(resultData) {
-    try {
-        localStorage.setItem(`exam_result_${resultData.examConfig.examId}`, JSON.stringify(resultData));
-        sessionStorage.setItem(`exam_result_${resultData.examConfig.examId}`, JSON.stringify(resultData));
-        console.log("💾 Complete answer data stored locally");
-        return true;
-    } catch (error) {
-        console.error("❌ Local storage failed:", error);
-        return false;
-    }
-}
-
-// ===== FIXED SUBMISSION FUNCTION =====
-function submitExam() {
-    if (hasSubmitted) return;
-    clearInterval(timerInterval);
-    
-    hasSubmitted = true;
-    examInProgress = false;
-    
-    const subjData = {};
-    examData.subjectNames.forEach((s, i) => {
-        const subjectName = identifySubject(s);
-        if (!subjData[subjectName]) subjData[subjectName] = {correct: 0, wrong: 0, blank: 0, total: 0, marks: 0};
-        
-        const ans = progress.answers[i];
-        if (ans === null) {
-            subjData[subjectName].blank++;
-        } else if (ans === examData.keys[i]) {
-            subjData[subjectName].correct++;
-            subjData[subjectName].marks += MARK_PER_CORRECT;
-        } else {
-            subjData[subjectName].wrong++;
-            subjData[subjectName].marks += MARK_PER_WRONG;
-        }
-        subjData[subjectName].total++;
-    });
-
-    const resultData = createResultDataWithAllAnswers(subjData);
-    currentSubjData = resultData;
-
-    console.log("🎯 FINAL SUBMISSION DATA:");
-    console.log("Student:", progress.student.name);
-    console.log("Re-submission:", isResubmission);
-    console.log("All Answers:", progress.answers);
-
-    const studentData = progress.student;
-    
-    // Show summary immediately
-    showSummaryInterface(subjData);
-    
-    // Submit to Google Forms in background
-    const submissionPromise = sendToGoogleFormWithGuarantee(resultData, studentData);
-
-    submissionPromise.then(success => {
-        if (success) {
-            console.log('🎉 Exam submitted successfully to Google Forms!');
-            showSubmissionSuccess();
-        } else {
-            console.error('💥 Google Forms submission failed!');
-            showFormSubmissionWarning();
-        }
-    });
-}
-
-function showSubmissionSuccess() {
-    const successMsg = `
-        <div class="success-message">
-            <h3>✅ Results Successfully Submitted to Google Sheets!</h3>
-            <p>Your marks and selected answers have been recorded.</p>
-            <p><small>Student: ${progress.student.name} | Roll: ${progress.student.roll} | Form: ${assignedForm} | Re-submission: ${isResubmission ? 'YES' : 'NO'}</small></p>
-        </div>
-    `;
-    
-    const summaryContainer = document.getElementById('summaryTableContainer');
-    if (summaryContainer) {
-        summaryContainer.insertAdjacentHTML('beforebegin', successMsg);
-    }
-}
-
-function showFormSubmissionWarning() {
-    const warningMsg = `
-        <div class="warning-banner">
-            ⚠️ Form Submission Issue - Data stored locally
-            <br><small>Your results and selected answers are safe (${progress.student.name} - Roll: ${progress.student.roll}). 
-            Please contact administrator to manually submit the results.</small>
-        </div>
-    `;
-    
-    const summaryContainer = document.getElementById('summaryTableContainer');
-    if (summaryContainer) {
-        summaryContainer.insertAdjacentHTML('beforebegin', warningMsg);
-    }
-}
-
-// ===== ACCESS CODE VERIFICATION =====
-function verifyAccessCode() {
-    const enteredCode = document.getElementById('accessCode').value.trim();
-    const errorElement = document.getElementById('accessError');
-    const accessDenied = document.getElementById('accessDenied');
-    
-    errorElement.style.display = 'none';
-    
-    if (enteredCode === ACCESS_CODE) {
-        console.log("Access granted!");
-        accessDenied.style.display = 'none';
-        document.getElementById('studentEntry').style.display = 'flex';
-        document.getElementById('accessCode').value = '';
-        document.getElementById('stuName').focus();
-    } else {
-        console.log("Access denied!");
-        errorElement.style.display = 'block';
-        document.getElementById('accessCode').value = '';
-        document.getElementById('accessCode').focus();
-        accessDenied.style.animation = 'shake 0.5s';
-        setTimeout(() => {
-            accessDenied.style.animation = '';
-        }, 500);
-    }
-}
-
-// ===== INPUT VALIDATION =====
-function validateStudentInputs() {
-  const n = document.getElementById('stuName'), 
-        s = document.getElementById('stuSection'), 
-        r = document.getElementById('stuRoll'), 
-        a = document.getElementById('stuAdm');
-  
-  if (s.value) {
-    s.value = s.value.toUpperCase();
-  }
-  
-  let v1 = /^[A-Za-z .]+$/.test(n.value), 
-      v2 = /^[A-Za-z0-9]+$/.test(s.value),
-      v3 = /^[0-9]+$/.test(r.value), 
-      v4 = /^[0-9]+$/.test(a.value);
-  
-  n.classList.toggle('error', !v1 && n.value !== ""); 
-  s.classList.toggle('error', !v2 && s.value !== "");
-  r.classList.toggle('error', !v3 && r.value !== ""); 
-  a.classList.toggle('error', !v4 && a.value !== "");
-  
-  const startBtn = document.getElementById('stuStartBtn');
-  const allValid = v1 && v2 && v3 && v4 && keyLoaded;
-  startBtn.style.display = allValid ? "inline-block" : "none";
-  
-  if (!keyLoaded) {
-    showError("Answer key not loaded - exam disabled. Contact administrator.");
-  }
-  
-  if (v1 && v2 && v3 && v4) {
-    const studentData = {
-      name: n.value,
-      sec: s.value,
-      roll: r.value,
-      adm: a.value
-    };
-    updateFormAssignmentDisplay(studentData);
-    
-    // Check for re-submission
-    checkResubmission(studentData);
-  }
-  
-  return allValid;
-}
-
-function showError(message) {
-    const errorDiv = document.getElementById('errorMessages');
-    errorDiv.innerHTML = `<div class="error-message">${message}</div>`;
-}
-
-function clearErrors() {
-    document.getElementById('errorMessages').innerHTML = '';
-}
-
-// ===== SECURITY MEASURES =====
-document.addEventListener('contextmenu', function(e) {
-    e.preventDefault();
-    return false;
-});
-
-document.addEventListener('keydown', function(e) {
-    if (e.keyCode === 123 || 
-        (e.ctrlKey && e.shiftKey && e.keyCode === 73) ||
-        (e.ctrlKey && e.shiftKey && e.keyCode === 74) ||
-        (e.ctrlKey && e.keyCode === 85) ||
-        (e.ctrlKey && e.keyCode === 83) ||
-        (e.ctrlKey && e.keyCode === 80) ||
-        e.keyCode === 44 ||
-        (e.ctrlKey && e.key === 'p') ||
-        (e.metaKey && e.key === 'p')) {
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
-    }
-});
+// ===== DEMO QUESTIONS DATA =====
+const demoQuestions = [
+    { text: "What is the capital of France?", options: ["A) London", "B) Berlin", "C) Paris", "D) Madrid"], answer: "C" },
+    { text: "Which planet is known as the Red Planet?", options: ["A) Jupiter", "B) Mars", "C) Venus", "D) Saturn"], answer: "B" },
+    { text: "What is the chemical symbol for gold?", options: ["A) Go", "B) Gd", "C) Au", "D) Ag"], answer: "C" },
+    { text: "Who wrote 'Romeo and Juliet'?", options: ["A) Charles Dickens", "B) William Shakespeare", "C) Jane Austen", "D) Mark Twain"], answer: "B" },
+    { text: "What is the largest ocean on Earth?", options: ["A) Atlantic", "B) Indian", "C) Arctic", "D) Pacific"], answer: "D" },
+    { text: "In which year did World War II end?", options: ["A) 1945", "B) 1939", "C) 1918", "D) 1950"], answer: "A" },
+    { text: "What is the square root of 64?", options: ["A) 6", "B) 7", "C) 8", "D) 9"], answer: "C" },
+    { text: "Which element has the atomic number 1?", options: ["A) Oxygen", "B) Carbon", "C) Hydrogen", "D) Nitrogen"], answer: "C" },
+    { text: "What is the speed of light in vacuum?", options: ["A) 300,000 km/s", "B) 150,000 km/s", "C) 450,000 km/s", "D) 600,000 km/s"], answer: "A" },
+    { text: "Who painted the Mona Lisa?", options: ["A) Vincent van Gogh", "B) Pablo Picasso", "C) Leonardo da Vinci", "D) Michelangelo"], answer: "C" }
+];
 
 // ===== INITIALIZATION =====
-// For demo purposes, create a mock answer key with 10 questions
 function initializeDemoKey() {
-    answerKey = ['A', 'B', 'C', 'D', 'A', 'B', 'C', 'D', 'A', 'B'];
+    answerKey = demoQuestions.map(q => q.answer);
     
-    console.log("Building image paths for", answerKey.length, "questions");
+    console.log("Building demo questions for", answerKey.length, "questions");
     for (let i = 1; i <= answerKey.length; i++) {
-      images.push(`https://via.placeholder.com/600x300/4B0082/FFFFFF?text=Question+${i}`);
+      images.push(`demo_question_${i}`);
     }
     
     keyLoaded = true;
@@ -1969,174 +1469,28 @@ function initializeDemoKey() {
 // Initialize with demo data
 initializeDemoKey();
 
-function shuffleArray(arr) {
-    const c = arr.slice();
-    for (let i = c.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [c[i], c[j]] = [c[j], c[i]];
-    }
-    return c;
-}
-
-function prepareExamData() {
-  examData.files = []; examData.subjectNames = []; examData.keys = []; examData.originalOrder = [];
-  
-  const subjectRanges = [
-    { name: "Maths", start: 1, end: 4 },
-    { name: "Physics", start: 5, end: 7 },
-    { name: "Chemistry", start: 8, end: 10 }
-  ];
-  
-  let groups = [];
-  
-  subjectRanges.forEach(subject => {
-    const subjectQuestions = [];
-    const subjectKeys = [];
-    const subjectOriginalOrder = [];
-    
-    for (let i = subject.start; i <= subject.end; i++) {
-      const imgIndex = i - 1;
-      if (images[imgIndex] && answerKey[imgIndex]) {
-        subjectQuestions.push(images[imgIndex]);
-        subjectKeys.push(answerKey[imgIndex]);
-        subjectOriginalOrder.push(imgIndex);
-      }
-    }
-    
-    const shuffledIndices = shuffleArray([...Array(subjectQuestions.length).keys()]);
-    
-    groups.push({
-      name: subject.name,
-      imgs: shuffledIndices.map(i => subjectQuestions[i]),
-      keys: shuffledIndices.map(i => subjectKeys[i]),
-      originalOrder: shuffledIndices.map(i => subjectOriginalOrder[i])
-    });
-  });
-  
-  const shuffledGroups = shuffleArray(groups);
-  
-  shuffledGroups.forEach(g => {
-    g.imgs.forEach((img, i) => {
-      examData.files.push(img);
-      examData.keys.push(g.keys[i]);
-      examData.subjectNames.push(g.name);
-      examData.originalOrder.push(g.originalOrder[i]);
-    });
-  });
-  
-  console.log("Final exam structure:");
-  console.log("Total questions:", examData.files.length);
-}
-
-["stuName", "stuSection", "stuRoll", "stuAdm"].forEach(id => {
-  document.getElementById(id).addEventListener("input", validateStudentInputs);
-});
-
-document.getElementById('stuStartBtn').onclick = () => { 
-  if (!validateStudentInputs()) return; 
-  showConfirm("Start Exam?", startWithSecurity); 
-};
-
-// ===== RESUBMISSION EVENT LISTENERS =====
-document.getElementById('verifyResubmission').addEventListener('click', function() {
-    verifyResubmissionPassword();
-});
-
-document.getElementById('cancelResubmission').addEventListener('click', function() {
-    cancelResubmission();
-});
-
-document.getElementById('resubmissionPassword').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-        verifyResubmissionPassword();
-    }
-});
-
-function startWithSecurity(ok) {
-  if (!ok) return;
-  const stuName = document.getElementById('stuName');
-  const stuSection = document.getElementById('stuSection');
-  const stuRoll = document.getElementById('stuRoll');
-  const stuAdm = document.getElementById('stuAdm');
-  
-  const studentKey = `${stuName.value}|${stuSection.value}|${stuRoll.value}|${stuAdm.value}`;
-  const stored = localStorage.getItem(studentKey), now = Date.now();
-  if (stored && now - stored < 86400000 && !adminOverrideActive && !isResubmission) {
-      document.getElementById('fullRedOverlay').style.display = "block"; 
-      document.getElementById('accessDeniedBox').style.display = "block";
-      document.getElementById('callAdminBtn').onclick = () => {
-          document.getElementById('adminPassModal').style.display = "flex";
-          document.getElementById('adminPassInput').focus();
-          document.getElementById('adminPassSubmit').onclick = () => {
-              const adminPassInput = document.getElementById('adminPassInput');
-              if (adminPassInput.value === ADMIN_PASSWORD) {
-                  adminOverrideActive = true;
-                  document.getElementById('adminPassModal').style.display = "none";
-                  document.getElementById('fullRedOverlay').style.display = "none"; 
-                  document.getElementById('accessDeniedBox').style.display = "none";
-                  startExam(studentKey);
-              } else alert("Incorrect password!");
-          };
-      };
-  } else {
-      startExam(studentKey);
-  }
-}
-
-function startExam(studentKey) {
-  if (!keyLoaded) {
-    alert('Answer key not loaded. Contact admin.');
-    return;
-  }
-
-  const stuName = document.getElementById('stuName');
-  const stuSection = document.getElementById('stuSection');
-  const stuRoll = document.getElementById('stuRoll');
-  const stuAdm = document.getElementById('stuAdm');
-
-  localStorage.setItem(studentKey, Date.now());
-  prepareExamData();
-  progress = {
-    answers: Array(examData.files.length).fill(null),
-    review: Array(examData.files.length).fill(false),
-    currentIndex: 0,
-    student: {name: stuName.value, sec: stuSection.value, roll: stuRoll.value, adm: stuAdm.value},
-    timeLeftSec: EXAM_DURATION_MINUTES * 60
-  };
-
-  examStartTime = Date.now();
-  examInProgress = true;
-  tabSwitchCount = 0;
-  lastTabSwitchTime = 0;
-  
-  document.getElementById('studentEntry').style.display = "none";
-  document.getElementById('examArea').style.display = "block";
-  renderQuestion(); renderPalette(); startTimer(); updateNavButtons();
-  
-  sheetReady = true;
-}
-
-// ===== RENDER QUESTION FUNCTION =====
+// ===== RENDER QUESTION FUNCTION - FIXED =====
 function renderQuestion() {
   const idx = progress.currentIndex;
   const container = document.getElementById('questionContainer');
+  const question = demoQuestions[idx];
   
   container.innerHTML = `
     <div class="question-transition question-fade-in">
       <div class="sectionTitle">${examData.subjectNames[idx]}</div>
-      <div class="scrollable-image-container">
-        <img src="${examData.files[idx]}" class="questionImg" alt="Question ${idx+1}" 
-             onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-      </div>
-      <div class="image-error" style="display:none;">
-        <h3>⚠️ Image Not Available</h3>
-        <p>Question image could not be loaded. Please contact administrator.</p>
+      <div class="question-text">
+        <strong>Question ${idx + 1}:</strong> ${question.text}
       </div>
       <div class="options-container">
-        <button class="optBtn ${progress.answers[idx] === 'A' ? 'selected' : ''}" data-opt="A">A</button>
-        <button class="optBtn ${progress.answers[idx] === 'B' ? 'selected' : ''}" data-opt="B">B</button>
-        <button class="optBtn ${progress.answers[idx] === 'C' ? 'selected' : ''}" data-opt="C">C</button>
-        <button class="optBtn ${progress.answers[idx] === 'D' ? 'selected' : ''}" data-opt="D">D</button>
+        ${question.options.map(option => {
+          const optLetter = option.charAt(0);
+          return `
+            <button class="optBtn ${progress.answers[idx] === optLetter ? 'selected' : ''}" 
+                    data-opt="${optLetter}">
+              ${option}
+            </button>
+          `;
+        }).join('')}
       </div>
     </div>
   `;
@@ -2314,78 +1668,309 @@ function showConfirm(message, callback) {
   };
 }
 
-// ===== SUMMARY AND REVIEW FUNCTIONS =====
-function showSummaryInterface(subjData) {
-  document.getElementById('examArea').style.display = 'none';
-  document.getElementById('summaryArea').style.display = 'block';
+// ===== INPUT VALIDATION =====
+function validateStudentInputs() {
+  const n = document.getElementById('stuName'), 
+        s = document.getElementById('stuSection'), 
+        r = document.getElementById('stuRoll'), 
+        a = document.getElementById('stuAdm');
   
-  // Update student info in summary
-  document.getElementById('summaryStudentName').textContent = progress.student.name;
-  document.getElementById('summarySection').textContent = progress.student.sec;
-  document.getElementById('summaryRoll').textContent = progress.student.roll;
-  document.getElementById('summaryAdm').textContent = progress.student.adm;
-  document.getElementById('summaryForm').textContent = assignedForm;
+  if (s.value) {
+    s.value = s.value.toUpperCase();
+  }
   
-  // Create summary table
-  const table = document.createElement('table');
-  table.className = 'results-table';
-  table.innerHTML = `
-    <thead>
-      <tr>
-        <th>Subject</th>
-        <th>Correct</th>
-        <th>Wrong</th>
-        <th>Blank</th>
-        <th>Total</th>
-        <th>Marks</th>
-      </tr>
-    </thead>
-    <tbody>
-      ${Object.entries(subjData).map(([subject, data]) => `
-        <tr>
-          <td>${subject}</td>
-          <td>${data.correct}</td>
-          <td>${data.wrong}</td>
-          <td>${data.blank}</td>
-          <td>${data.total}</td>
-          <td>${data.marks.toFixed(2)}</td>
-        </tr>
-      `).join('')}
-      <tr class="total-row">
-        <td><strong>Total</strong></td>
-        <td><strong>${Object.values(subjData).reduce((sum, d) => sum + d.correct, 0)}</strong></td>
-        <td><strong>${Object.values(subjData).reduce((sum, d) => sum + d.wrong, 0)}</strong></td>
-        <td><strong>${Object.values(subjData).reduce((sum, d) => sum + d.blank, 0)}</strong></td>
-        <td><strong>${Object.values(subjData).reduce((sum, d) => sum + d.total, 0)}</strong></td>
-        <td><strong>${Object.values(subjData).reduce((sum, d) => sum + d.marks, 0).toFixed(2)}</strong></td>
-      </tr>
-    </tbody>
-  `;
+  let v1 = /^[A-Za-z .]+$/.test(n.value), 
+      v2 = /^[A-Za-z0-9]+$/.test(s.value),
+      v3 = /^[0-9]+$/.test(r.value), 
+      v4 = /^[0-9]+$/.test(a.value);
   
-  document.getElementById('summaryTableContainer').innerHTML = '';
-  document.getElementById('summaryTableContainer').appendChild(table);
+  n.classList.toggle('error', !v1 && n.value !== ""); 
+  s.classList.toggle('error', !v2 && s.value !== "");
+  r.classList.toggle('error', !v3 && r.value !== ""); 
+  a.classList.toggle('error', !v4 && a.value !== "");
   
-  // Set up close button
-  document.getElementById('closeSummaryBtn').onclick = () => {
-    document.getElementById('summaryArea').style.display = 'none';
-    document.getElementById('studentEntry').style.display = 'flex';
+  const startBtn = document.getElementById('stuStartBtn');
+  const allValid = v1 && v2 && v3 && v4 && keyLoaded;
+  startBtn.style.display = allValid ? "inline-block" : "none";
+  
+  if (!keyLoaded) {
+    showError("Answer key not loaded - exam disabled. Contact administrator.");
+  }
+  
+  if (v1 && v2 && v3 && v4) {
+    const studentData = {
+      name: n.value,
+      sec: s.value,
+      roll: r.value,
+      adm: a.value
+    };
+    updateFormAssignmentDisplay(studentData);
     
-    // Clear form
-    document.getElementById('stuName').value = '';
-    document.getElementById('stuSection').value = '';
-    document.getElementById('stuRoll').value = '';
-    document.getElementById('stuAdm').value = '';
-    document.getElementById('formAssignment').style.display = 'none';
-    
-    validateStudentInputs();
-  };
+    // Check for re-submission
+    checkResubmission(studentData);
+  }
+  
+  return allValid;
 }
 
-function identifySubject(subjectName) {
-  if (subjectName.includes('Math')) return 'Mathematics';
-  if (subjectName.includes('Phy')) return 'Physics';
-  if (subjectName.includes('Chem')) return 'Chemistry';
-  return subjectName;
+function showError(message) {
+    const errorDiv = document.getElementById('errorMessages');
+    errorDiv.innerHTML = `<div class="error-message">${message}</div>`;
+}
+
+function clearErrors() {
+    document.getElementById('errorMessages').innerHTML = '';
+}
+
+// ===== SECURITY MEASURES =====
+document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+    return false;
+});
+
+document.addEventListener('keydown', function(e) {
+    if (e.keyCode === 123 || 
+        (e.ctrlKey && e.shiftKey && e.keyCode === 73) ||
+        (e.ctrlKey && e.shiftKey && e.keyCode === 74) ||
+        (e.ctrlKey && e.keyCode === 85) ||
+        (e.ctrlKey && e.keyCode === 83) ||
+        (e.ctrlKey && e.keyCode === 80) ||
+        e.keyCode === 44 ||
+        (e.ctrlKey && e.key === 'p') ||
+        (e.metaKey && e.key === 'p')) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+    }
+});
+
+function shuffleArray(arr) {
+    const c = arr.slice();
+    for (let i = c.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [c[i], c[j]] = [c[j], c[i]];
+    }
+    return c;
+}
+
+function prepareExamData() {
+  examData.files = []; examData.subjectNames = []; examData.keys = []; examData.originalOrder = [];
+  
+  const subjectRanges = [
+    { name: "Maths", start: 1, end: 4 },
+    { name: "Physics", start: 5, end: 7 },
+    { name: "Chemistry", start: 8, end: 10 }
+  ];
+  
+  let groups = [];
+  
+  subjectRanges.forEach(subject => {
+    const subjectQuestions = [];
+    const subjectKeys = [];
+    const subjectOriginalOrder = [];
+    
+    for (let i = subject.start; i <= subject.end; i++) {
+      const imgIndex = i - 1;
+      if (images[imgIndex] && answerKey[imgIndex]) {
+        subjectQuestions.push(images[imgIndex]);
+        subjectKeys.push(answerKey[imgIndex]);
+        subjectOriginalOrder.push(imgIndex);
+      }
+    }
+    
+    const shuffledIndices = shuffleArray([...Array(subjectQuestions.length).keys()]);
+    
+    groups.push({
+      name: subject.name,
+      imgs: shuffledIndices.map(i => subjectQuestions[i]),
+      keys: shuffledIndices.map(i => subjectKeys[i]),
+      originalOrder: shuffledIndices.map(i => subjectOriginalOrder[i])
+    });
+  });
+  
+  const shuffledGroups = shuffleArray(groups);
+  
+  shuffledGroups.forEach(g => {
+    g.imgs.forEach((img, i) => {
+      examData.files.push(img);
+      examData.keys.push(g.keys[i]);
+      examData.subjectNames.push(g.name);
+      examData.originalOrder.push(g.originalOrder[i]);
+    });
+  });
+  
+  console.log("Final exam structure:");
+  console.log("Total questions:", examData.files.length);
+}
+
+["stuName", "stuSection", "stuRoll", "stuAdm"].forEach(id => {
+  document.getElementById(id).addEventListener("input", validateStudentInputs);
+});
+
+document.getElementById('stuStartBtn').onclick = () => { 
+  if (!validateStudentInputs()) return; 
+  showConfirm("Start Exam?", startWithSecurity); 
+};
+
+// ===== RESUBMISSION FUNCTIONALITY =====
+function checkResubmission(studentData) {
+    const studentId = generateStudentId(studentData);
+    const previousSubmission = localStorage.getItem(`submission_${studentId}`);
+    
+    if (previousSubmission) {
+        const submissionData = JSON.parse(previousSubmission);
+        const submissionTime = new Date(submissionData.timestamp);
+        const currentTime = new Date();
+        const hoursSinceSubmission = (currentTime - submissionTime) / (1000 * 60 * 60);
+        
+        if (hoursSinceSubmission < RESUBMISSION_WINDOW_HOURS) {
+            document.getElementById('resubmissionSection').style.display = 'block';
+            document.getElementById('stuStartBtn').style.display = 'none';
+            return true;
+        }
+    }
+    
+    document.getElementById('resubmissionSection').style.display = 'none';
+    document.getElementById('stuStartBtn').style.display = 'inline-block';
+    return false;
+}
+
+function verifyResubmissionPassword() {
+    const enteredPassword = document.getElementById('resubmissionPassword').value.trim();
+    
+    if (enteredPassword === RESUBMISSION_PASSWORD) {
+        isResubmission = true;
+        document.getElementById('resubmissionSection').style.display = 'none';
+        document.getElementById('stuStartBtn').style.display = 'inline-block';
+        document.getElementById('errorMessages').innerHTML = '<div class="success-message">✅ Password verified. You can now start the exam.</div>';
+        return true;
+    } else {
+        document.getElementById('errorMessages').innerHTML = '<div class="error-message">❌ Incorrect password. Please try again.</div>';
+        document.getElementById('resubmissionPassword').value = '';
+        document.getElementById('resubmissionPassword').focus();
+        return false;
+    }
+}
+
+function cancelResubmission() {
+    document.getElementById('resubmissionSection').style.display = 'none';
+    document.getElementById('resubmissionPassword').value = '';
+    document.getElementById('errorMessages').innerHTML = '';
+    isResubmission = false;
+}
+
+// ===== AUTOMATIC FORM DISTRIBUTION =====
+function getAssignedForm(studentData) {
+    const forms = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+    const formsCount = forms.length;
+    
+    if (studentData.roll && !isNaN(studentData.roll)) {
+        const rollNumber = parseInt(studentData.roll);
+        const formIndex = (rollNumber - 1) % formsCount;
+        return forms[formIndex];
+    }
+    
+    const hashString = `${studentData.name}|${studentData.roll}|${studentData.adm}`;
+    let hash = 0;
+    for (let i = 0; i < hashString.length; i++) {
+        hash = ((hash << 5) - hash) + hashString.charCodeAt(i);
+        hash = hash & hash;
+    }
+    return forms[Math.abs(hash) % formsCount];
+}
+
+function updateFormAssignmentDisplay(studentData) {
+    assignedForm = getAssignedForm(studentData);
+    document.getElementById('assignedFormDisplay').textContent = `FORM ${assignedForm}`;
+    document.getElementById('formAssignment').style.display = 'block';
+}
+
+function startWithSecurity(ok) {
+  if (!ok) return;
+  const stuName = document.getElementById('stuName');
+  const stuSection = document.getElementById('stuSection');
+  const stuRoll = document.getElementById('stuRoll');
+  const stuAdm = document.getElementById('stuAdm');
+  
+  const studentKey = `${stuName.value}|${stuSection.value}|${stuRoll.value}|${stuAdm.value}`;
+  const stored = localStorage.getItem(studentKey), now = Date.now();
+  if (stored && now - stored < 86400000 && !adminOverrideActive && !isResubmission) {
+      document.getElementById('fullRedOverlay').style.display = "block"; 
+      document.getElementById('accessDeniedBox').style.display = "block";
+      document.getElementById('callAdminBtn').onclick = () => {
+          document.getElementById('adminPassModal').style.display = "flex";
+          document.getElementById('adminPassInput').focus();
+          document.getElementById('adminPassSubmit').onclick = () => {
+              const adminPassInput = document.getElementById('adminPassInput');
+              if (adminPassInput.value === ADMIN_PASSWORD) {
+                  adminOverrideActive = true;
+                  document.getElementById('adminPassModal').style.display = "none";
+                  document.getElementById('fullRedOverlay').style.display = "none"; 
+                  document.getElementById('accessDeniedBox').style.display = "none";
+                  startExam(studentKey);
+              } else alert("Incorrect password!");
+          };
+      };
+  } else {
+      startExam(studentKey);
+  }
+}
+
+function startExam(studentKey) {
+  if (!keyLoaded) {
+    alert('Answer key not loaded. Contact admin.');
+    return;
+  }
+
+  const stuName = document.getElementById('stuName');
+  const stuSection = document.getElementById('stuSection');
+  const stuRoll = document.getElementById('stuRoll');
+  const stuAdm = document.getElementById('stuAdm');
+
+  localStorage.setItem(studentKey, Date.now());
+  prepareExamData();
+  progress = {
+    answers: Array(examData.files.length).fill(null),
+    review: Array(examData.files.length).fill(false),
+    currentIndex: 0,
+    student: {name: stuName.value, sec: stuSection.value, roll: stuRoll.value, adm: stuAdm.value},
+    timeLeftSec: EXAM_DURATION_MINUTES * 60
+  };
+
+  examStartTime = Date.now();
+  examInProgress = true;
+  
+  document.getElementById('studentEntry').style.display = "none";
+  document.getElementById('examArea').style.display = "block";
+  renderQuestion(); renderPalette(); startTimer(); updateNavButtons();
+  
+  sheetReady = true;
+}
+
+// ===== ACCESS CODE VERIFICATION =====
+function verifyAccessCode() {
+    const enteredCode = document.getElementById('accessCode').value.trim();
+    const errorElement = document.getElementById('accessError');
+    const accessDenied = document.getElementById('accessDenied');
+    
+    errorElement.style.display = 'none';
+    
+    if (enteredCode === ACCESS_CODE) {
+        console.log("Access granted!");
+        accessDenied.style.display = 'none';
+        document.getElementById('studentEntry').style.display = 'flex';
+        document.getElementById('accessCode').value = '';
+        document.getElementById('stuName').focus();
+    } else {
+        console.log("Access denied!");
+        errorElement.style.display = 'block';
+        document.getElementById('accessCode').value = '';
+        document.getElementById('accessCode').focus();
+        accessDenied.style.animation = 'shake 0.5s';
+        setTimeout(() => {
+            accessDenied.style.animation = '';
+        }, 500);
+    }
 }
 
 // ===== ACCESS CODE VERIFICATION EVENT LISTENER =====
@@ -2395,6 +1980,21 @@ document.getElementById('accessCode').addEventListener('keypress', function(e) {
   if (e.key === 'Enter') {
     verifyAccessCode();
   }
+});
+
+// ===== RESUBMISSION EVENT LISTENERS =====
+document.getElementById('verifyResubmission').addEventListener('click', function() {
+    verifyResubmissionPassword();
+});
+
+document.getElementById('cancelResubmission').addEventListener('click', function() {
+    cancelResubmission();
+});
+
+document.getElementById('resubmissionPassword').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        verifyResubmissionPassword();
+    }
 });
 
 // ===== ADMIN PASSWORD SUBMISSION =====
@@ -2441,7 +2041,6 @@ window.addEventListener('load', function() {
 
 console.log("🎯 LFJC Online Exam System Loaded Successfully");
 console.log("🔄 Re-submission: Password-protected re-submission within 24 hours");
-console.log("📊 Google Forms: All data submitted to Google Sheets");
 </script>
 </body>
 </html>
