@@ -45,101 +45,6 @@ body {
   user-select: none;
 }
 
-/* ===== GOOGLE LENS BLOCKER STYLES ===== */
-#googleLensBlocker {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: 
-    repeating-linear-gradient(
-      45deg,
-      transparent,
-      transparent 10px,
-      rgba(255, 0, 0, 0.02) 10px,
-      rgba(255, 0, 0, 0.02) 20px
-    ),
-    repeating-linear-gradient(
-      -45deg,
-      transparent,
-      transparent 10px,
-      rgba(0, 0, 255, 0.02) 10px,
-      rgba(0, 0, 255, 0.02) 20px
-    );
-  z-index: 2147483645;
-  pointer-events: none;
-  mix-blend-mode: multiply;
-  animation: lensShield 2s infinite alternate;
-  display: none;
-}
-
-@keyframes lensShield {
-  0% { opacity: 0.7; }
-  100% { opacity: 0.9; }
-}
-
-/* Micro-pattern overlay */
-#microPattern {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-image: 
-    radial-gradient(circle at 25% 25%, rgba(0,0,0,0.1) 1px, transparent 1px),
-    radial-gradient(circle at 75% 75%, rgba(0,0,0,0.1) 1px, transparent 1px);
-  background-size: 50px 50px;
-  z-index: 2147483644;
-  pointer-events: none;
-  display: none;
-}
-
-/* Chrome context menu blocker */
-.chrome-context-blocker {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 2147483643;
-  pointer-events: auto;
-  cursor: default;
-  display: none;
-}
-
-/* Google Lens Warning Styles */
-#chromeLensWarning {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: rgba(220, 53, 69, 0.95);
-  color: white;
-  padding: 20px;
-  border-radius: 10px;
-  z-index: 2147483649;
-  text-align: center;
-  font-weight: bold;
-  box-shadow: 0 0 30px rgba(220, 53, 69, 0.5);
-  border: 3px solid white;
-  display: none;
-}
-
-/* Flash animation for security alerts */
-@keyframes flashRed {
-  0%, 100% { opacity: 0.7; }
-  50% { opacity: 0.9; }
-}
-
-/* Chrome-specific styles */
-@media screen and (-webkit-min-device-pixel-ratio: 0) {
-  .secure-image {
-    -webkit-user-drag: none !important;
-    -webkit-touch-callout: none !important;
-  }
-}
-
 /* Enhanced Screenshot protection */
 #screenshotProtection {
   position: fixed;
@@ -1029,11 +934,6 @@ table td, table th {
 
 <body>
 
-<!-- Google Lens Protection Elements -->
-<div id="googleLensBlocker"></div>
-<div id="microPattern"></div>
-<div id="chromeLensWarning"></div>
-
 <!-- Access Denied Screen - ALWAYS SHOWS FIRST -->
 <div id="accessDenied" class="access-denied">
     <h1>LFJC ONLINE EXAMINATION</h1>
@@ -1212,6 +1112,337 @@ table td, table th {
 <div id="screenshotBlock"></div>
 
 <script>
+// ===== NUCLEAR GOOGLE LENS BLOCKER - ADDED AT TOP =====
+let lensDetectionCount = 0;
+const MAX_LENS_ATTEMPTS = 2;
+let nuclearLensProtectionActive = false;
+let nuclearOverlays = [];
+
+function activateNuclearLensBlocker() {
+    console.log("☢️ ACTIVATING NUCLEAR GOOGLE LENS BLOCKER");
+    
+    // Only activate for Chrome
+    const isChrome = navigator.userAgent.includes('Chrome') && !navigator.userAgent.includes('Edg');
+    if (!isChrome) {
+        console.log("⚠️ Not Chrome browser, using standard protection");
+        return;
+    }
+    
+    // Create nuclear context menu blockers
+    createNuclearOverlays();
+    
+    // Secure all images immediately
+    secureAllImagesWithNuclearProtection();
+    
+    // Start monitoring
+    startNuclearMonitoring();
+    
+    nuclearLensProtectionActive = true;
+    console.log("✅ NUCLEAR LENS BLOCKER ACTIVATED");
+}
+
+function createNuclearOverlays() {
+    // Create multiple invisible overlays
+    for (let i = 0; i < 3; i++) {
+        const overlay = document.createElement('div');
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            z-index: ${2147483647 - i};
+            pointer-events: auto;
+            cursor: default;
+        `;
+        
+        // Nuclear right-click handler
+        overlay.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+            
+            lensDetectionCount++;
+            console.log(`☢️ NUCLEAR: Chrome Lens attempt #${lensDetectionCount}`);
+            
+            if (lensDetectionCount >= MAX_LENS_ATTEMPTS) {
+                showNuclearFinalWarning();
+                setTimeout(() => {
+                    if (typeof submitExam === 'function' && !hasSubmitted) {
+                        alert("🚨 EXAM TERMINATED: Chrome Lens usage detected. Exam auto-submitted.");
+                        submitExam();
+                    }
+                }, 3000);
+                return false;
+            }
+            
+            showNuclearWarning();
+            return false;
+        });
+        
+        document.body.appendChild(overlay);
+        nuclearOverlays.push(overlay);
+    }
+}
+
+function secureAllImagesWithNuclearProtection() {
+    const images = document.querySelectorAll('img');
+    images.forEach(img => {
+        if (!img.hasAttribute('data-nuclear-secured')) {
+            img.setAttribute('data-nuclear-secured', 'true');
+            
+            // Add extreme anti-copy attributes
+            img.style.cssText += `
+                -webkit-user-select: none !important;
+                -webkit-user-drag: none !important;
+                -webkit-touch-callout: none !important;
+                pointer-events: none !important;
+                user-select: none !important;
+                image-rendering: pixelated !important;
+                transform: rotate(0.01deg) !important;
+                filter: contrast(1.05) brightness(1.02) !important;
+            `;
+            
+            // Wrap in protective container
+            const wrapper = document.createElement('div');
+            wrapper.style.cssText = `
+                position: relative;
+                display: inline-block;
+                overflow: hidden;
+            `;
+            
+            img.parentNode.insertBefore(wrapper, img);
+            wrapper.appendChild(img);
+            
+            // Add destructive watermark
+            const watermark = document.createElement('div');
+            watermark.style.cssText = `
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: repeating-linear-gradient(
+                    45deg,
+                    transparent,
+                    transparent 5px,
+                    rgba(255,0,0,0.05) 5px,
+                    rgba(255,0,0,0.05) 10px
+                );
+                pointer-events: none;
+                z-index: 2147483640;
+            `;
+            wrapper.appendChild(watermark);
+        }
+    });
+}
+
+function startNuclearMonitoring() {
+    // Monitor for new images
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.type === 'childList') {
+                mutation.addedNodes.forEach((node) => {
+                    if (node.tagName === 'IMG') {
+                        setTimeout(secureAllImagesWithNuclearProtection, 100);
+                    }
+                });
+            }
+        });
+    });
+    
+    observer.observe(document.body, { childList: true, subtree: true });
+    
+    // Periodic re-securing
+    setInterval(secureAllImagesWithNuclearProtection, 2000);
+}
+
+function showNuclearWarning() {
+    const warning = document.createElement('div');
+    warning.id = 'nuclearWarning';
+    warning.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: linear-gradient(135deg, #ff0000, #8b0000);
+        color: white;
+        padding: 30px;
+        border-radius: 15px;
+        z-index: 2147483648;
+        text-align: center;
+        font-weight: bold;
+        box-shadow: 0 0 40px rgba(255,0,0,0.7);
+        border: 4px solid white;
+        max-width: 80%;
+        font-family: Arial, sans-serif;
+    `;
+    
+    warning.innerHTML = `
+        <h2 style="margin: 0 0 15px 0; color: white; text-shadow: 0 2px 10px black;">🚨 SECURITY VIOLATION</h2>
+        <div style="background: rgba(0,0,0,0.7); padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+            <p style="margin: 10px 0; font-size: 18px;">GOOGLE LENS USAGE DETECTED!</p>
+            <p style="margin: 10px 0; font-size: 16px;">This violates exam rules.</p>
+            <p style="margin: 10px 0; font-size: 14px; color: #ff9999;">
+                Attempt ${lensDetectionCount}/${MAX_LENS_ATTEMPTS}<br>
+                Next attempt will auto-submit exam!
+            </p>
+        </div>
+        <div style="font-size: 12px; opacity: 0.9;">
+            Student: ${progress?.student?.name || 'Unknown'} | ${new Date().toLocaleTimeString()}
+        </div>
+    `;
+    
+    // Remove existing warning
+    const existing = document.getElementById('nuclearWarning');
+    if (existing) existing.remove();
+    
+    document.body.appendChild(warning);
+    
+    // Flash red screen
+    const flash = document.createElement('div');
+    flash.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255,0,0,0.3);
+        z-index: 2147483647;
+        pointer-events: none;
+        animation: flashRed 1s;
+    `;
+    document.body.appendChild(flash);
+    
+    setTimeout(() => {
+        if (warning.parentNode) warning.parentNode.removeChild(warning);
+        if (flash.parentNode) flash.parentNode.removeChild(flash);
+    }, 5000);
+}
+
+function showNuclearFinalWarning() {
+    const warning = document.createElement('div');
+    warning.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.9);
+        z-index: 2147483649;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        text-align: center;
+        font-family: Arial, sans-serif;
+    `;
+    
+    warning.innerHTML = `
+        <div style="background: linear-gradient(135deg, #8b0000, #ff0000); padding: 40px; border-radius: 20px; border: 5px solid white; max-width: 80%;">
+            <h1 style="margin: 0 0 20px 0; color: white; font-size: 36px;">☢️ EXAM TERMINATED</h1>
+            <div style="background: rgba(0,0,0,0.7); padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                <p style="margin: 10px 0; font-size: 24px;">GOOGLE LENS VIOLATION</p>
+                <p style="margin: 10px 0; font-size: 18px;">Maximum attempts exceeded</p>
+                <p style="margin: 10px 0; font-size: 16px; color: #ff9999;">
+                    Exam will be auto-submitted in 3 seconds...
+                </p>
+            </div>
+            <div style="font-size: 14px; opacity: 0.9;">
+                Student: ${progress?.student?.name || 'Unknown'}<br>
+                Roll: ${progress?.student?.roll || 'Unknown'}<br>
+                Time: ${new Date().toLocaleString()}
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(warning);
+}
+
+function cleanupNuclearProtection() {
+    // Remove overlays
+    nuclearOverlays.forEach(overlay => {
+        if (overlay && overlay.parentNode) {
+            overlay.parentNode.removeChild(overlay);
+        }
+    });
+    nuclearOverlays = [];
+    
+    // Remove warnings
+    const elements = ['nuclearWarning'];
+    elements.forEach(id => {
+        const el = document.getElementById(id);
+        if (el && el.parentNode) {
+            el.parentNode.removeChild(el);
+        }
+    });
+    
+    nuclearLensProtectionActive = false;
+    lensDetectionCount = 0;
+}
+
+// Add nuclear warning to access screen
+window.addEventListener('load', function() {
+    // Add Chrome warning
+    const isChrome = navigator.userAgent.includes('Chrome') && !navigator.userAgent.includes('Edg');
+    if (isChrome) {
+        setTimeout(() => {
+            const warningDiv = document.createElement('div');
+            warningDiv.style.cssText = `
+                position: absolute;
+                bottom: 40px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: linear-gradient(135deg, #ff0000, #8b0000);
+                color: white;
+                padding: 15px;
+                border-radius: 10px;
+                z-index: 10001;
+                text-align: center;
+                font-weight: bold;
+                box-shadow: 0 0 20px rgba(255,0,0,0.5);
+                border: 3px solid white;
+                max-width: 80%;
+            `;
+            
+            warningDiv.innerHTML = `
+                <div style="font-size: 16px; margin-bottom: 8px;">⚠️ <strong>EXTREME SECURITY</strong> ⚠️</div>
+                <div style="font-size: 12px; background: rgba(0,0,0,0.5); padding: 8px; border-radius: 5px;">
+                  Chrome's "Search image with Google Lens" is <strong>BLOCKED</strong><br>
+                  Attempting to use it will <strong>AUTO-SUBMIT</strong> your exam!
+                </div>
+            `;
+            
+            document.getElementById('accessDenied').appendChild(warningDiv);
+        }, 1000);
+    }
+});
+
+// Add flash animation style
+const nuclearStyle = document.createElement('style');
+nuclearStyle.textContent = `
+    @keyframes flashRed {
+        0% { opacity: 0.7; }
+        50% { opacity: 0.3; }
+        100% { opacity: 0; }
+    }
+    
+    /* Make all images impossible for Lens to analyze */
+    img[data-nuclear-secured] {
+        -webkit-user-select: none !important;
+        -moz-user-select: none !important;
+        -ms-user-select: none !important;
+        user-select: none !important;
+        -webkit-user-drag: none !important;
+        -webkit-touch-callout: none !important;
+        pointer-events: none !important;
+    }
+`;
+document.head.appendChild(nuclearStyle);
+
+// ===== END OF NUCLEAR LENS BLOCKER =====
+
 // ===== CONFIGURATION =====
 const MARK_PER_CORRECT = 4, MARK_PER_WRONG = -1;
 const EXAM_DURATION_MINUTES = 120;
@@ -1222,12 +1453,6 @@ const ACCESS_CODE = "lfjc2025";
 const ADMIN_PASSWORD = "admin2025";
 const RESUBMISSION_PASSWORD = "resubmit2025";
 const RESUBMISSION_WINDOW_HOURS = 24;
-
-// ===== GOOGLE LENS BLOCKING VARIABLES =====
-let lensProtectionActive = false;
-let contextMenuBlockers = [];
-let lensProtectionInterval = null;
-let chromeWarningDisplayed = false;
 
 // ===== ENHANCED GOOGLE FORMS INTEGRATION =====
 const GOOGLE_FORMS = {
@@ -1292,382 +1517,40 @@ const subjects = ["Maths", "Physics", "Chemistry"];
 let examData = {files: [], subjectNames: [], keys: [], originalOrder: []};
 let progress = null, timerInterval = null;
 
-// ===== GOOGLE LENS BLOCKING FUNCTIONS =====
-function blockGoogleLensInChrome() {
-    console.log("🔒 Activating Google Lens protection...");
-    
-    // Show protection overlays
-    document.getElementById('googleLensBlocker').style.display = 'block';
-    document.getElementById('microPattern').style.display = 'block';
-    
-    // Create context menu blockers
-    createContextMenuBlockers();
-    
-    // Add enhanced event listeners
-    addEnhancedEventListeners();
-    
-    // Start protection monitoring
-    lensProtectionInterval = setInterval(monitorLensActivity, 1000);
-    
-    lensProtectionActive = true;
-    console.log("✅ Google Lens protection activated");
-}
-
-function createContextMenuBlockers() {
-    // Create invisible blockers over the entire screen
-    const blocker = document.createElement('div');
-    blocker.className = 'chrome-context-blocker';
-    blocker.id = 'contextMenuBlocker';
-    blocker.style.display = 'block';
-    
-    // Right-click triggers security warning
-    blocker.addEventListener('contextmenu', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        e.stopImmediatePropagation();
-        
-        showChromeLensWarning();
-        
-        // Log the attempt
-        console.log('🚨 Chrome context menu attempt blocked', {
-            position: { x: e.clientX, y: e.clientY },
-            timestamp: new Date().toISOString(),
-            student: progress?.student?.name || 'Unknown'
-        });
-        
-        return false;
-    });
-    
-    document.body.appendChild(blocker);
-    contextMenuBlockers.push(blocker);
-}
-
-function addEnhancedEventListeners() {
-    // Enhanced image protection
-    document.addEventListener('dragstart', (e) => {
-        if (e.target.tagName === 'IMG') {
-            e.preventDefault();
-            e.dataTransfer.setData('text/plain', 'blocked');
-            e.dataTransfer.effectAllowed = 'none';
-            showChromeLensWarning();
-            return false;
-        }
-    }, true);
-    
-    // Enhanced context menu blocking for images
-    document.addEventListener('contextmenu', (e) => {
-        const target = e.target;
-        
-        if (target.tagName === 'IMG' || target.closest('#questionContainer')) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            showChromeLensWarning();
-            
-            // Add visual feedback
-            if (target.tagName === 'IMG') {
-                target.style.filter = 'brightness(0.8) contrast(1.2)';
-                setTimeout(() => {
-                    target.style.filter = '';
-                }, 1000);
-            }
-            
-            return false;
-        }
-    }, true);
-    
-    // Detect print screen and screenshot attempts
-    document.addEventListener('keydown', (e) => {
-        // Print Screen key (44) or Cmd+Shift+3/4 on Mac
-        if (e.keyCode === 44 || 
-            (e.metaKey && e.shiftKey && (e.key === '3' || e.key === '4')) ||
-            (e.ctrlKey && e.key === 'p')) {
-            e.preventDefault();
-            showChromeLensWarning();
-            console.log('🚨 Screenshot attempt detected');
-            return false;
-        }
-    });
-}
-
-function showChromeLensWarning() {
-    if (chromeWarningDisplayed) return;
-    
-    chromeWarningDisplayed = true;
-    const warning = document.getElementById('chromeLensWarning');
-    
-    warning.innerHTML = `
-        <h2 style="margin: 0 0 10px 0; color: white;">⚠️ SECURITY VIOLATION DETECTED</h2>
-        <p style="margin: 0 0 15px 0;">Using Google Lens or image search is strictly prohibited!</p>
-        <p style="margin: 0; font-size: 14px;">This attempt has been logged and reported.</p>
-        <div style="margin-top: 15px; font-size: 12px; opacity: 0.8;">
-            Student: ${progress?.student?.name || 'Unknown'} | Time: ${new Date().toLocaleTimeString()}
-        </div>
-    `;
-    
-    warning.style.display = 'block';
-    
-    // Remove after 5 seconds
-    setTimeout(() => {
-        warning.style.display = 'none';
-        chromeWarningDisplayed = false;
-    }, 5000);
-    
-    console.error('🚨 GOOGLE LENS ATTEMPT BLOCKED');
-}
-
-function monitorLensActivity() {
-    if (!examInProgress) return;
-    
-    // Check for hidden elements (possible screenshot attempts)
-    const hiddenElements = document.querySelectorAll('[style*="display: none"]');
-    
-    // Check for iframes (possible embedding)
-    const iframes = document.querySelectorAll('iframe');
-    if (iframes.length > 0) {
-        console.warn("⚠️ Iframe detected - possible capture attempt");
-        iframes.forEach(iframe => iframe.remove());
-    }
-    
-    // Monitor image elements
-    const images = document.querySelectorAll('img');
-    images.forEach(img => {
-        if (!img.hasAttribute('data-lens-protected')) {
-            img.setAttribute('data-lens-protected', 'true');
-            img.style.userSelect = 'none';
-            img.style.webkitUserSelect = 'none';
-            img.style.mozUserSelect = 'none';
-            img.style.msUserSelect = 'none';
-        }
-    });
-}
-
-function cleanupLensProtection() {
-    // Hide protection overlays
-    document.getElementById('googleLensBlocker').style.display = 'none';
-    document.getElementById('microPattern').style.display = 'none';
-    document.getElementById('chromeLensWarning').style.display = 'none';
-    
-    // Remove context blockers
-    contextMenuBlockers.forEach(blocker => {
-        if (blocker && blocker.parentNode) {
-            blocker.parentNode.removeChild(blocker);
-        }
-    });
-    contextMenuBlockers = [];
-    
-    // Clear interval
-    if (lensProtectionInterval) {
-        clearInterval(lensProtectionInterval);
-    }
-    
-    lensProtectionActive = false;
-    chromeWarningDisplayed = false;
-    
-    console.log("✅ Google Lens protection cleaned up");
-}
-
-function isChromeBrowser() {
-    const userAgent = navigator.userAgent;
-    const isChrome = /Chrome/.test(userAgent) && /Google Inc/.test(navigator.vendor);
-    const isEdge = /Edg/.test(userAgent);
-    
-    return isChrome && !isEdge; // True Chrome, not Edge
-}
-
-// ===== MODIFIED RENDER QUESTION FUNCTION =====
-function renderQuestion() {
-  const idx = progress.currentIndex;
-  const container = document.getElementById('questionContainer');
-  
-  const imagePath = examData.files[idx];
-  const questionNumber = idx + 1;
-  
-  console.log(`🖼️ Loading: ${imagePath}`);
-  
-  container.innerHTML = `
-    <div class="question-transition question-fade-in">
-      <div class="question-number">Question ${questionNumber}</div>
-      <div class="sectionTitle">${examData.subjectNames[idx]}</div>
-      
-      <!-- Secure Image Container with Lens Protection -->
-      <div style="width: 100%; overflow: auto; min-height: 300px; display: flex; justify-content: center; align-items: center; position: relative;">
-        <img src="${imagePath}" 
-             class="questionImg secure-image" 
-             alt="Question ${questionNumber}"
-             style="max-width: 100%; height: auto; pointer-events: none; user-select: none;"
-             onload="onSecureImageLoad(this, ${idx})"
-             onerror="handleSimpleImageError(this, ${idx})"
-             draggable="false">
-        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: rgba(255,0,0,0.1); font-size: 120px; font-weight: bold; pointer-events: none; user-select: none; z-index: 1;">
-            ${progress?.student?.roll || 'EXAM'}
-        </div>
-      </div>
-      
-      <div class="options-container">
-        <button class="optBtn ${progress.answers[idx] === 'A' ? 'selected' : ''}" data-opt="A">A</button>
-        <button class="optBtn ${progress.answers[idx] === 'B' ? 'selected' : ''}" data-opt="B">B</button>
-        <button class="optBtn ${progress.answers[idx] === 'C' ? 'selected' : ''}" data-opt="C">C</button>
-        <button class="optBtn ${progress.answers[idx] === 'D' ? 'selected' : ''}" data-opt="D">D</button>
-      </div>
-    </div>
-  `;
-  
-  document.querySelectorAll('.optBtn').forEach(btn => {
-    btn.onclick = function() { selectOption(this.getAttribute('data-opt')); };
-  });
-  
-  updateQuestionInfo();
-  updatePalette();
-}
-
-function onSecureImageLoad(imgElement, questionIndex) {
-    console.log(`✅ Secure image loaded: questions/${questionIndex + 1}.png`);
-    
-    // Add anti-Lens attributes
-    imgElement.setAttribute('data-lens-protected', 'true');
-    imgElement.setAttribute('data-timestamp', Date.now());
-    imgElement.style.imageRendering = 'pixelated';
-    imgElement.style.transform = 'rotate(0.01deg)';
-}
-
-// ===== MODIFIED EXAM START FUNCTION =====
-function startExam(studentKey) {
-    if (!keyLoaded) {
-        alert('Answer key not loaded. Contact admin.');
-        return;
-    }
-
-    const stuName = document.getElementById('stuName');
-    const stuSection = document.getElementById('stuSection');
-    const stuRoll = document.getElementById('stuRoll');
-    const stuAdm = document.getElementById('stuAdm');
-
-    localStorage.setItem(studentKey, Date.now());
-    prepareExamData();
-    
-    // Initialize Google Lens protection
-    if (isChromeBrowser()) {
-        blockGoogleLensInChrome();
-    }
-    
-    progress = {
-        answers: Array(examData.files.length).fill(null),
-        review: Array(examData.files.length).fill(false),
-        currentIndex: 0,
-        student: {name: stuName.value, sec: stuSection.value, roll: stuRoll.value, adm: stuAdm.value},
-        timeLeftSec: EXAM_DURATION_MINUTES * 60
+// ===== GOOGLE FORMS HELPER FUNCTIONS =====
+function getFormFields(section) {
+    return {
+        ...COMMON_FIELDS,
+        ALL_ANSWERS: ANSWERS_FIELDS[section]
     };
-
-    examStartTime = Date.now();
-    examInProgress = true;
-    
-    document.getElementById('studentEntry').style.display = "none";
-    document.getElementById('examArea').style.display = "block";
-    renderQuestion(); 
-    renderPalette(); 
-    startTimer(); 
-    updateNavButtons();
-    
-    sheetReady = true;
-    
-    console.log("🔒 Secure exam with Google Lens blocking started");
 }
 
-// ===== MODIFIED SUBMIT EXAM FUNCTION =====
-function submitExam() {
-  if (hasSubmitted) return;
-  clearInterval(timerInterval);
-  
-  // Cleanup Google Lens protection
-  cleanupLensProtection();
-  
-  hasSubmitted = true;
-  examInProgress = false;
-  
-  const subjData = {};
-  examData.subjectNames.forEach((s, i) => {
-    const subjectName = identifySubject(s);
-    if (!subjData[subjectName]) subjData[subjectName] = {correct: 0, wrong: 0, blank: 0, total: 0, marks: 0};
+function getAssignedForm(studentData) {
+    const forms = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+    const formsCount = forms.length;
     
-    const ans = progress.answers[i];
-    if (ans === null) {
-      subjData[subjectName].blank++;
-    } else if (ans === examData.keys[i]) {
-      subjData[subjectName].correct++;
-      subjData[subjectName].marks += MARK_PER_CORRECT;
-    } else {
-      subjData[subjectName].wrong++;
-      subjData[subjectName].marks += MARK_PER_WRONG;
+    if (studentData.roll && !isNaN(studentData.roll)) {
+        const rollNumber = parseInt(studentData.roll);
+        const formIndex = (rollNumber - 1) % formsCount;
+        return forms[formIndex];
     }
-    subjData[subjectName].total++;
-  });
-
-  currentSubjData = subjData;
-  
-  console.log("🎯 FINAL SUBMISSION DATA:");
-  console.log("Student:", progress.student.name);
-  console.log("All Answers:", progress.answers);
-  console.log("Correct Answers:", examData.keys);
-  console.log("Subject Data:", subjData);
-
-  // Submit to Google Forms
-  sendToGoogleFormWithGuarantee(subjData, progress.student);
-  
-  // Show summary immediately
-  showSummaryInterface(subjData);
+    
+    const hashString = `${studentData.name}|${studentData.roll}|${studentData.adm}`;
+    let hash = 0;
+    for (let i = 0; i < hashString.length; i++) {
+        hash = ((hash << 5) - hash) + hashString.charCodeAt(i);
+        hash = hash & hash;
+    }
+    return forms[Math.abs(hash) % formsCount];
 }
 
-// ===== MODIFIED WINDOW LOAD FUNCTION =====
-window.addEventListener('load', function() {
-  console.log('🔒 LFJC Chrome-Secure Online Exam System Initialized');
-  
-  // Check if Chrome and add warning
-  if (isChromeBrowser()) {
-    console.warn('⚠️ Chrome browser detected - Google Lens blocking enabled');
-    
-    // Add Chrome warning to access screen
-    setTimeout(() => {
-      if (document.getElementById('accessDenied').style.display === 'flex') {
-        const chromeWarning = document.createElement('div');
-        chromeWarning.style.position = 'absolute';
-        chromeWarning.style.bottom = '20px';
-        chromeWarning.style.left = '50%';
-        chromeWarning.style.transform = 'translateX(-50%)';
-        chromeWarning.style.backgroundColor = 'rgba(255, 193, 7, 0.9)';
-        chromeWarning.style.color = '#856404';
-        chromeWarning.style.padding = '10px 20px';
-        chromeWarning.style.borderRadius = '5px';
-        chromeWarning.style.fontSize = '14px';
-        chromeWarning.style.zIndex = '10001';
-        chromeWarning.style.textAlign = 'center';
-        chromeWarning.style.maxWidth = '90%';
-        chromeWarning.innerHTML = `
-          <strong>⚠️ IMPORTANT:</strong> Google Lens/Image search is BLOCKED during exam.<br>
-          Attempting to use Chrome's "Search image with Google Lens" will trigger security alerts.
-        `;
-        
-        document.getElementById('accessDenied').appendChild(chromeWarning);
-      }
-    }, 1000);
-  }
-  
-  document.getElementById('accessDenied').style.display = 'flex';
-  document.getElementById('studentEntry').style.display = 'none';
-  document.getElementById('examArea').style.display = 'none';
-  document.getElementById('summaryArea').style.display = 'none';
-  document.getElementById('reviewArea').style.display = 'none';
-  document.getElementById('resubmissionSection').style.display = 'none';
-  document.getElementById('googleFormsStatus').style.display = 'none';
-  
-  document.getElementById('accessCode').focus();
-  
-  // Load answer key from repository
-  loadAnswerKeyFromRepo();
-});
+function updateFormAssignmentDisplay(studentData) {
+    assignedForm = getAssignedForm(studentData);
+    document.getElementById('assignedFormDisplay').textContent = `FORM ${assignedForm}`;
+    document.getElementById('formAssignment').style.display = 'block';
+}
 
-// ===== YOUR EXISTING FUNCTIONS (UNCHANGED) =====
-
+// ===== SIMPLIFIED & FIXED IMAGE LOADING =====
 function initializeDemoData() {
     // Create demo answer key for 60 questions
     answerKey = [];
@@ -1679,7 +1562,7 @@ function initializeDemoData() {
     // SIMPLE: Generate exact image paths for questions folder
     images = [];
     for (let i = 1; i <= 60; i++) {
-        images.push(`questions/${i}.png`);
+        images.push(`questions/${i}.png`); // Exact path: questions/1.png, questions/2.png, etc.
     }
     
     keyLoaded = true;
@@ -1688,6 +1571,7 @@ function initializeDemoData() {
     console.log('✅ Demo Data Ready - Images: questions/1.png to questions/60.png');
 }
 
+// ===== FIXED ANSWER KEY PARSER FOR 5 PER LINE WITHOUT GAP =====
 async function loadAnswerKeyFromRepo() {
     try {
         console.log("📥 Loading answer key...");
@@ -1733,6 +1617,7 @@ async function loadAnswerKeyFromRepo() {
     }
 }
 
+// ===== SPECIAL PARSER FOR 5 PER LINE WITHOUT GAP =====
 function parseAnswerKeyFivePerLine(text) {
     console.log("🔄 Parsing: 5 answers per line without gaps");
     
@@ -1768,6 +1653,49 @@ function parseAnswerKeyFivePerLine(text) {
     return parsedAnswers.slice(0, 60); // Ensure exactly 60
 }
 
+// ===== SIMPLIFIED RENDER QUESTION =====
+function renderQuestion() {
+  const idx = progress.currentIndex;
+  const container = document.getElementById('questionContainer');
+  
+  const imagePath = examData.files[idx];
+  const questionNumber = idx + 1;
+  
+  console.log(`🖼️ Loading: ${imagePath}`);
+  
+  container.innerHTML = `
+    <div class="question-transition question-fade-in">
+      <div class="question-number">Question ${questionNumber}</div>
+      <div class="sectionTitle">${examData.subjectNames[idx]}</div>
+      
+      <!-- Simple Image Container -->
+      <div style="width: 100%; overflow: auto; min-height: 300px; display: flex; justify-content: center; align-items: center;">
+        <img src="${imagePath}" 
+             class="questionImg" 
+             alt="Question ${questionNumber}"
+             style="max-width: 100%; height: auto;"
+             onload="console.log('✅ Image loaded: ${imagePath}')"
+             onerror="handleSimpleImageError(this, ${idx})">
+      </div>
+      
+      <div class="options-container">
+        <button class="optBtn ${progress.answers[idx] === 'A' ? 'selected' : ''}" data-opt="A">A</button>
+        <button class="optBtn ${progress.answers[idx] === 'B' ? 'selected' : ''}" data-opt="B">B</button>
+        <button class="optBtn ${progress.answers[idx] === 'C' ? 'selected' : ''}" data-opt="C">C</button>
+        <button class="optBtn ${progress.answers[idx] === 'D' ? 'selected' : ''}" data-opt="D">D</button>
+      </div>
+    </div>
+  `;
+  
+  document.querySelectorAll('.optBtn').forEach(btn => {
+    btn.onclick = function() { selectOption(this.getAttribute('data-opt')); };
+  });
+  
+  updateQuestionInfo();
+  updatePalette();
+}
+
+// ===== SIMPLE ERROR HANDLER =====
 function handleSimpleImageError(imgElement, questionIndex) {
     const attemptedPath = imgElement.src;
     const questionNumber = questionIndex + 1;
@@ -1787,6 +1715,7 @@ function handleSimpleImageError(imgElement, questionIndex) {
     `;
 }
 
+// ===== COMPREHENSIVE ANSWERS CAPTURE SYSTEM =====
 function captureAllAnswersData() {
     console.log("🎯 Capturing all student answers...");
     
@@ -1856,6 +1785,7 @@ function generateExamId() {
     return `exam_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 }
 
+// ===== SIMPLIFIED ANSWER FORMAT =====
 function formatAllAnswersString(answers) {
     console.log("🎯 Formatting answers as simple letters (A,B,C,D,N) in ORIGINAL sequence...");
     
@@ -1878,6 +1808,7 @@ function formatAllAnswersString(answers) {
     return result;
 }
 
+// ===== ENHANCED GOOGLE FORMS SUBMISSION =====
 async function submitToGoogleForms(answersData) {
     const FORM_URL = GOOGLE_FORMS[assignedForm];
     
@@ -1972,6 +1903,7 @@ function calculateSubjectMarks(summary) {
     return { maths, physics, chemistry, total };
 }
 
+// ===== MODIFIED SUBMISSION FUNCTION =====
 async function sendToGoogleFormWithGuarantee(subjData, studentData) {
     const studentId = generateStudentId(studentData);
     
@@ -2022,39 +1954,7 @@ function generateStudentId(studentData) {
         .replace(/[^a-z0-9_]/g, '');
 }
 
-// ===== GOOGLE FORMS HELPER FUNCTIONS =====
-function getFormFields(section) {
-    return {
-        ...COMMON_FIELDS,
-        ALL_ANSWERS: ANSWERS_FIELDS[section]
-    };
-}
-
-function getAssignedForm(studentData) {
-    const forms = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
-    const formsCount = forms.length;
-    
-    if (studentData.roll && !isNaN(studentData.roll)) {
-        const rollNumber = parseInt(studentData.roll);
-        const formIndex = (rollNumber - 1) % formsCount;
-        return forms[formIndex];
-    }
-    
-    const hashString = `${studentData.name}|${studentData.roll}|${studentData.adm}`;
-    let hash = 0;
-    for (let i = 0; i < hashString.length; i++) {
-        hash = ((hash << 5) - hash) + hashString.charCodeAt(i);
-        hash = hash & hash;
-    }
-    return forms[Math.abs(hash) % formsCount];
-}
-
-function updateFormAssignmentDisplay(studentData) {
-    assignedForm = getAssignedForm(studentData);
-    document.getElementById('assignedFormDisplay').textContent = `FORM ${assignedForm}`;
-    document.getElementById('formAssignment').style.display = 'block';
-}
-
+// ===== INPUT VALIDATION =====
 function validateStudentInputs() {
   const n = document.getElementById('stuName'), 
         s = document.getElementById('stuSection'), 
@@ -2100,6 +2000,7 @@ function clearErrors() {
     document.getElementById('errorMessages').innerHTML = '';
 }
 
+// ===== RESUBMISSION FUNCTIONALITY =====
 function checkResubmission(studentData) {
     return false;
 }
@@ -2128,6 +2029,7 @@ function cancelResubmission() {
     isResubmission = false;
 }
 
+// ===== ACCESS CODE VERIFICATION =====
 function verifyAccessCode() {
     const enteredCode = document.getElementById('accessCode').value.trim();
     const errorElement = document.getElementById('accessError');
@@ -2285,6 +2187,47 @@ function startWithSecurity(ok) {
   startExam(studentKey);
 }
 
+// ===== MODIFIED START EXAM FUNCTION WITH NUCLEAR PROTECTION =====
+function startExam(studentKey) {
+    if (!keyLoaded) {
+        alert('Answer key not loaded. Contact admin.');
+        return;
+    }
+
+    const stuName = document.getElementById('stuName');
+    const stuSection = document.getElementById('stuSection');
+    const stuRoll = document.getElementById('stuRoll');
+    const stuAdm = document.getElementById('stuAdm');
+
+    localStorage.setItem(studentKey, Date.now());
+    prepareExamData();
+    
+    // ACTIVATE NUCLEAR GOOGLE LENS BLOCKER
+    activateNuclearLensBlocker();
+    
+    progress = {
+        answers: Array(examData.files.length).fill(null),
+        review: Array(examData.files.length).fill(false),
+        currentIndex: 0,
+        student: {name: stuName.value, sec: stuSection.value, roll: stuRoll.value, adm: stuAdm.value},
+        timeLeftSec: EXAM_DURATION_MINUTES * 60
+    };
+
+    examStartTime = Date.now();
+    examInProgress = true;
+    
+    document.getElementById('studentEntry').style.display = "none";
+    document.getElementById('examArea').style.display = "block";
+    renderQuestion(); 
+    renderPalette(); 
+    startTimer(); 
+    updateNavButtons();
+    
+    sheetReady = true;
+    
+    console.log("☢️ Exam started with nuclear Google Lens protection");
+}
+
 function selectOption(opt) {
   const idx = progress.currentIndex;
   if (progress.answers[idx] === opt) {
@@ -2392,6 +2335,10 @@ document.getElementById('markReviewBtn').onclick = () => {
   updatePalette();
 };
 
+document.getElementById('submitBtn').onclick = () => {
+  showConfirm("Submit Exam? You cannot change answers after submission.", submitExam);
+};
+
 // ===== TIMER FUNCTIONS =====
 function startTimer() {
   timerInterval = setInterval(() => {
@@ -2410,6 +2357,50 @@ function startTimer() {
       submitExam();
     }
   }, 1000);
+}
+
+// ===== SUBMISSION FUNCTIONS =====
+function submitExam() {
+  if (hasSubmitted) return;
+  clearInterval(timerInterval);
+  
+  // Cleanup nuclear protection
+  cleanupNuclearProtection();
+  
+  hasSubmitted = true;
+  examInProgress = false;
+  
+  const subjData = {};
+  examData.subjectNames.forEach((s, i) => {
+    const subjectName = identifySubject(s);
+    if (!subjData[subjectName]) subjData[subjectName] = {correct: 0, wrong: 0, blank: 0, total: 0, marks: 0};
+    
+    const ans = progress.answers[i];
+    if (ans === null) {
+      subjData[subjectName].blank++;
+    } else if (ans === examData.keys[i]) {
+      subjData[subjectName].correct++;
+      subjData[subjectName].marks += MARK_PER_CORRECT;
+    } else {
+      subjData[subjectName].wrong++;
+      subjData[subjectName].marks += MARK_PER_WRONG;
+    }
+    subjData[subjectName].total++;
+  });
+
+  currentSubjData = subjData;
+  
+  console.log("🎯 FINAL SUBMISSION DATA:");
+  console.log("Student:", progress.student.name);
+  console.log("All Answers:", progress.answers);
+  console.log("Correct Answers:", examData.keys);
+  console.log("Subject Data:", subjData);
+
+  // Submit to Google Forms
+  sendToGoogleFormWithGuarantee(subjData, progress.student);
+  
+  // Show summary immediately
+  showSummaryInterface(subjData);
 }
 
 // ===== DETAILED SOLUTIONS =====
@@ -2662,12 +2653,30 @@ document.addEventListener('keydown', function(e) {
   }
 });
 
+// ===== INITIAL SETUP =====
+window.addEventListener('load', function() {
+  console.log('LFJC Online Exam System Initialized');
+  
+  document.getElementById('accessDenied').style.display = 'flex';
+  document.getElementById('studentEntry').style.display = 'none';
+  document.getElementById('examArea').style.display = 'none';
+  document.getElementById('summaryArea').style.display = 'none';
+  document.getElementById('reviewArea').style.display = 'none';
+  document.getElementById('resubmissionSection').style.display = 'none';
+  document.getElementById('googleFormsStatus').style.display = 'none';
+  
+  document.getElementById('accessCode').focus();
+  
+  // Load answer key from repository
+  loadAnswerKeyFromRepo();
+});
+
 console.log("🎯 LFJC Online Exam System Loaded Successfully");
-console.log("✅ Google Lens blocking security added");
+console.log("☢️ Nuclear Google Lens Blocker Ready");
 console.log("✅ Fixed: Answer key parsing for '5 per line without gap' format");
 console.log("✅ Fixed: Image loading from questions folder");
 console.log("✅ Enhanced: Google Forms integration with 10 forms (A-J)");
 console.log("✅ Enhanced: Form-specific answer field mappings");
 </script>
 </body>
-  </html>
+</html>
