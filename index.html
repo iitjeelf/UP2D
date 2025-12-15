@@ -936,12 +936,15 @@ table td, table th {
 
 <!-- Access Denied Screen - ALWAYS SHOWS FIRST -->
 <div id="accessDenied" class="access-denied">
-    <h1>ACCESS REQUIRED</h1>
-     <p>MATHS 30 QSTNS<p>
-     </p>PHYSICS 15 QSTNS<p>
+    <h1>LFJC ONLINE EXAMINATION</h1>
+     </p>MATHS 30 QSTNS</p>
+     </p>PHYSICS 15 QSTNS</p>
      </p>CHEMISTRY 15 QSTNS</p>
-     <p>CORRECT ANSWER + 4 MARKS<p>
+     </p>CORRECT ANSWER + 4 MARKS</p>
      </p>WRONG ANSWER -1 MARK</p>
+  </p>First Answer only questions you are sure about</p>
+ </p> If you spend more than 2-3 minutes on a question without a clear path to the answer, immediately click Mark for Review and move on</p>
+  </p>Second Tackle marked/review questions</p>
   <input type="password" id="accessCode" class="access-code-input" placeholder="Enter Access Code">
     <button id="verifyAccess" class="verify-btn">VERIFY ACCESS</button>
     <div id="accessError" class="access-error">❌ Invalid access code. Please try again.</div>
@@ -1114,7 +1117,7 @@ table td, table th {
 <script>
 // ===== CONFIGURATION =====
 const MARK_PER_CORRECT = 4, MARK_PER_WRONG = -1;
-const EXAM_DURATION_MINUTES = 119;
+const EXAM_DURATION_MINUTES = 120;
 const EXAM_DURATION_MS = EXAM_DURATION_MINUTES * 60 * 1000;
 const STORAGE_KEY_PREFIX = "lfjc_exam_";
 const MAX_QUESTIONS = 60;
