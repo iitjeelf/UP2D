@@ -1,0 +1,1358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>LFJC Online Exam</title>
+<style>
+/* ===== BASE STYLES ===== */
+:root {
+  --primary-color: #4B0082;
+  --secondary-color: #D8BFD8;
+  --light-purple: #E6E6FA;
+  --white: #fff;
+  --black: #000;
+  --success: #32CD32;
+  --warning: #ff9900;
+  --danger: #ff6666;
+  --shadow: 0 5px 15px rgba(0,0,0,0.1);
+  --transition: all 0.3s ease;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  background: var(--white);
+  color: var(--black);
+  line-height: 1.6;
+  /* KEEPING YOUR ORIGINAL SECURITY: */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* ===== HEADER & FOOTER ===== */
+header {
+  background: linear-gradient(145deg, var(--light-purple), var(--secondary-color));
+  color: var(--primary-color);
+  text-align: center;
+  padding: 20px;
+  font-size: 36px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  box-shadow: var(--shadow);
+  text-shadow: 0 1px 2px var(--white);
+}
+
+footer {
+  background: var(--light-purple);
+  color: var(--primary-color);
+  padding: 10px;
+  text-align: center;
+  font-weight: bold;
+  position: fixed;
+  width: 100%;
+  bottom: 0;
+}
+
+/* ===== STUDENT ENTRY SECTION ===== */
+#studentEntry {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 140px);
+  padding: 16px;
+  text-align: center;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 60px;
+  width: 100%;
+  max-width: 500px;
+}
+
+.form-group label {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-right: 10px;
+  color: var(--primary-color);
+  width: 180px;
+  text-align: right;
+}
+
+input[type="text"], input[type="number"] {
+  padding: 12px 14px;
+  font-size: 1.1rem;
+  border-radius: 10px;
+  border: 1.5px solid var(--primary-color);
+  outline: none;
+  min-width: 250px;
+  transition: var(--transition);
+  /* ALLOW TEXT SELECTION IN INPUTS ONLY */
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+  user-select: text !important;
+}
+
+input[type="text"]:focus, input[type="number"]:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(75, 0, 130, 0.2);
+}
+
+input.error {
+  border-color: var(--danger);
+}
+
+/* ===== BUTTON STYLES ===== */
+button {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  border: none;
+  border-radius: 12px;
+  transition: var(--transition);
+  box-shadow: 0 6px #aaa;
+  background: linear-gradient(to bottom, #fafaff, #dcd6f7);
+  color: var(--primary-color);
+  font-weight: 600;
+  padding: 12px 24px;
+  font-size: 18px;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px rgba(0,0,0,.28);
+}
+
+button:active {
+  transform: translateY(3px) scale(.98);
+}
+
+button:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+.optBtn {
+  font-size: 16px;
+  padding: 8px 18px;
+  margin: 6px;
+  border: 2px solid var(--primary-color);
+  background: var(--white);
+  border-radius: 8px;
+  box-shadow: 0 5px #aaa;
+}
+
+.optBtn.selected {
+  background: var(--success);
+  color: var(--white);
+  border-color: #2fa92f;
+}
+
+.navBtn {
+  font-size: 16px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  color: var(--white);
+  font-weight: bold;
+  cursor: pointer;
+  background: linear-gradient(145deg, #1E90FF, #4682B4);
+  margin: 0 15px;
+}
+
+#markReviewBtn {
+  background: linear-gradient(145deg, #ffb84d, var(--warning));
+}
+
+#submitBtn {
+  background: linear-gradient(145deg, #c8b88a, #b49e60);
+}
+
+/* ===== TIMER STYLES ===== */
+#timerEl {
+  font-size: 20px;
+  font-weight: bold;
+  color: var(--primary-color);
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: #f0f0ff;
+  display: inline-block;
+  transition: var(--transition);
+}
+
+#timerEl.blink {
+  animation: blinkTimer 1s infinite;
+}
+
+@keyframes blinkTimer {
+  0% { background: var(--danger); color: var(--white); }
+  50% { background: var(--white); color: var(--primary-color); }
+  100% { background: var(--danger); color: var(--white); }
+}
+
+/* ===== PALETTE STYLES ===== */
+#paletteContainer {
+  display: grid;
+  gap: 8px;
+  margin: 20px auto;
+  max-width: 100%;
+  padding: 0 10px;
+  justify-content: center;
+}
+
+#paletteContainer button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 14px;
+  margin: 2px;
+  border: 1px solid var(--primary-color);
+  background: var(--light-purple);
+  color: var(--primary-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#paletteContainer button.selected {
+  background: var(--success);
+  color: var(--white);
+  border-color: #2fa92f;
+}
+
+#paletteContainer button.reviewed {
+  background: yellow;
+  color: var(--black);
+}
+
+#paletteContainer button.current {
+  border: 3px solid red;
+}
+
+/* ===== EXAM AREA STYLES ===== */
+#examArea {
+  padding: 16px;
+  text-align: center;
+  display: none;
+}
+
+#examHeader {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+#stuInfo {
+  flex: 0 0 auto;
+  text-align: left;
+  white-space: nowrap;
+}
+
+#stuQInfo {
+  flex: 1;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.sectionTitle {
+  font-size: 22px;
+  color: var(--primary-color);
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+/* ===== IMAGE STYLES ===== */
+.questionImg {
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+  display: block;
+  margin: 0 auto;
+  border: 2px solid #E6E6FA;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* ===== ACCESS DENIED SCREEN STYLES ===== */
+.access-denied {
+  display: flex;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #4B0082, #8A2BE2);
+  z-index: 10000;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  text-align: center;
+  padding: 20px;
+}
+
+.access-denied h1 {
+  font-size: 2.5em;
+  margin-bottom: 20px;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.access-code-input {
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  width: 300px;
+  text-align: center;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.verify-btn {
+  background: white;
+  color: #4B0082;
+  border: none;
+  padding: 12px 30px;
+  font-size: 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.verify-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px rgba(0,0,0,0.15);
+}
+
+.access-error {
+  color: #ffeb3b;
+  margin-top: 10px;
+  font-weight: 600;
+  display: none;
+}
+
+/* ===== CONFIRM MODAL STYLES ===== */
+.confirmModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.45);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 10001;
+}
+
+.confirmBox {
+  background: var(--white);
+  padding: 20px;
+  border-radius: 12px;
+  min-width: 280px;
+  text-align: center;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.confirmBox p {
+  font-size: 18px;
+  color: var(--primary-color);
+  margin-bottom: 15px;
+}
+
+.confirmBox button {
+  margin: 0 10px;
+  padding: 8px 16px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* ===== FIXED: FILL-BLANK INPUT STYLES ===== */
+.fill-blank-input {
+  padding: 14px 20px;
+  font-size: 24px;
+  border: 2px solid #4B0082;
+  border-radius: 10px;
+  width: 250px;
+  text-align: center;
+  outline: none;
+  font-weight: bold;
+  background: #f8f9fa;
+  margin: 10px 0;
+  /* CRITICAL FIX: Allow text selection in this specific input */
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+  user-select: text !important;
+  -webkit-touch-callout: text !important;
+}
+
+.fill-blank-input:focus {
+  box-shadow: 0 0 0 3px rgba(75, 0, 130, 0.5);
+  border-color: #4B0082;
+}
+
+/* ===== RESPONSIVE STYLES ===== */
+@media (max-width: 600px) {
+  .form-group {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .form-group label {
+    text-align: left;
+    width: auto;
+    margin-bottom: 5px;
+  }
+  
+  #examHeader {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  #stuInfo, #stuQInfo {
+    text-align: center;
+  }
+  
+  .navContainer {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .navBtn {
+    width: 80%;
+    margin-bottom: 10px;
+    margin-left: 0;
+    margin-right: 0;
+  }
+  
+  #paletteContainer {
+    grid-template-columns: repeat(5, 1fr) !important;
+    gap: 6px;
+  }
+  
+  #paletteContainer button {
+    width: 35px;
+    height: 35px;
+    font-size: 12px;
+  }
+  
+  /* Mobile fix for fill-blank input */
+  .fill-blank-input {
+    width: 90%;
+    max-width: 300px;
+    font-size: 20px;
+    padding: 12px 16px;
+  }
+}
+
+@media (min-width: 601px) and (max-width: 900px) {
+  #paletteContainer {
+    grid-template-columns: repeat(10, 1fr) !important;
+  }
+}
+
+@media (min-width: 901px) and (max-width: 1200px) {
+  #paletteContainer {
+    grid-template-columns: repeat(15, 1fr) !important;
+  }
+}
+
+@media (min-width: 1201px) {
+  #paletteContainer {
+    grid-template-columns: repeat(20, 1fr) !important;
+  }
+}
+</style>
+</head>
+
+<body>
+<!-- Access Denied Screen -->
+<div id="accessDenied" class="access-denied">
+    <h1>LFJC ONLINE EXAMINATION</h1>
+    <p style="font-size: 1.2em; margin: 10px 0;">TOTAL 75 QUESTIONS</p>
+    <p style="margin: 5px 0;">• Maths: Q1-20 (MCQ), Q21-25 (Type Numerical Answer)</p>
+    <p style="margin: 5px 0;">• Physics: Q26-45 (MCQ), Q46-50 (Type Numerical Answer)</p>
+    <p style="margin: 5px 0;">• Chemistry: Q51-70 (MCQ), Q71-75 (Type Numerical Answer)</p>
+    <p style="margin: 10px 0; font-weight: bold;">CORRECT ANSWER + 4 MARKS</p>
+    <p style="margin: 5px 0; font-weight: bold;">WRONG ANSWER -1 MARK</p>
+    <p style="margin: 15px 0; max-width: 600px; line-height: 1.5;">
+        <strong>Instructions:</strong><br>
+        1. First Answer only questions you are sure about<br>
+        2. If you spend more than 2-3 minutes on a question without a clear path to the answer, immediately click Mark for Review and move on<br>
+        3. Second Tackle marked/review questions
+    </p>
+    <input type="password" id="accessCode" class="access-code-input" placeholder="Enter Access Code">
+    <button id="verifyAccess" class="verify-btn">VERIFY ACCESS</button>
+    <div id="accessError" class="access-error">❌ Invalid access code. Please try again.</div>
+</div>
+
+<header>LFJC ONLINE EXAMINATION</header>
+
+<div id="studentEntry" style="display:none;">
+  <div class="form-group"><label>NAME</label><input type="text" id="stuName" placeholder="Only letters & spaces" autocomplete="off"></div>
+  <div class="form-group"><label>SECTION</label><input type="text" id="stuSection" placeholder="Letters & digits" autocomplete="off"></div>
+  <div class="form-group"><label>ROLL NUMBER</label><input type="text" id="stuRoll" placeholder="Digits only" autocomplete="off"></div>
+  <div class="form-group"><label>ADMISSION NUMBER</label><input type="text" id="stuAdm" placeholder="Digits only" autocomplete="off"></div>
+
+  <div class="form-group"><button id="stuStartBtn" style="display:none;">Start Exam</button></div>
+  <div id="errorMessages"></div>
+</div>
+
+<div id="examArea" style="display:none;">
+  <div id="examHeader" style="display:flex;align-items:center;width:100%;font-weight:bold;">
+    <div id="stuInfo" style="flex:0 0 auto;text-align:left; white-space:nowrap;"></div>
+    <div id="stuQInfo" style="flex:1;text-align:center; white-space:nowrap;"></div>
+    <div style="flex:0 0 auto;text-align:right; white-space:nowrap;">
+        <span id="timerEl">🕒 00:00</span>
+    </div>
+  </div>
+
+  <div id="questionContainer" style="text-align:center;margin-top:10px;"></div>
+
+  <div class="navContainer" style="margin-top: 40px; display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+    <button class="navBtn" id="prevBtn">⬅ Previous</button>
+    <button class="navBtn" id="markReviewBtn">Review</button>
+    <button class="navBtn" id="nextBtn">Next ➡</button>
+    <button class="navBtn" id="submitBtn">Submit Exam</button>
+  </div>
+
+  <div id="paletteContainer"></div>
+</div>
+
+<footer>@LFJC2025 All Rights Reserved</footer>
+
+<!-- Confirm Modal -->
+<div class="confirmModal" id="confirmModal">
+  <div class="confirmBox">
+    <p id="confirmText">Start Exam?</p>
+    <button id="confirmYes">Yes</button>
+    <button id="confirmNo">No</button>
+  </div>
+</div>
+
+<script>
+// ===== CONFIGURATION =====
+const MARK_PER_CORRECT = 4, MARK_PER_WRONG = -1;
+const EXAM_DURATION_MINUTES = 180;
+const ACCESS_CODE = "lfjc2025";
+const MAX_QUESTIONS = 75;
+
+// ===== IMPROVED FULL-SCREEN SYSTEM =====
+let fullScreenCheckInterval = null;
+let examInProgress = false;
+let inputFocusActive = false;
+
+// Initialize full-screen system
+function initFullScreenSystem() {
+    // Add full-screen change listeners
+    document.addEventListener('fullscreenchange', handleFullScreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullScreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullScreenChange);
+    document.addEventListener('MSFullscreenChange', handleFullScreenChange);
+    
+    // Add input focus/blur listeners - IMPROVED
+    document.addEventListener('focusin', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+            inputFocusActive = true;
+            // Temporarily disable full-screen checks while typing
+            stopFullScreenMonitoring();
+        }
+    });
+    
+    document.addEventListener('focusout', function(e) {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+            setTimeout(() => {
+                inputFocusActive = false;
+                if (examInProgress && !inputFocusActive) {
+                    startFullScreenMonitoring();
+                    // Auto return to full-screen after typing
+                    setTimeout(() => forceFullScreenSilently(), 300);
+                }
+            }, 100);
+        }
+    });
+}
+
+function handleFullScreenChange() {
+    if (!examInProgress) return;
+    
+    const isFs = document.fullscreenElement || 
+                 document.webkitFullscreenElement || 
+                 document.mozFullScreenElement || 
+                 document.msFullscreenElement;
+    
+    // SILENTLY return to full-screen - NO MESSAGES
+    if (!isFs && !inputFocusActive) {
+        setTimeout(() => {
+            forceFullScreenSilently();
+        }, 300);
+    }
+}
+
+async function forceFullScreenSilently() {
+    if (!examInProgress || inputFocusActive) return;
+    
+    try {
+        const elem = document.documentElement;
+        
+        if (elem.requestFullscreen) {
+            await elem.requestFullscreen();
+        } else if (elem.webkitRequestFullscreen) {
+            await elem.webkitRequestFullscreen();
+        } else if (elem.mozRequestFullScreen) {
+            await elem.mozRequestFullScreen();
+        } else if (elem.msRequestFullscreen) {
+            await elem.msRequestfullscreen();
+        }
+        
+        return true;
+    } catch (err) {
+        return false;
+    }
+}
+
+function startFullScreenMonitoring() {
+    if (fullScreenCheckInterval) {
+        clearInterval(fullScreenCheckInterval);
+    }
+    
+    // Check every 500ms for full-screen status
+    fullScreenCheckInterval = setInterval(() => {
+        if (!examInProgress || inputFocusActive) {
+            return;
+        }
+        
+        const isFs = document.fullscreenElement || 
+                     document.webkitFullscreenElement || 
+                     document.mozFullScreenElement || 
+                     document.msFullscreenElement;
+        
+        if (!isFs) {
+            forceFullScreenSilently();
+        }
+    }, 500);
+}
+
+function stopFullScreenMonitoring() {
+    if (fullScreenCheckInterval) {
+        clearInterval(fullScreenCheckInterval);
+        fullScreenCheckInterval = null;
+    }
+}
+
+// ===== TAB SWITCH DETECTION =====
+let tabSwitchCount = 0;
+
+document.addEventListener('visibilitychange', function() {
+    if (inputFocusActive) return; // Ignore if typing
+    
+    if (!examInProgress) return;
+    
+    if (document.hidden) {
+        tabSwitchCount++;
+        
+        if (tabSwitchCount >= 3) {
+            if (examInProgress && !hasSubmitted) {
+                submitExam();
+            }
+        }
+    }
+});
+
+// ===== GLOBAL VARIABLES =====
+let images = [];
+let answerKey = [];
+let keyLoaded = false;
+let hasSubmitted = false;
+let examStartTime = null;
+let progress = null, timerInterval = null;
+let examData = {files: [], subjectNames: [], keys: [], originalOrder: [], questionTypes: []};
+
+// ===== DEMO DATA INITIALIZATION =====
+function initializeDemoData() {
+    answerKey = [];
+    
+    // Create answer key for 75 questions
+    for (let i = 1; i <= 75; i++) {
+        if (i <= 20 || (i >= 26 && i <= 45) || (i >= 51 && i <= 70)) {
+            // MCQ questions
+            const options = ['A', 'B', 'C', 'D'];
+            answerKey.push(options[Math.floor(Math.random() * options.length)]);
+        } else {
+            // Numerical answer questions
+            answerKey.push(String(Math.floor(Math.random() * 100) + 1));
+        }
+    }
+    
+    images = [];
+    for (let i = 1; i <= 75; i++) {
+        images.push(`questions/${i}.png`);
+    }
+    
+    keyLoaded = true;
+    clearErrors();
+    validateStudentInputs();
+}
+
+// ===== INPUT VALIDATION =====
+function validateStudentInputs() {
+  const n = document.getElementById('stuName'), 
+        s = document.getElementById('stuSection'), 
+        r = document.getElementById('stuRoll'), 
+        a = document.getElementById('stuAdm');
+  
+  if (s.value) s.value = s.value.toUpperCase();
+  
+  let v1 = /^[A-Za-z .]+$/.test(n.value), 
+      v2 = /^[A-Za-z0-9]+$/.test(s.value),
+      v3 = /^[0-9]+$/.test(r.value), 
+      v4 = /^[0-9]+$/.test(a.value);
+  
+  n.classList.toggle('error', !v1 && n.value !== ""); 
+  s.classList.toggle('error', !v2 && s.value !== "");
+  r.classList.toggle('error', !v3 && r.value !== ""); 
+  a.classList.toggle('error', !v4 && a.value !== "");
+  
+  const allValid = v1 && v2 && v3 && v4 && keyLoaded;
+  document.getElementById('stuStartBtn').style.display = allValid ? "inline-block" : "none";
+  
+  if (!keyLoaded) showError("Answer key not loaded - exam disabled.");
+  
+  return allValid;
+}
+
+function showError(message) {
+    const errorDiv = document.getElementById('errorMessages');
+    errorDiv.innerHTML = `<div style="color:#ff3333; font-weight:600; padding:10px; margin:10px 0; border-radius:6px; background:rgba(255,102,102,0.1); border:1px solid #ff6666;">${message}</div>`;
+}
+
+function clearErrors() {
+    document.getElementById('errorMessages').innerHTML = '';
+}
+
+// ===== ACCESS CODE VERIFICATION =====
+function verifyAccessCode() {
+    const enteredCode = document.getElementById('accessCode').value.trim();
+    const errorElement = document.getElementById('accessError');
+    const accessDenied = document.getElementById('accessDenied');
+    
+    errorElement.style.display = 'none';
+    
+    if (enteredCode === ACCESS_CODE) {
+        accessDenied.style.display = 'none';
+        document.getElementById('studentEntry').style.display = 'flex';
+        document.getElementById('accessCode').value = '';
+        document.getElementById('stuName').focus();
+    } else {
+        errorElement.style.display = 'block';
+        document.getElementById('accessCode').value = '';
+        document.getElementById('accessCode').focus();
+    }
+}
+
+// ===== EVENT LISTENERS =====
+["stuName", "stuSection", "stuRoll", "stuAdm"].forEach(id => {
+  document.getElementById(id).addEventListener("input", validateStudentInputs);
+});
+
+document.getElementById('stuStartBtn').onclick = () => { 
+  if (!validateStudentInputs()) return; 
+  showConfirm("Start Exam?", startExam); 
+};
+
+document.getElementById('verifyAccess').addEventListener('click', verifyAccessCode);
+document.getElementById('accessCode').addEventListener('keypress', function(e) {
+  if (e.key === 'Enter') verifyAccessCode();
+});
+
+// ===== UTILITY FUNCTIONS =====
+function shuffleArray(arr) {
+    const c = arr.slice();
+    for (let i = c.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [c[i], c[j]] = [c[j], c[i]];
+    }
+    return c;
+}
+
+// ===== EXAM PREPARATION =====
+function prepareExamData() {
+  examData.files = []; examData.subjectNames = []; examData.keys = []; examData.originalOrder = []; examData.questionTypes = [];
+  
+  const subjectRanges = [
+    { name: "Maths", start: 1, end: 25 },
+    { name: "Physics", start: 26, end: 50 },
+    { name: "Chemistry", start: 51, end: 75 }
+  ];
+  
+  let groups = [];
+  
+  subjectRanges.forEach(subject => {
+    const subjectQuestions = [];
+    const subjectKeys = [];
+    const subjectOriginalOrder = [];
+    const subjectTypes = [];
+    
+    for (let i = subject.start; i <= subject.end; i++) {
+      const imgIndex = i - 1;
+      if (images[imgIndex] && answerKey[imgIndex]) {
+        subjectQuestions.push(images[imgIndex]);
+        subjectKeys.push(answerKey[imgIndex]);
+        subjectOriginalOrder.push(imgIndex);
+        
+        let questionType = 'mcq';
+        if ((subject.name === "Maths" && i >= 21 && i <= 25) ||
+            (subject.name === "Physics" && i >= 46 && i <= 50) ||
+            (subject.name === "Chemistry" && i >= 71 && i <= 75)) {
+          questionType = 'fill-blank';
+        }
+        subjectTypes.push(questionType);
+      }
+    }
+    
+    const shuffledIndices = shuffleArray([...Array(subjectQuestions.length).keys()]);
+    
+    groups.push({
+      name: subject.name,
+      imgs: shuffledIndices.map(i => subjectQuestions[i]),
+      keys: shuffledIndices.map(i => subjectKeys[i]),
+      originalOrder: shuffledIndices.map(i => subjectOriginalOrder[i]),
+      types: shuffledIndices.map(i => subjectTypes[i])
+    });
+  });
+  
+  const shuffledGroups = shuffleArray(groups);
+  
+  shuffledGroups.forEach(g => {
+    g.imgs.forEach((img, i) => {
+      examData.files.push(img);
+      examData.keys.push(g.keys[i]);
+      examData.subjectNames.push(g.name);
+      examData.originalOrder.push(g.originalOrder[i]);
+      examData.questionTypes.push(g.types[i]);
+    });
+  });
+}
+
+// ===== FIXED: RENDER QUESTION FUNCTION =====
+function renderQuestion() {
+  const idx = progress.currentIndex;
+  const container = document.getElementById('questionContainer');
+  
+  const imagePath = examData.files[idx];
+  const questionNumber = idx + 1;
+  const questionType = examData.questionTypes[idx];
+  const subject = examData.subjectNames[idx];
+  
+  // Auto full-screen only if not currently typing
+  if (!inputFocusActive) {
+    setTimeout(() => {
+      forceFullScreenSilently();
+    }, 100);
+  }
+  
+  let optionsHTML = '';
+  
+  if (questionType === 'fill-blank') {
+    optionsHTML = `
+      <div style="margin: 20px 0;">
+        <div style="margin: 20px 0; font-weight: bold; color: #4B0082; font-size: 18px;">
+          Type your numerical answer:
+        </div>
+        <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 15px; margin: 25px 0;">
+          <input type="number" 
+                 id="fillBlankInput" 
+                 class="fill-blank-input"
+                 placeholder="Enter answer"
+                 value="${progress.answers[idx] || ''}"
+                 min="0"
+                 step="any"
+                 oninput="handleNumericalInput(this, ${idx})"
+                 onkeypress="handleNumericalKeyPress(event, ${idx})"
+                 onfocus="handleInputFocus()"
+                 onblur="handleInputBlur()">
+          
+          <div style="display: flex; gap: 15px; margin-top: 10px;">
+            <button onclick="submitNumericalAnswer(${idx})"
+                    style="padding: 12px 30px; background: linear-gradient(145deg, #32CD32, #228B22); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer;">
+              Save Answer
+            </button>
+            <button onclick="clearNumericalAnswer(${idx})"
+                    style="padding: 12px 30px; background: linear-gradient(145deg, #ff6666, #dc143c); color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer;">
+              Clear
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  } else {
+    optionsHTML = `
+      <div class="options-container" style="margin-bottom: 60px;">
+        <button class="optBtn ${progress.answers[idx] === 'A' ? 'selected' : ''}" data-opt="A" onclick="selectOption('A')">A</button>
+        <button class="optBtn ${progress.answers[idx] === 'B' ? 'selected' : ''}" data-opt="B" onclick="selectOption('B')">B</button>
+        <button class="optBtn ${progress.answers[idx] === 'C' ? 'selected' : ''}" data-opt="C" onclick="selectOption('C')">C</button>
+        <button class="optBtn ${progress.answers[idx] === 'D' ? 'selected' : ''}" data-opt="D" onclick="selectOption('D')">D</button>
+      </div>
+    `;
+  }
+  
+  container.innerHTML = `
+    <div>
+      <div class="question-number" style="font-size: 18px; font-weight: bold; margin-bottom: 10px;">Question ${questionNumber} of 75</div>
+      <div class="sectionTitle">${subject} (${questionType === 'fill-blank' ? 'Type Numerical Answer' : 'MCQ'})</div>
+      
+      <div style="width: 100%; overflow: auto; min-height: 300px; display: flex; justify-content: center; align-items: center; margin: 20px 0;">
+        <img src="${imagePath}" 
+             class="questionImg" 
+             alt="Question ${questionNumber}"
+             style="max-width: 100%; height: auto; max-height: 400px;"
+             onerror="this.outerHTML = '<div style=\'padding:20px; text-align:center; color:#c62828;\'><h3>⚠️ Image Not Found</h3><p>Question ${questionNumber}</p></div>'">
+      </div>
+      
+      ${optionsHTML}
+    </div>
+  `;
+  
+  if (questionType === 'fill-blank') {
+    setTimeout(() => {
+      const input = document.getElementById('fillBlankInput');
+      if (input) {
+        input.focus();
+        input.select();
+        handleInputFocus();
+      }
+    }, 300);
+  }
+  
+  updateQuestionInfo();
+  updatePalette();
+}
+
+// ===== FIXED INPUT HANDLING FUNCTIONS =====
+function handleInputFocus() {
+    inputFocusActive = true;
+    stopFullScreenMonitoring();
+}
+
+function handleInputBlur() {
+    setTimeout(() => {
+        inputFocusActive = false;
+        if (examInProgress) {
+            startFullScreenMonitoring();
+        }
+    }, 500);
+}
+
+function handleNumericalInput(inputElement, questionIndex) {
+    inputFocusActive = true;
+    
+    const value = inputElement.value;
+    const cleanedValue = value.replace(/[^0-9\.\-]/g, '');
+    
+    const decimalCount = (cleanedValue.match(/\./g) || []).length;
+    if (decimalCount > 1) {
+        const parts = cleanedValue.split('.');
+        inputElement.value = parts[0] + '.' + parts.slice(1).join('');
+    } else if (cleanedValue !== value) {
+        inputElement.value = cleanedValue;
+    }
+}
+
+function handleNumericalKeyPress(event, questionIndex) {
+    inputFocusActive = true;
+    
+    const allowedKeys = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '-', 'Enter', 'Backspace', 'Delete', 'Tab'];
+    
+    if (!allowedKeys.includes(event.key) && !event.ctrlKey && !event.altKey && !event.metaKey) {
+        event.preventDefault();
+        return;
+    }
+    
+    if (event.key === 'Enter') {
+        submitNumericalAnswer(questionIndex);
+        event.preventDefault();
+    }
+}
+
+function submitNumericalAnswer(questionIndex) {
+  const input = document.getElementById('fillBlankInput');
+  if (!input) return;
+  
+  const answer = input.value.trim();
+  
+  if (answer === '') {
+    progress.answers[questionIndex] = null;
+    updatePalette();
+    return;
+  }
+  
+  if (!/^-?\d+(\.\d+)?$/.test(answer)) {
+    return;
+  }
+  
+  progress.answers[questionIndex] = answer;
+  
+  updatePalette();
+  
+  setTimeout(() => {
+    if (questionIndex < examData.files.length - 1) {
+      progress.currentIndex++;
+      renderQuestion();
+      updateNavButtons();
+    }
+  }, 300);
+}
+
+function clearNumericalAnswer(questionIndex) {
+  progress.answers[questionIndex] = null;
+  
+  const input = document.getElementById('fillBlankInput');
+  if (input) {
+    input.value = '';
+    input.focus();
+  }
+  
+  updatePalette();
+}
+
+function selectOption(opt) {
+  const idx = progress.currentIndex;
+  const questionType = examData.questionTypes[idx];
+  
+  if (questionType === 'fill-blank') {
+    const input = document.getElementById('fillBlankInput');
+    if (input && opt !== null) {
+      input.value = opt;
+      submitNumericalAnswer(idx);
+    } else if (opt === null) {
+      clearNumericalAnswer(idx);
+    }
+    return;
+  }
+  
+  if (progress.answers[idx] === opt) {
+    progress.answers[idx] = null;
+  } else {
+    progress.answers[idx] = opt;
+  }
+  updateOptionButtons();
+  updatePalette();
+}
+
+function updateOptionButtons() {
+  const idx = progress.currentIndex;
+  const currentAnswer = progress.answers[idx];
+  const questionType = examData.questionTypes[idx];
+  
+  if (questionType === 'fill-blank') {
+    const input = document.getElementById('fillBlankInput');
+    if (input) {
+      input.value = currentAnswer || '';
+    }
+  } else {
+    document.querySelectorAll('.optBtn').forEach(btn => {
+      const btnOpt = btn.getAttribute('data-opt');
+      btn.classList.toggle('selected', btnOpt === currentAnswer);
+    });
+  }
+}
+
+function updateQuestionInfo() {
+  const idx = progress.currentIndex;
+  const stuInfoEl = document.getElementById('stuInfo');
+  const stuQInfoEl = document.getElementById('stuQInfo');
+  
+  if (stuInfoEl) stuInfoEl.textContent = `${progress.student.name} | ${progress.student.sec} | Roll: ${progress.student.roll}`;
+  if (stuQInfoEl) stuQInfoEl.textContent = `Q${idx+1} of 75 | ${examData.subjectNames[idx]} | ${examData.questionTypes[idx] === 'fill-blank' ? 'Type Numerical Answer' : 'MCQ'}`;
+}
+
+// ===== PALETTE FUNCTIONS =====
+function renderPalette() {
+  const container = document.getElementById('paletteContainer');
+  container.innerHTML = '';
+  
+  for (let i = 0; i < examData.files.length; i++) {
+    const btn = document.createElement('button');
+    btn.className = 'palette-btn';
+    btn.textContent = i + 1;
+    
+    if (progress.answers[i] !== null) btn.classList.add('selected');
+    if (progress.review[i]) btn.classList.add('reviewed');
+    if (i === progress.currentIndex) btn.classList.add('current');
+    
+    btn.onclick = () => {
+      progress.currentIndex = i;
+      renderQuestion();
+      updateNavButtons();
+      setTimeout(() => forceFullScreenSilently(), 100);
+    };
+    
+    container.appendChild(btn);
+  }
+}
+
+function updatePalette() {
+  const buttons = document.querySelectorAll('#paletteContainer button');
+  buttons.forEach((btn, i) => {
+    btn.className = 'palette-btn';
+    
+    if (progress.answers[i] !== null) btn.classList.add('selected');
+    if (progress.review[i]) btn.classList.add('reviewed');
+    if (i === progress.currentIndex) btn.classList.add('current');
+  });
+}
+
+// ===== NAVIGATION FUNCTIONS =====
+function updateNavButtons() {
+  const idx = progress.currentIndex;
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const markReviewBtn = document.getElementById('markReviewBtn');
+  
+  prevBtn.disabled = idx === 0;
+  nextBtn.disabled = idx === examData.files.length - 1;
+  
+  if (progress.review[idx]) {
+    markReviewBtn.textContent = 'Unmark Review';
+    markReviewBtn.style.background = 'linear-gradient(145deg, #dc3545, #c82333)';
+  } else {
+    markReviewBtn.textContent = 'Mark for Review';
+    markReviewBtn.style.background = 'linear-gradient(145deg, #ffb84d, var(--warning))';
+  }
+}
+
+document.getElementById('prevBtn').onclick = () => {
+  if (progress.currentIndex > 0) {
+    progress.currentIndex--;
+    renderQuestion();
+    updateNavButtons();
+    setTimeout(() => forceFullScreenSilently(), 100);
+  }
+};
+
+document.getElementById('nextBtn').onclick = () => {
+  if (progress.currentIndex < examData.files.length - 1) {
+    progress.currentIndex++;
+    renderQuestion();
+    updateNavButtons();
+    setTimeout(() => forceFullScreenSilently(), 100);
+  }
+};
+
+document.getElementById('markReviewBtn').onclick = () => {
+  const idx = progress.currentIndex;
+  progress.review[idx] = !progress.review[idx];
+  updateNavButtons();
+  updatePalette();
+};
+
+document.getElementById('submitBtn').onclick = () => {
+  showConfirm("Submit Exam? You cannot change answers after submission.", submitExam);
+};
+
+// ===== EXAM START =====
+function startExam(ok) {
+  if (!ok) return;
+  
+  const stuName = document.getElementById('stuName');
+  const stuSection = document.getElementById('stuSection');
+  const stuRoll = document.getElementById('stuRoll');
+  const stuAdm = document.getElementById('stuAdm');
+
+  prepareExamData();
+  
+  progress = {
+      answers: Array(examData.files.length).fill(null),
+      review: Array(examData.files.length).fill(false),
+      currentIndex: 0,
+      student: {name: stuName.value, sec: stuSection.value, roll: stuRoll.value, adm: stuAdm.value},
+      timeLeftSec: EXAM_DURATION_MINUTES * 60
+  };
+
+  examInProgress = true;
+  
+  document.getElementById('studentEntry').style.display = "none";
+  document.getElementById('examArea').style.display = "block";
+  
+  setTimeout(() => {
+    forceFullScreenSilently();
+  }, 500);
+  
+  renderQuestion(); 
+  renderPalette(); 
+  startTimer(); 
+  updateNavButtons();
+  
+  startFullScreenMonitoring();
+}
+
+// ===== TIMER FUNCTIONS =====
+function startTimer() {
+  timerInterval = setInterval(() => {
+    progress.timeLeftSec--;
+    
+    const minutes = Math.floor(progress.timeLeftSec / 60);
+    const seconds = progress.timeLeftSec % 60;
+    const timerEl = document.getElementById('timerEl');
+    
+    timerEl.textContent = `🕒 ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    
+    if (progress.timeLeftSec <= 300) timerEl.classList.add('blink');
+    
+    if (progress.timeLeftSec <= 0) {
+      clearInterval(timerInterval);
+      submitExam();
+    }
+  }, 1000);
+}
+
+// ===== SUBMISSION FUNCTION =====
+function submitExam() {
+  if (hasSubmitted) return;
+  clearInterval(timerInterval);
+  
+  hasSubmitted = true;
+  examInProgress = false;
+  
+  stopFullScreenMonitoring();
+  
+  // Calculate results
+  const subjData = {};
+  examData.subjectNames.forEach((s, i) => {
+    const subjectName = s;
+    if (!subjData[subjectName]) subjData[subjectName] = {
+      correct: 0, wrong: 0, blank: 0, total: 0, marks: 0
+    };
+    
+    const ans = progress.answers[i];
+    
+    if (ans === null) {
+      subjData[subjectName].blank++;
+    } else if (ans === examData.keys[i]) {
+      subjData[subjectName].correct++;
+      subjData[subjectName].marks += MARK_PER_CORRECT;
+    } else {
+      subjData[subjectName].wrong++;
+      subjData[subjectName].marks += MARK_PER_WRONG;
+    }
+    subjData[subjectName].total++;
+  });
+
+  // Show simple results
+  alert("Exam submitted!\n\n" + 
+        Object.entries(subjData).map(([subj, data]) => 
+          `${subj}:\nCorrect: ${data.correct}\nWrong: ${data.wrong}\nBlank: ${data.blank}\nMarks: ${data.marks}`
+        ).join('\n\n'));
+  
+  // Return to start
+  document.getElementById('examArea').style.display = 'none';
+  document.getElementById('studentEntry').style.display = 'flex';
+  resetForm();
+}
+
+function resetForm() {
+  document.getElementById('stuName').value = '';
+  document.getElementById('stuSection').value = '';
+  document.getElementById('stuRoll').value = '';
+  document.getElementById('stuAdm').value = '';
+  validateStudentInputs();
+}
+
+// ===== CONFIRMATION MODAL =====
+function showConfirm(message, callback) {
+  const modal = document.getElementById('confirmModal');
+  const text = document.getElementById('confirmText');
+  const yesBtn = document.getElementById('confirmYes');
+  const noBtn = document.getElementById('confirmNo');
+  
+  text.textContent = message;
+  modal.style.display = 'flex';
+  
+  yesBtn.onclick = () => { modal.style.display = 'none'; callback(true); };
+  noBtn.onclick = () => { modal.style.display = 'none'; callback(false); };
+}
+
+// ===== YOUR ORIGINAL SECURITY MEASURES =====
+document.addEventListener('contextmenu', function(e) { e.preventDefault(); return false; });
+
+document.addEventListener('keydown', function(e) {
+    if (e.keyCode === 123 || 
+        (e.ctrlKey && e.shiftKey && e.keyCode === 73) ||
+        (e.ctrlKey && e.shiftKey && e.keyCode === 74) ||
+        (e.ctrlKey && e.keyCode === 85) ||
+        (e.ctrlKey && e.keyCode === 83) ||
+        (e.ctrlKey && e.keyCode === 80) ||
+        e.keyCode === 44 ||
+        (e.ctrlKey && e.key === 'p') ||
+        (e.metaKey && e.key === 'p')) {
+        e.preventDefault(); e.stopPropagation(); return false;
+    }
+});
+
+// ===== KEYBOARD SHORTCUTS =====
+document.addEventListener('keydown', function(e) {
+  if (document.getElementById('examArea').style.display === 'block') {
+    const idx = progress.currentIndex;
+    const questionType = examData.questionTypes[idx];
+    
+    if (questionType === 'fill-blank') {
+      // Allow number keys for numerical input
+      if ((e.key >= '0' && e.key <= '9') || e.key === '.' || e.key === '-') {
+        // Auto full-screen while typing is now handled by focus events
+      }
+    } else {
+      // A-D keys for MCQ
+      const keyMap = {'1': 'A', '2': 'B', '3': 'C', '4': 'D'};
+      if (keyMap[e.key]) {
+        e.preventDefault();
+        selectOption(keyMap[e.key]);
+      }
+    }
+    
+    // Navigation shortcuts
+    if (e.key === 'ArrowLeft') document.getElementById('prevBtn').click();
+    if (e.key === 'ArrowRight') document.getElementById('nextBtn').click();
+    if (e.key === ' ') document.getElementById('markReviewBtn').click();
+  }
+});
+
+// ===== INITIAL SETUP =====
+window.addEventListener('load', function() {
+  console.log('LFJC Online Exam System Initialized');
+  
+  document.getElementById('accessDenied').style.display = 'flex';
+  document.getElementById('studentEntry').style.display = 'none';
+  document.getElementById('examArea').style.display = 'none';
+  
+  document.getElementById('accessCode').focus();
+  
+  // Initialize full-screen system
+  initFullScreenSystem();
+  
+  // Load demo data
+  initializeDemoData();
+});
+</script>
+</body>
+</html>
