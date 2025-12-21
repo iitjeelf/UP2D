@@ -182,6 +182,41 @@ body.blur-active .blur-warning-message {
   pointer-events: none;
 }
 
+/* ===== FULL-SCREEN EXIT BLUR OVERLAY ===== */
+#fullscreen-exit-blur {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 50%;
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999999;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    display: none;
+}
+
+/* Add a subtle warning message */
+#fullscreen-exit-blur::after {
+    content: '⚠️ Full-screen mode required. Please wait...';
+    position: absolute;
+    top: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    background: rgba(255, 0, 0, 0.7);
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: 2px solid yellow;
+}
+
 /* ===== HEADER & FOOTER ===== */
 header {
   background: linear-gradient(145deg, var(--light-purple), var(--secondary-color));
@@ -1311,6 +1346,9 @@ table td, table th {
     </div>
 </div>
 
+<!-- Full-screen Exit Blur Overlay -->
+<div id="fullscreen-exit-blur"></div>
+
 <!-- Blur Overlay -->
 <div id="blur-overlay"></div>
 
@@ -1528,6 +1566,359 @@ table td, table th {
 </div>
 
 <script>
+// ===== ENHANCED FULL-SCREEN EXIT DETECTION & AUTO RE-ENTRY =====
+class FullScreenExitHandler {
+    constructor() {
+        this.isMonitoring = false;
+        this.checkInterval = null;
+        this.uiCheckInterval = null;
+        this.maxReentryAttempts = 5;
+        this.reentryAttempts = 0;
+        this.lastReentryTime = 0;
+        this.reentryCooldown = 1000; // 1 second cooldown
+        this.uiElements = [
+            'header', 'nav', 'footer', 'addressbar', 'toolbar', 
+            'tabs', '[class*="tab"]', '[class*="header"]', 
+            '[class*="menu"]', '[class*="toolbar"]', '[role="navigation"]'
+        ];
+        this.isBlurApplied = false;
+        
+        // Create blur overlay for top 50% of screen
+        this.createBlurOverlay();
+        
+        console.log('✅ Full-screen exit handler initialized');
+    }
+    
+    createBlurOverlay() {
+        // Remove existing blur overlay if any
+        const existingOverlay = document.getElementById('fullscreen-exit-blur');
+        if (existingOverlay) {
+            existingOverlay.remove();
+        }
+        
+        // Create new blur overlay
+        const blurOverlay = document.createElement('div');
+        blurOverlay.id = 'fullscreen-exit-blur';
+        document.body.appendChild(blurOverlay);
+    }
+    
+    startMonitoring() {
+        if (this.isMonitoring) return;
+        
+        this.isMonitoring = true;
+        
+        // Start checking full-screen status
+        this.checkInterval = setInterval(() => this.checkFullScreenStatus(), 500);
+        
+        // Start checking for UI elements
+        this.uiCheckInterval = setInterval(() => this.checkForVisibleUI(), 1000);
+        
+        // Add event listeners for fullscreen changes
+        this.addEventListeners();
+        
+        console.log('🔍 Started full-screen exit monitoring');
+    }
+    
+    stopMonitoring() {
+        this.isMonitoring = false;
+        
+        if (this.checkInterval) {
+            clearInterval(this.checkInterval);
+            this.checkInterval = null;
+        }
+        
+        if (this.uiCheckInterval) {
+            clearInterval(this.uiCheckInterval);
+            this.uiCheckInterval = null;
+        }
+        
+        // Remove blur if applied
+        this.removeBlur();
+        
+        console.log('🛑 Stopped full-screen exit monitoring');
+    }
+    
+    addEventListeners() {
+        // Listen for fullscreen changes
+        const events = [
+            'fullscreenchange',
+            'webkitfullscreenchange', 
+            'mozfullscreenchange',
+            'MSFullscreenChange'
+        ];
+        
+        events.forEach(event => {
+            document.addEventListener(event, () => this.handleFullscreenChange());
+        });
+        
+        // Listen for resize events (browser UI might appear)
+        window.addEventListener('resize', () => this.checkForVisibleUI());
+        
+        // Listen for focus/blur events
+        window.addEventListener('blur', () => this.handleWindowBlur());
+        window.addEventListener('focus', () => this.handleWindowFocus());
+        
+        // Listen for key events that might exit fullscreen
+        document.addEventListener('keydown', (e) => this.handleKeyDown(e));
+    }
+    
+    handleFullscreenChange() {
+        const isFullscreen = this.isInFullScreen();
+        
+        if (!isFullscreen && examInProgress) {
+            console.log('⚠️ Full-screen exited, forcing re-entry...');
+            this.forceReenterFullScreen();
+            this.checkForVisibleUI();
+        } else if (isFullscreen) {
+            console.log('✅ Full-screen active');
+            this.reentryAttempts = 0; // Reset attempts
+            this.removeBlur();
+        }
+    }
+    
+    checkFullScreenStatus() {
+        if (!examInProgress) return;
+        
+        const isFullscreen = this.isInFullScreen();
+        
+        if (!isFullscreen) {
+            console.log('🔍 Periodic check: Not in full-screen, forcing re-entry...');
+            this.forceReenterFullScreen();
+            this.checkForVisibleUI();
+        }
+    }
+    
+    async forceReenterFullScreen() {
+        const currentTime = Date.now();
+        
+        // Check cooldown
+        if (currentTime - this.lastReentryTime < this.reentryCooldown) {
+            return;
+        }
+        
+        // Check max attempts
+        if (this.reentryAttempts >= this.maxReentryAttempts) {
+            console.error('🚨 Max re-entry attempts reached. Consider submitting exam.');
+            showToast('Maximum full-screen violations detected', 'error', 3000);
+            return;
+        }
+        
+        this.lastReentryTime = currentTime;
+        this.reentryAttempts++;
+        
+        console.log(`🔄 Attempting full-screen re-entry (Attempt ${this.reentryAttempts}/${this.maxReentryAttempts})`);
+        
+        try {
+            // Check if we're already in full-screen
+            if (this.isInFullScreen()) {
+                console.log('✅ Already in full-screen');
+                this.removeBlur();
+                return;
+            }
+            
+            // Try to enter full-screen
+            const element = document.documentElement;
+            
+            if (element.requestFullscreen) {
+                await element.requestFullscreen();
+            } else if (element.mozRequestFullScreen) {
+                await element.mozRequestFullScreen();
+            } else if (element.webkitRequestFullscreen) {
+                await element.webkitRequestFullscreen();
+            } else if (element.msRequestFullscreen) {
+                await element.msRequestFullscreen();
+            }
+            
+            console.log('✅ Successfully entered full-screen');
+            this.reentryAttempts = 0; // Reset on success
+            this.removeBlur();
+            
+        } catch (error) {
+            console.error('❌ Failed to enter full-screen:', error);
+            showToast('Failed to enter full-screen mode', 'error', 2000);
+            
+            // Apply blur since we can't enter full-screen
+            this.applyBlur();
+        }
+    }
+    
+    isInFullScreen() {
+        return !!(
+            document.fullscreenElement ||
+            document.webkitFullscreenElement ||
+            document.mozFullScreenElement ||
+            document.msFullscreenElement
+        );
+    }
+    
+    checkForVisibleUI() {
+        if (!examInProgress) {
+            this.removeBlur();
+            return;
+        }
+        
+        const isFullscreen = this.isInFullScreen();
+        
+        if (!isFullscreen) {
+            console.log('📱 Not in full-screen, checking for UI elements...');
+            this.applyBlur();
+            return;
+        }
+        
+        // Check if any UI elements are visible
+        let uiFound = false;
+        
+        // Check browser UI by checking viewport vs screen dimensions
+        const hasBrowserUI = this.hasBrowserChromeVisible();
+        
+        if (hasBrowserUI) {
+            console.log('⚠️ Browser UI detected');
+            uiFound = true;
+        }
+        
+        // Check for HTML UI elements
+        for (const selector of this.uiElements) {
+            try {
+                const elements = document.querySelectorAll(selector);
+                elements.forEach(el => {
+                    if (this.isElementVisible(el)) {
+                        console.log(`⚠️ UI element visible: ${selector}`);
+                        uiFound = true;
+                    }
+                });
+            } catch (e) {
+                // Ignore invalid selectors
+            }
+        }
+        
+        if (uiFound) {
+            this.applyBlur();
+            // Try to re-enter full-screen to hide UI
+            setTimeout(() => this.forceReenterFullScreen(), 500);
+        } else {
+            this.removeBlur();
+        }
+    }
+    
+    hasBrowserChromeVisible() {
+        // Check if browser UI is visible by comparing inner/outer dimensions
+        // This is a heuristic since we can't directly detect browser chrome
+        
+        // Method 1: Check if window is maximized but not fullscreen
+        if (window.outerHeight > window.innerHeight + 100 || 
+            window.outerWidth > window.innerWidth + 100) {
+            return true;
+        }
+        
+        // Method 2: Check screen vs window dimensions
+        if (window.screen && window.screen.availHeight) {
+            const screenHeight = window.screen.availHeight;
+            const windowHeight = window.outerHeight;
+            
+            // If window height is significantly less than screen height, browser UI is likely visible
+            if (screenHeight - windowHeight > 100) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    isElementVisible(el) {
+        if (!el) return false;
+        
+        const rect = el.getBoundingClientRect();
+        const style = window.getComputedStyle(el);
+        
+        return (
+            rect.width > 0 &&
+            rect.height > 0 &&
+            style.opacity !== '0' &&
+            style.display !== 'none' &&
+            style.visibility !== 'hidden'
+        );
+    }
+    
+    applyBlur() {
+        if (this.isBlurApplied) return;
+        
+        const blurOverlay = document.getElementById('fullscreen-exit-blur');
+        if (blurOverlay) {
+            blurOverlay.style.display = 'block';
+            setTimeout(() => {
+                blurOverlay.style.opacity = '1';
+            }, 10);
+            
+            this.isBlurApplied = true;
+            console.log('🔵 Blur applied to top 50% of screen');
+            
+            // Show warning toast
+            showToast('Full-screen mode required. Re-entering full-screen...', 'warning', 3000);
+        }
+    }
+    
+    removeBlur() {
+        if (!this.isBlurApplied) return;
+        
+        const blurOverlay = document.getElementById('fullscreen-exit-blur');
+        if (blurOverlay) {
+            blurOverlay.style.opacity = '0';
+            setTimeout(() => {
+                blurOverlay.style.display = 'none';
+            }, 300);
+            
+            this.isBlurApplied = false;
+            console.log('🔵 Blur removed');
+        }
+    }
+    
+    handleWindowBlur() {
+        if (!examInProgress) return;
+        
+        console.log('⚠️ Window lost focus - might have switched tabs');
+        this.applyBlur();
+        
+        // Try to regain focus
+        setTimeout(() => {
+            if (document.hidden) {
+                this.forceReenterFullScreen();
+            }
+        }, 500);
+    }
+    
+    handleWindowFocus() {
+        if (!examInProgress) return;
+        
+        console.log('✅ Window gained focus');
+        
+        // Check if we're in full-screen
+        if (!this.isInFullScreen()) {
+            this.forceReenterFullScreen();
+        } else {
+            this.removeBlur();
+        }
+    }
+    
+    handleKeyDown(e) {
+        // Block F11 and Escape during exam
+        if (examInProgress && (e.key === 'F11' || e.key === 'Escape')) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            console.log(`🔒 Blocked ${e.key} key`);
+            showToast(`${e.key} key is disabled during exam`, 'warning', 2000);
+            
+            // Immediately try to re-enter full-screen
+            this.forceReenterFullScreen();
+            
+            return false;
+        }
+    }
+}
+
+// Initialize the full-screen exit handler
+const fullScreenExitHandler = new FullScreenExitHandler();
+
 // ===== CONFIGURATION =====
 const MARK_PER_CORRECT = 4, MARK_PER_WRONG = -1;
 const EXAM_DURATION_MINUTES = 180; // 3 hours for 75 questions
@@ -3177,18 +3568,23 @@ function startWithSecurity(ok) {
   
   const studentKey = `${stuName.value}|${stuSection.value}|${stuRoll.value}|${stuAdm.value}`;
   
+  // Start full-screen exit monitoring
+  fullScreenExitHandler.startMonitoring();
+  
   // Enable full-screen security before starting exam
   examSecurity.enable().then(() => {
     startExam(studentKey);
   }).catch(err => {
     console.error('Failed to enable security:', err);
     alert('⚠️ Please allow full-screen mode to start the exam.');
+    fullScreenExitHandler.stopMonitoring();
   });
 }
 
 function startExam(studentKey) {
     if (!keyLoaded) {
         alert('Answer key not loaded. Contact admin.');
+        fullScreenExitHandler.stopMonitoring();
         return;
     }
 
@@ -3231,6 +3627,11 @@ function startExam(studentKey) {
     
     // Setup enhanced blur feature after exam starts
     setupBlurFeature();
+    
+    // Force full-screen immediately
+    setTimeout(() => {
+        fullScreenExitHandler.forceReenterFullScreen();
+    }, 1000);
 }
 
 function selectOption(opt) {
@@ -3416,6 +3817,9 @@ function submitExam() {
   
   hasSubmitted = true;
   examInProgress = false;
+  
+  // Stop full-screen exit monitoring
+  fullScreenExitHandler.stopMonitoring();
   
   // Disable security after exam
   examSecurity.disable();
@@ -3823,6 +4227,12 @@ console.log("   • Blocks ALL mouse clicks and keyboard input");
 console.log("   • Shows warning message with return button");
 console.log("   • Tracks violations (3 max before auto-submission)");
 console.log("   • Google Lens/OCR impossible due to heavy blur");
+console.log("✅ FULL-SCREEN EXIT DETECTION & AUTO RE-ENTRY:");
+console.log("   • Automatically detects when full-screen is exited");
+console.log("   • Forces immediate re-entry to full-screen mode");
+console.log("   • Applies 50% blur to top of screen when UI is detected");
+console.log("   • Blocks F11 and Escape keys");
+console.log("   • Monitors for browser UI elements continuously");
 </script>
 </body>
 </html>
