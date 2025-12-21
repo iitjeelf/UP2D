@@ -860,6 +860,20 @@ table td, table th {
   text-align: center;
   margin-bottom: 20px;
   box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  /* Ensure it's always interactive */
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+  cursor: text !important;
+  pointer-events: auto !important;
+}
+
+/* Make sure the whole access denied area is clickable */
+.access-denied,
+.access-denied * {
+  pointer-events: auto !important;
+  user-select: text !important;
 }
 
 .verify-btn {
@@ -1340,7 +1354,8 @@ table td, table th {
         2. If you spend more than 2-3 minutes on a question without a clear path to the answer, immediately click Mark for Review and move on<br>
         3. Second Tackle marked/review questions
     </p>
-    <input type="password" id="accessCode" class="access-code-input" placeholder="Enter Access Code">
+    <!-- CHANGED: Changed type from "password" to "text" for visibility -->
+    <input type="text" id="accessCode" class="access-code-input" placeholder="Enter Access Code" autocomplete="off">
     <button id="verifyAccess" class="verify-btn">VERIFY ACCESS</button>
     <div id="accessError" class="access-error">❌ Invalid access code. Please try again.</div>
 </div>
@@ -2318,7 +2333,9 @@ class AdvancedScreenCaptureProtector {
             '.security-message', '.waiting-message', '.toast', '.confirmModal',
             '#adminPassModal', '#screenshotProtection', '#screenshotBlock',
             '#fullscreenSecurityModal', '#fullscreenLockOverlay',
-            '#securityViolationAlert', '#accessDeniedBox', '#fullRedOverlay'
+            '#securityViolationAlert', '#accessDeniedBox', '#fullRedOverlay',
+            // ADDED: Whitelist access denied screen elements
+            '#accessDenied', '#accessCode', '#verifyAccess', '#accessError'
         ];
         
         ourSelectors.forEach(selector => {
@@ -4458,7 +4475,10 @@ function verifyAccessCode() {
         accessDenied.style.display = 'none';
         document.getElementById('studentEntry').style.display = 'flex';
         document.getElementById('accessCode').value = '';
-        document.getElementById('stuName').focus();
+        // Focus on first input field
+        setTimeout(() => {
+            document.getElementById('stuName').focus();
+        }, 100);
     } else {
         errorElement.style.display = 'block';
         document.getElementById('accessCode').value = '';
@@ -5184,7 +5204,13 @@ window.addEventListener('load', function() {
   document.getElementById('resubmissionSection').style.display = 'none';
   document.getElementById('googleFormsStatus').style.display = 'none';
   
-  document.getElementById('accessCode').focus();
+  // Focus on access code input
+  setTimeout(() => {
+    const accessInput = document.getElementById('accessCode');
+    if (accessInput) {
+      accessInput.focus();
+    }
+  }, 500);
   
   // Load answer key from repository
   loadAnswerKeyFromRepo();
@@ -5211,6 +5237,7 @@ console.log("✅ ULTRA-ADVANCED Google Lens & Screen Capture Protection");
 console.log("✅ ☢️ NUCLEAR AREA SELECTION BLOCKER ACTIVATED");
 console.log("✅ 7-layer security system with auto-submission on violations");
 console.log("✅ BLUR ISSUE FIXED - Emergency blur overlay set to 0px blur");
+console.log("✅ FIXED: Access code input now accepts text (changed from password type)");
 </script>
 </body>
 </html>
