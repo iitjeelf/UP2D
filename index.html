@@ -1474,11 +1474,13 @@ const QUESTION_STRUCTURE = {
   ]
 };
 
-// ===== BLUR OVERLAY CONTROL =====
+// ===== BLUR OVERLAY CONTROL - ENHANCED =====
 let blurActive = false;
-let lastClickTime = 0;
-let blurClickTimeout = null;
-let blurClickCooldown = 500; // 500ms cooldown between blur activations
+let lastTriggerTime = 0;
+let blurTimeout = null;
+let blurCooldown = 300; // 300ms cooldown between blur activations
+let lastFocusedElement = null;
+let tabNavigationActive = false;
 
 function setupBlurFeature() {
     const blurOverlay = document.getElementById('blur-overlay');
@@ -1490,99 +1492,119 @@ function setupBlurFeature() {
         document.body.appendChild(overlay);
     }
     
-    // Add click event listener to entire document
+    // ===== 1. MOUSE CLICK DETECTION =====
     document.addEventListener('click', handleMouseClick);
     
-    // Add event listeners to navigation buttons to clear blur
-    const navButtons = ['prevBtn', 'nextBtn', 'markReviewBtn', 'submitBtn'];
-    navButtons.forEach(btnId => {
-        const btn = document.getElementById(btnId);
-        if (btn) {
-            btn.addEventListener('click', clearBlur);
-        }
-    });
+    // ===== 2. TOUCH EVENT DETECTION (for mobile/touch devices) =====
+    document.addEventListener('touchstart', handleTouchEvent);
+    document.addEventListener('touchend', handleTouchEvent);
     
-    // Also clear blur when using palette buttons
-    document.addEventListener('click', function(e) {
-        if (e.target.classList.contains('palette-btn')) {
-            clearBlur();
-        }
-    });
+    // ===== 3. TAB NAVIGATION DETECTION =====
+    document.addEventListener('keydown', handleTabNavigation);
     
-    // Clear blur when using numerical keypad
-    document.addEventListener('click', function(e) {
-        if (e.target.classList.contains('num-key-btn') || 
-            e.target.classList.contains('submit-fill-blank-btn')) {
-            clearBlur();
-        }
-    });
+    // ===== 4. FOCUS CHANGE DETECTION =====
+    document.addEventListener('focusin', handleFocusChange);
     
-    // Clear blur when selecting MCQ options
-    document.addEventListener('click', function(e) {
-        if (e.target.classList.contains('optBtn')) {
-            clearBlur();
-        }
-    });
+    // ===== 5. CLEAR BLUR ON ALL EXAM ACTIONS =====
+    setupBlurClearOnActions();
     
-    console.log('✅ Blur overlay feature initialized');
+    console.log('✅ Enhanced blur overlay feature initialized');
+    console.log('🔵 Blur activates on: Mouse clicks, Touch events, Tab navigation, Focus changes');
 }
 
 function handleMouseClick(e) {
-    // Don't trigger on navigation buttons (they have their own handlers)
-    if (e.target.classList.contains('navBtn') || 
-        e.target.classList.contains('palette-btn') ||
-        e.target.classList.contains('num-key-btn') ||
-        e.target.classList.contains('optBtn') ||
-        e.target.classList.contains('submit-fill-blank-btn') ||
-        e.target.closest('.confirmModal') ||
-        e.target.closest('#adminPassModal') ||
-        e.target.closest('#accessDenied')) {
-        return;
-    }
-    
-    // Don't trigger on input fields or text areas
-    if (e.target.tagName === 'INPUT' || 
-        e.target.tagName === 'TEXTAREA' ||
-        e.target.tagName === 'SELECT') {
-        return;
-    }
-    
     // Check if exam is in progress
-    const examArea = document.getElementById('examArea');
-    if (!examArea || examArea.style.display !== 'block') {
-        return;
-    }
+    if (!isExamInProgress()) return;
     
-    // Cooldown check - prevent rapid successive blur activations
-    const currentTime = Date.now();
-    if (currentTime - lastClickTime < blurClickCooldown) {
-        return;
-    }
+    // Cooldown check
+    if (!checkCooldown()) return;
     
-    lastClickTime = currentTime;
-    
-    // Activate blur overlay
-    activateBlur();
-    
-    // Auto-clear after 2 seconds
-    if (blurClickTimeout) {
-        clearTimeout(blurClickTimeout);
-    }
-    
-    blurClickTimeout = setTimeout(() => {
-        if (blurActive) {
-            clearBlur();
-        }
-    }, 2000);
+    // Activate blur for ALL clicks (even on buttons)
+    activateBlur('mouse click');
 }
 
-function activateBlur() {
+function handleTouchEvent(e) {
+    // Check if exam is in progress
+    if (!isExamInProgress()) return;
+    
+    // Cooldown check
+    if (!checkCooldown()) return;
+    
+    // Activate blur for ALL touch events
+    activateBlur('touch event');
+}
+
+function handleTabNavigation(e) {
+    // Check if exam is in progress
+    if (!isExamInProgress()) return;
+    
+    // Detect Tab key press
+    if (e.key === 'Tab') {
+        // Cooldown check
+        if (!checkCooldown()) return;
+        
+        tabNavigationActive = true;
+        activateBlur('tab navigation');
+        
+        // Set a flag to clear when user stops tabbing
+        setTimeout(() => {
+            tabNavigationActive = false;
+        }, 100);
+    }
+}
+
+function handleFocusChange(e) {
+    // Check if exam is in progress
+    if (!isExamInProgress()) return;
+    
+    // Only trigger if it's a tab navigation (not mouse/touch)
+    if (!tabNavigationActive) return;
+    
+    // Cooldown check
+    if (!checkCooldown()) return;
+    
+    // Store the last focused element
+    lastFocusedElement = e.target;
+    
+    // Activate blur on focus change during tab navigation
+    activateBlur('focus change');
+}
+
+function isExamInProgress() {
+    const examArea = document.getElementById('examArea');
+    return examArea && examArea.style.display === 'block' && examInProgress;
+}
+
+function checkCooldown() {
+    const currentTime = Date.now();
+    if (currentTime - lastTriggerTime < blurCooldown) {
+        return false;
+    }
+    lastTriggerTime = currentTime;
+    return true;
+}
+
+function activateBlur(source = 'unknown') {
     const blurOverlay = document.getElementById('blur-overlay');
     if (blurOverlay) {
         blurOverlay.classList.add('active');
         blurActive = true;
-        console.log('🔵 Blur overlay activated');
+        console.log(`🔵 Blur overlay activated by: ${source}`);
+        
+        // Show toast notification
+        showToast('Screen blurred for security', 'info', 1500);
     }
+    
+    // Auto-clear after 2.5 seconds
+    if (blurTimeout) {
+        clearTimeout(blurTimeout);
+    }
+    
+    blurTimeout = setTimeout(() => {
+        if (blurActive) {
+            clearBlur();
+        }
+    }, 2500);
 }
 
 function clearBlur() {
@@ -1593,10 +1615,58 @@ function clearBlur() {
         console.log('🔵 Blur overlay cleared');
     }
     
-    if (blurClickTimeout) {
-        clearTimeout(blurClickTimeout);
-        blurClickTimeout = null;
+    if (blurTimeout) {
+        clearTimeout(blurTimeout);
+        blurTimeout = null;
     }
+}
+
+function setupBlurClearOnActions() {
+    // Clear blur on ALL navigation button clicks
+    const navButtons = ['prevBtn', 'nextBtn', 'markReviewBtn', 'submitBtn'];
+    navButtons.forEach(btnId => {
+        const btn = document.getElementById(btnId);
+        if (btn) {
+            btn.addEventListener('click', () => {
+                clearBlur();
+                console.log(`🔵 Blur cleared by ${btnId} button`);
+            });
+        }
+    });
+    
+    // Clear blur when using palette buttons
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('palette-btn')) {
+            clearBlur();
+            console.log('🔵 Blur cleared by palette button');
+        }
+    });
+    
+    // Clear blur when using numerical keypad
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('num-key-btn') || 
+            e.target.classList.contains('submit-fill-blank-btn')) {
+            clearBlur();
+            console.log('🔵 Blur cleared by keypad button');
+        }
+    });
+    
+    // Clear blur when selecting MCQ options
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('optBtn')) {
+            clearBlur();
+            console.log('🔵 Blur cleared by MCQ option');
+        }
+    });
+    
+    // Clear blur on input focus (to allow typing)
+    document.addEventListener('focusin', function(e) {
+        if (e.target.tagName === 'INPUT' || 
+            e.target.tagName === 'TEXTAREA') {
+            clearBlur();
+            console.log('🔵 Blur cleared by input focus');
+        }
+    });
 }
 
 // ===== SILENT FULL-SCREEN SECURITY SYSTEM =====
@@ -2957,7 +3027,7 @@ function startExam(studentKey) {
     
     sheetReady = true;
     
-    // Setup blur feature after exam starts
+    // Setup enhanced blur feature after exam starts
     setupBlurFeature();
 }
 
@@ -3544,7 +3614,13 @@ console.log("✅ 3x3 Numerical Keypad for fill-in-blank questions");
 console.log("✅ Auto full-screen without warnings");
 console.log("✅ Tab key navigation enabled");
 console.log("✅ 2-second submission messages");
-console.log("✅ Blur overlay feature for mouse click protection");
+console.log("✅ ENHANCED Blur overlay feature:");
+console.log("   • Activates on ALL mouse clicks");
+console.log("   • Activates on ALL touch events (mobile/tablet)");
+console.log("   • Activates on Tab key navigation");
+console.log("   • Activates on focus changes");
+console.log("   • Auto-clears after 2.5 seconds");
+console.log("   • Clears when using navigation buttons");
 </script>
 </body>
 </html>
