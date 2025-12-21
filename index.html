@@ -1008,71 +1008,6 @@ table td, table th {
   gap: 20px;
 }
 
-/* ===== UPDATED 3x3 NUMERICAL KEYPAD STYLES ===== */
-.numerical-keypad {
-  margin: 25px auto;
-  max-width: 320px;
-}
-
-.keypad-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  padding: 15px;
-  background: #f8f9fa;
-  border-radius: 15px;
-  border: 2px solid #4B0082;
-  box-shadow: 0 8px 16px rgba(75, 0, 130, 0.1);
-}
-
-.num-key-btn {
-  width: 70px;
-  height: 70px;
-  font-size: 28px;
-  font-weight: bold;
-  border: 3px solid #4B0082;
-  border-radius: 15px;
-  background: linear-gradient(145deg, #ffffff, #f0f0ff);
-  color: #4B0082;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 6px 0 rgba(75, 0, 130, 0.2);
-}
-
-.num-key-btn:hover {
-  background: linear-gradient(145deg, #f0f0ff, #e6e6fa);
-  transform: translateY(-3px);
-  box-shadow: 0 8px 0 rgba(75, 0, 130, 0.3);
-}
-
-.num-key-btn:active {
-  transform: translateY(2px);
-  box-shadow: 0 2px 0 rgba(75, 0, 130, 0.2);
-}
-
-.num-key-btn:focus {
-  outline: 3px solid #4B0082 !important;
-  outline-offset: 2px;
-  box-shadow: 0 0 0 3px rgba(75, 0, 130, 0.2) !important;
-}
-
-.special-btn {
-  font-size: 24px;
-}
-
-.clear-btn {
-  background: linear-gradient(145deg, #ff9900, #ff8c00);
-  color: white;
-  border-color: #ff8c00;
-}
-
-.submit-num-btn {
-  background: linear-gradient(145deg, #32CD32, #228B22);
-  color: white;
-  border-color: #228B22;
-  font-size: 26px;
-}
-
 /* Tab navigation focus styles */
 .fill-blank-input:focus {
   outline: 3px solid #4B0082 !important;
@@ -1096,20 +1031,6 @@ table td, table th {
   outline: 3px solid #4B0082 !important;
   outline-offset: 2px;
   box-shadow: 0 0 0 3px rgba(75, 0, 130, 0.2) !important;
-}
-
-/* Responsive keypad */
-@media (max-width: 400px) {
-  .keypad-grid {
-    gap: 8px;
-    padding: 10px;
-  }
-  
-  .num-key-btn {
-    width: 60px;
-    height: 60px;
-    font-size: 24px;
-  }
 }
 
 /* ===== TOAST NOTIFICATION STYLES ===== */
@@ -1482,6 +1403,7 @@ class ChromeMenuBlurDetector {
         this.observationTimer = null;
         this.lastMenuClickTime = 0;
         this.menuClickCooldown = 1000; // 1 second cooldown
+        this.autoClearTimeout = null;
         
         // Create blur overlay element
         this.createBlurOverlay();
@@ -1519,20 +1441,6 @@ class ChromeMenuBlurDetector {
         this.observationTimer = setInterval(() => {
             this.checkForChromeMenu();
         }, 500);
-        
-        // Also observe for context menu (right-click) which might open the menu
-        document.addEventListener('contextmenu', (e) => {
-            if (examInProgress) {
-                this.handlePotentialMenuOpen();
-            }
-        });
-        
-        // Observe for keyboard shortcuts that might open Chrome menu
-        document.addEventListener('keydown', (e) => {
-            if (examInProgress && (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I'))) {
-                this.handlePotentialMenuOpen();
-            }
-        });
     }
     
     checkForChromeMenu() {
@@ -1571,8 +1479,6 @@ class ChromeMenuBlurDetector {
         
         if (menuFound) {
             this.activateBlur();
-        } else if (this.isBlurred && this.shouldRemoveBlur()) {
-            this.deactivateBlur();
         }
     }
     
@@ -1613,24 +1519,23 @@ class ChromeMenuBlurDetector {
                 }
             }, 300);
             
-            console.log('✅ Chrome menu closed - Blur removed');
+            console.log('✅ Chrome menu blur removed');
         }
     }
     
-    shouldRemoveBlur() {
-        // Remove blur if user clicks on navigation buttons or interacts with exam
-        const activeElement = document.activeElement;
-        const isInteractingWithExam = activeElement && (
-            activeElement.classList.contains('navBtn') ||
-            activeElement.classList.contains('optBtn') ||
-            activeElement.classList.contains('num-key-btn') ||
-            activeElement.id === 'fillBlankInput' ||
-            activeElement.id === 'prevBtn' ||
-            activeElement.id === 'nextBtn' ||
-            activeElement.id === 'markReviewBtn'
-        );
-        
-        return isInteractingWithExam;
+    clearBlurOnQuestionChange() {
+        // Only clear blur if question successfully changed and displayed
+        if (this.isBlurred) {
+            // Check if we're in full screen mode
+            const isFs = document.fullscreenElement || 
+                        document.webkitFullscreenElement || 
+                        document.mozFullScreenElement || 
+                        document.msFullscreenElement;
+            
+            if (isFs) {
+                this.deactivateBlur();
+            }
+        }
     }
     
     showMenuWarning() {
@@ -1661,7 +1566,7 @@ class ChromeMenuBlurDetector {
         
         warningDiv.innerHTML = `
             ⚠️ CHROME MENU DETECTED<br>
-            <small>Click on any exam button to remove blur</small>
+            <small>Use Next/Previous buttons to remove blur</small>
         `;
         
         document.body.appendChild(warningDiv);
@@ -1669,7 +1574,7 @@ class ChromeMenuBlurDetector {
         // Remove warning after 3 seconds
         setTimeout(() => {
             if (warningDiv.parentNode) {
-                warningDiv.remove();
+                warningDiv.parentNode.removeChild(warningDiv);
             }
         }, 3000);
     }
@@ -1677,6 +1582,9 @@ class ChromeMenuBlurDetector {
     stopObservation() {
         if (this.observationTimer) {
             clearInterval(this.observationTimer);
+        }
+        if (this.autoClearTimeout) {
+            clearTimeout(this.autoClearTimeout);
         }
         this.deactivateBlur();
         
@@ -2259,7 +2167,7 @@ function prepareExamData() {
   console.log("Chemistry:", typeCount.Chemistry);
 }
 
-// ===== UPDATED RENDER QUESTION WITH 3x3 KEYPAD =====
+// ===== UPDATED RENDER QUESTION WITHOUT KEYPAD =====
 function renderQuestion() {
   const idx = progress.currentIndex;
   const container = document.getElementById('questionContainer');
@@ -2274,7 +2182,7 @@ function renderQuestion() {
   let optionsHTML = '';
   
   if (questionType === 'fill-blank') {
-    // NUMERICAL INPUT FOR FILL IN THE BLANK WITH 3x3 KEYPAD
+    // NUMERICAL INPUT FOR FILL IN THE BLANK (NO KEYPAD)
     optionsHTML = `
       <div class="fill-blank-container">
         <div style="margin: 20px 0; font-weight: bold; color: #4B0082; font-size: 18px;">
@@ -2318,36 +2226,8 @@ function renderQuestion() {
           </button>
         </div>
         
-        <!-- 3x3 Numerical Keypad -->
-        <div class="numerical-keypad">
-          <div class="keypad-grid">
-            ${[1,2,3,4,5,6,7,8,9].map(num => `
-              <button class="num-key-btn" 
-                      onclick="handleKeypadButton('${num}', ${idx})"
-                      tabindex="0">
-                ${num}
-              </button>
-            `).join('')}
-            <button class="num-key-btn special-btn" 
-                    onclick="handleKeypadButton('0', ${idx})"
-                    tabindex="0">
-              0
-            </button>
-            <button class="num-key-btn special-btn clear-btn" 
-                    onclick="handleKeypadButton('C', ${idx})"
-                    tabindex="0">
-              C
-            </button>
-            <button class="num-key-btn special-btn submit-num-btn" 
-                    onclick="handleKeypadButton('✓', ${idx})"
-                    tabindex="0">
-              ✓
-            </button>
-          </div>
-        </div>
-        
         <div style="margin-top: 15px; color: #666; font-size: 14px;">
-          <em>Note: Use keypad, type in input box, or use Tab to navigate</em>
+          <em>Note: Type your answer in the input box above</em>
         </div>
       </div>
     `;
@@ -2432,28 +2312,6 @@ function handleNumericalKeyPress(event, questionIndex) {
     submitNumericalAnswer(questionIndex);
     event.preventDefault();
   }
-}
-
-function handleKeypadButton(button, questionIndex) {
-  const input = document.getElementById('fillBlankInput');
-  if (!input) return;
-  
-  let currentValue = input.value;
-  
-  switch(button) {
-    case 'C': // Clear
-      input.value = '';
-      break;
-    case '✓': // Submit
-      submitNumericalAnswer(questionIndex);
-      break;
-    default: // Numbers
-      input.value = currentValue + button;
-      break;
-  }
-  
-  // Focus back on input
-  input.focus();
 }
 
 function submitNumericalAnswer(questionIndex) {
@@ -3183,6 +3041,11 @@ document.getElementById('prevBtn').onclick = () => {
     progress.currentIndex--;
     renderQuestion();
     updateNavButtons();
+    
+    // Clear blur only after successful question change
+    if (chromeMenuBlurDetector) {
+      chromeMenuBlurDetector.clearBlurOnQuestionChange();
+    }
   }
 };
 
@@ -3191,6 +3054,11 @@ document.getElementById('nextBtn').onclick = () => {
     progress.currentIndex++;
     renderQuestion();
     updateNavButtons();
+    
+    // Clear blur only after successful question change
+    if (chromeMenuBlurDetector) {
+      chromeMenuBlurDetector.clearBlurOnQuestionChange();
+    }
   }
 };
 
@@ -3199,10 +3067,14 @@ document.getElementById('markReviewBtn').onclick = () => {
   progress.review[idx] = !progress.review[idx];
   updateNavButtons();
   updatePalette();
+  
+  // DO NOT clear blur for review button
 };
 
 document.getElementById('submitBtn').onclick = () => {
   showConfirm("Submit Exam? You cannot change answers after submission.", submitExam);
+  
+  // DO NOT clear blur for submit button
 };
 
 // ===== TIMER FUNCTIONS =====
@@ -3504,7 +3376,7 @@ function resetForm() {
   validateStudentInputs();
 }
 
-// ===== CONFIRMATION MODAL =====
+// ===== FIXED CONFIRMATION MODAL =====
 function showConfirm(message, callback) {
   const modal = document.getElementById('confirmModal');
   const text = document.getElementById('confirmText');
@@ -3514,8 +3386,20 @@ function showConfirm(message, callback) {
   text.textContent = message;
   modal.style.display = 'flex';
   
-  yesBtn.onclick = () => { modal.style.display = 'none'; callback(true); };
-  noBtn.onclick = () => { modal.style.display = 'none'; callback(false); };
+  // Clear previous event listeners
+  yesBtn.onclick = null;
+  noBtn.onclick = null;
+  
+  // Set new event listeners
+  yesBtn.onclick = () => { 
+    modal.style.display = 'none'; 
+    callback(true); 
+  };
+  
+  noBtn.onclick = () => { 
+    modal.style.display = 'none'; 
+    callback(false); 
+  };
 }
 
 // ===== ADMIN PASSWORD =====
@@ -3607,45 +3491,6 @@ document.addEventListener('keydown', function(e) {
   }
 });
 
-// ===== ENHANCE EXISTING EVENT LISTENERS FOR CHROME MENU BLUR =====
-document.addEventListener('click', function(e) {
-  if (examInProgress && chromeMenuBlurDetector && chromeMenuBlurDetector.isBlurred) {
-    // Check if click is on exam elements (should remove blur)
-    const target = e.target;
-    const isExamElement = target.closest('.navBtn, .optBtn, .num-key-btn, .palette-btn, #fillBlankInput, #prevBtn, #nextBtn, #markReviewBtn, #submitBtn');
-    
-    if (isExamElement) {
-      chromeMenuBlurDetector.deactivateBlur();
-    }
-  }
-});
-
-// Also handle keyboard navigation
-document.addEventListener('keydown', function(e) {
-  if (examInProgress && chromeMenuBlurDetector && chromeMenuBlurDetector.isBlurred) {
-    // Arrow keys, Tab, Enter, number keys should remove blur
-    const allowedKeys = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab', 'Enter', ' ', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];
-    
-    if (allowedKeys.includes(e.key)) {
-      chromeMenuBlurDetector.deactivateBlur();
-    }
-  }
-});
-
-// ===== UPDATE THE EXISTING SECURITY SYSTEM =====
-// Modify the FullScreenSecurity class to work with the blur detector
-const originalHandleFullScreenExitSilently = FullScreenSecurity.prototype.handleFullScreenExitSilently;
-
-FullScreenSecurity.prototype.handleFullScreenExitSilently = function() {
-  // Call original method
-  originalHandleFullScreenExitSilently.call(this);
-  
-  // Also activate blur if exam is in progress
-  if (examInProgress && chromeMenuBlurDetector) {
-    chromeMenuBlurDetector.activateBlur();
-  }
-};
-
 // ===== INITIAL SETUP =====
 window.addEventListener('load', function() {
   console.log('LFJC Online Exam System Initialized (75 Questions)');
@@ -3655,7 +3500,7 @@ window.addEventListener('load', function() {
   console.log('• Chemistry: Q51-70 (MCQ), Q71-75 (Numerical Input)');
   console.log('🔒 Chrome Three-Dots Menu Blur Protection Active');
   console.log('• Top 50% screen blur when Chrome menu detected');
-  console.log('• Blur removes when interacting with exam');
+  console.log('• Blur removes only when Next/Previous buttons are clicked and question displays');
   
   document.getElementById('accessDenied').style.display = 'flex';
   document.getElementById('studentEntry').style.display = 'none';
@@ -3676,11 +3521,13 @@ console.log("✅ 75 questions with specified structure");
 console.log("✅ Maths: Q1-20 (MCQ), Q21-25 (Numerical Input)");
 console.log("✅ Physics: Q26-45 (MCQ), Q46-50 (Numerical Input)");
 console.log("✅ Chemistry: Q51-70 (MCQ), Q71-75 (Numerical Input)");
-console.log("✅ 3x3 Numerical Keypad for fill-in-blank questions");
+console.log("❌ 3x3 Numerical Keypad removed");
 console.log("✅ Auto full-screen without warnings");
 console.log("✅ Tab key navigation enabled");
 console.log("✅ 2-second submission messages");
 console.log("✅ Chrome Three-Dots Menu Blur Protection");
+console.log("✅ Blur removes ONLY on Next/Previous button clicks after question display");
+console.log("✅ Fixed 'No' button in confirmation modal");
 </script>
 </body>
 </html>
