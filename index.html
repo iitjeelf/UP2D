@@ -525,6 +525,70 @@ button:focus {
   100% { background: #ffcccc; }
 }
 
+/* ===== MOUSE CLICK BLUR OVERLAY ===== */
+#mouseClickBlurOverlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: rgba(0, 0, 0, 0.5) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  z-index: 2147483640 !important;
+  display: none !important;
+  justify-content: center !important;
+  align-items: center !important;
+  flex-direction: column !important;
+  pointer-events: auto !important;
+  transition: opacity 0.3s ease !important;
+}
+
+#mouseClickWarningBox {
+  background: rgba(255, 0, 0, 0.9) !important;
+  color: white !important;
+  padding: 30px 40px !important;
+  border-radius: 15px !important;
+  text-align: center !important;
+  max-width: 500px !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
+  border: 3px solid white !important;
+  animation: pulseWarning 1s infinite !important;
+}
+
+#mouseClickWarningBox h2 {
+  margin: 0 0 20px 0 !important;
+  font-size: 28px !important;
+}
+
+#mouseClickWarningBox p {
+  font-size: 18px !important;
+  margin: 10px 0 !important;
+}
+
+#enterFullScreenBtn {
+  padding: 12px 30px !important;
+  background: white !important;
+  color: #ff0000 !important;
+  border: none !important;
+  border-radius: 8px !important;
+  font-size: 18px !important;
+  font-weight: bold !important;
+  cursor: pointer !important;
+  margin-top: 20px !important;
+  transition: transform 0.2s ease !important;
+}
+
+#enterFullScreenBtn:hover {
+  transform: scale(1.05) !important;
+}
+
+@keyframes pulseWarning {
+  0% { transform: scale(1); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+  50% { transform: scale(1.02); box-shadow: 0 15px 40px rgba(0,0,0,0.6); }
+  100% { transform: scale(1); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+}
+
 /* ===== FONT SIZE ADJUSTMENTS ===== */
 #stuInfo, #stuQInfo, #timerEl {
   font-size: 20px !important;
@@ -587,6 +651,15 @@ table td, table th {
     width: 35px;
     height: 35px;
     font-size: 12px;
+  }
+  
+  #mouseClickWarningBox {
+    padding: 20px !important;
+    margin: 20px !important;
+  }
+  
+  #mouseClickWarningBox h2 {
+    font-size: 22px !important;
   }
 }
 
@@ -942,71 +1015,6 @@ table td, table th {
   margin: 10px;
 }
 
-/* ===== UPDATED 3x3 NUMERICAL KEYPAD STYLES ===== */
-.numerical-keypad {
-  margin: 25px auto;
-  max-width: 320px;
-}
-
-.keypad-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  padding: 15px;
-  background: #f8f9fa;
-  border-radius: 15px;
-  border: 2px solid #4B0082;
-  box-shadow: 0 8px 16px rgba(75, 0, 130, 0.1);
-}
-
-.num-key-btn {
-  width: 70px;
-  height: 70px;
-  font-size: 28px;
-  font-weight: bold;
-  border: 3px solid #4B0082;
-  border-radius: 15px;
-  background: linear-gradient(145deg, #ffffff, #f0f0ff);
-  color: #4B0082;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 6px 0 rgba(75, 0, 130, 0.2);
-}
-
-.num-key-btn:hover {
-  background: linear-gradient(145deg, #f0f0ff, #e6e6fa);
-  transform: translateY(-3px);
-  box-shadow: 0 8px 0 rgba(75, 0, 130, 0.3);
-}
-
-.num-key-btn:active {
-  transform: translateY(2px);
-  box-shadow: 0 2px 0 rgba(75, 0, 130, 0.2);
-}
-
-.num-key-btn:focus {
-  outline: 3px solid #4B0082 !important;
-  outline-offset: 2px;
-  box-shadow: 0 0 0 3px rgba(75, 0, 130, 0.2) !important;
-}
-
-.special-btn {
-  font-size: 24px;
-}
-
-.clear-btn {
-  background: linear-gradient(145deg, #ff9900, #ff8c00);
-  color: white;
-  border-color: #ff8c00;
-}
-
-.submit-num-btn {
-  background: linear-gradient(145deg, #32CD32, #228B22);
-  color: white;
-  border-color: #228B22;
-  font-size: 26px;
-}
-
 /* Tab navigation focus styles */
 .fill-blank-input:focus {
   outline: 3px solid #4B0082 !important;
@@ -1030,20 +1038,6 @@ table td, table th {
   outline: 3px solid #4B0082 !important;
   outline-offset: 2px;
   box-shadow: 0 0 0 3px rgba(75, 0, 130, 0.2) !important;
-}
-
-/* Responsive keypad */
-@media (max-width: 400px) {
-  .keypad-grid {
-    gap: 8px;
-    padding: 10px;
-  }
-  
-  .num-key-btn {
-    width: 60px;
-    height: 60px;
-    font-size: 24px;
-  }
 }
 
 /* ===== TOAST NOTIFICATION STYLES ===== */
@@ -1143,19 +1137,6 @@ table td, table th {
   border: 3px solid white !important;
 }
 
-@keyframes pulseWarning {
-  0% { transform: translate(-50%, -50%) scale(1); }
-  50% { transform: translate(-50%, -50%) scale(1.05); }
-  100% { transform: translate(-50%, -50%) scale(1); }
-}
-
-@keyframes fadeInOut {
-  0% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
-  20% { opacity: 1; transform: translateX(-50%) translateY(0); }
-  80% { opacity: 1; transform: translateX(-50%) translateY(0); }
-  100% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
-}
-
 /* ===== HIDE ALL BROWSER UI STYLES ===== */
 /* Hide all scrollbars */
 * {
@@ -1205,6 +1186,19 @@ html {
 </head>
 
 <body>
+
+<!-- Mouse Click Blur Overlay -->
+<div id="mouseClickBlurOverlay">
+  <div id="mouseClickWarningBox">
+    <h2>⚠️ EXAM INTERFACE LOST</h2>
+    <p>You clicked outside the exam interface.</p>
+    <p><strong>Click "ENTER FULL SCREEN" to return to exam mode.</strong></p>
+    <button id="enterFullScreenBtn">ENTER FULL SCREEN</button>
+    <p style="font-size: 14px; margin-top: 20px; opacity: 0.8;">
+      You cannot continue until you return to full-screen mode.
+    </p>
+  </div>
+</div>
 
 <!-- Access Denied Screen - ALWAYS SHOWS FIRST -->
 <div id="accessDenied" class="access-denied">
@@ -1433,6 +1427,123 @@ const QUESTION_STRUCTURE = {
   ]
 };
 
+// ===== MOUSE CLICK DETECTION SYSTEM =====
+class MouseClickSecurity {
+    constructor() {
+        this.blurOverlay = document.getElementById('mouseClickBlurOverlay');
+        this.enterFullScreenBtn = document.getElementById('enterFullScreenBtn');
+        this.isActive = false;
+        this.examContainer = null;
+        this.securitySystem = null;
+        this.clickCount = 0;
+        this.maxClicks = Infinity; // Unlimited times
+        
+        this.setupEventListeners();
+        console.log('🖱️ Mouse Click Security System Initialized');
+    }
+    
+    setSecuritySystem(securitySystem) {
+        this.securitySystem = securitySystem;
+    }
+    
+    setExamContainer(containerId) {
+        this.examContainer = document.getElementById(containerId);
+    }
+    
+    setupEventListeners() {
+        // Setup button click
+        this.enterFullScreenBtn.onclick = () => {
+            this.deactivateBlur();
+            if (this.securitySystem) {
+                this.securitySystem.handleFullScreenExitAggressively();
+            }
+        };
+        
+        // Setup mouse click detection
+        document.addEventListener('click', (e) => {
+            this.handleClickDetection(e);
+        }, true);
+        
+        // Also detect mousedown for better coverage
+        document.addEventListener('mousedown', (e) => {
+            this.handleClickDetection(e);
+        }, true);
+    }
+    
+    handleClickDetection(event) {
+        // Only activate during exam
+        if (!this.securitySystem || !this.securitySystem.securityActive) return;
+        
+        // If exam container exists, check if click is outside
+        if (this.examContainer && this.examContainer.style.display === 'block') {
+            const isClickInsideExam = this.examContainer.contains(event.target) || 
+                                     this.examContainer === event.target;
+            
+            // Check if click is on header or footer
+            const header = document.querySelector('header');
+            const footer = document.querySelector('footer');
+            const isClickOnHeader = header && (header.contains(event.target) || header === event.target);
+            const isClickOnFooter = footer && (footer.contains(event.target) || footer === event.target);
+            
+            // Check if click is on blur overlay itself
+            const isClickOnBlur = this.blurOverlay.contains(event.target) || 
+                                 this.blurOverlay === event.target;
+            
+            // Allow clicks on header, footer, and blur overlay itself
+            if (isClickOnHeader || isClickOnFooter || isClickOnBlur) {
+                return;
+            }
+            
+            // If click is outside exam container, activate blur
+            if (!isClickInsideExam && !this.isActive) {
+                console.log('⚠️ Mouse click detected outside exam interface');
+                this.clickCount++;
+                console.log(`🖱️ Click count: ${this.clickCount} (unlimited allowed)`);
+                this.activateBlur();
+            }
+        }
+    }
+    
+    activateBlur() {
+        if (this.isActive) return;
+        
+        this.isActive = true;
+        this.blurOverlay.style.display = 'flex';
+        
+        // Fade in
+        setTimeout(() => {
+            this.blurOverlay.style.opacity = '1';
+        }, 10);
+        
+        console.log('🔵 Mouse click blur overlay activated');
+        
+        // Auto-return to full screen after 10 seconds if no action
+        setTimeout(() => {
+            if (this.isActive && this.securitySystem) {
+                console.log('🔄 Auto-returning to full-screen after timeout');
+                this.deactivateBlur();
+                this.securitySystem.handleFullScreenExitAggressively();
+            }
+        }, 10000);
+    }
+    
+    deactivateBlur() {
+        this.isActive = false;
+        this.blurOverlay.style.opacity = '0';
+        
+        setTimeout(() => {
+            this.blurOverlay.style.display = 'none';
+        }, 300);
+        
+        console.log('🔵 Mouse click blur overlay deactivated');
+    }
+    
+    destroy() {
+        this.blurOverlay.style.display = 'none';
+        this.isActive = false;
+    }
+}
+
 // ===== AGGRESSIVE FULL-SCREEN SECURITY SYSTEM =====
 class AggressiveFullScreenSecurity {
     constructor() {
@@ -1445,13 +1556,19 @@ class AggressiveFullScreenSecurity {
         this.autoReturnTimeout = null;
         this.isReturningToFullScreen = false;
         this.chromeMenuDetector = null;
+        this.mouseClickSecurity = null;
     }
     
     async enable() {
         console.log('🔒 ENABLING AGGRESSIVE FULL-SCREEN SECURITY...');
         this.securityActive = true;
         
-        // Setup event listeners FIRST
+        // Setup mouse click security FIRST
+        this.mouseClickSecurity = new MouseClickSecurity();
+        this.mouseClickSecurity.setSecuritySystem(this);
+        this.mouseClickSecurity.setExamContainer('examArea');
+        
+        // Setup event listeners
         this.setupEventListeners();
         
         // Initialize Chrome menu detector
@@ -1682,9 +1799,9 @@ class AggressiveFullScreenSecurity {
     handleMenuDetection() {
         console.log('⚠️ Chrome menu detected!');
         
-        // Activate blur overlay
-        if (this.chromeMenuDetector) {
-            this.chromeMenuDetector.activateBlur();
+        // Activate blur overlay from mouse click security
+        if (this.mouseClickSecurity) {
+            this.mouseClickSecurity.activateBlur();
         }
         
         // Force return to full-screen
@@ -1729,8 +1846,10 @@ class AggressiveFullScreenSecurity {
             // Immediately try to return to full-screen
             this.handleFullScreenExitAggressively();
             
-            // Show warning about menu
-            this.handleMenuDetection();
+            // Activate blur overlay
+            if (this.mouseClickSecurity) {
+                this.mouseClickSecurity.activateBlur();
+            }
             
             return false;
         }
@@ -1751,8 +1870,10 @@ class AggressiveFullScreenSecurity {
                 // Immediately try to return to full-screen
                 this.handleFullScreenExitAggressively();
                 
-                // Show warning about menu
-                this.handleMenuDetection();
+                // Activate blur overlay
+                if (this.mouseClickSecurity) {
+                    this.mouseClickSecurity.activateBlur();
+                }
                 
                 return false;
             }
@@ -1839,6 +1960,12 @@ class AggressiveFullScreenSecurity {
         if (this.chromeMenuDetector) {
             this.chromeMenuDetector.destroy();
             this.chromeMenuDetector = null;
+        }
+        
+        // Remove mouse click security
+        if (this.mouseClickSecurity) {
+            this.mouseClickSecurity.destroy();
+            this.mouseClickSecurity = null;
         }
         
         // Remove UI hiding styles
@@ -2391,7 +2518,7 @@ function prepareExamData() {
   console.log("Chemistry:", typeCount.Chemistry);
 }
 
-// ===== UPDATED RENDER QUESTION WITH 3x3 KEYPAD =====
+// ===== UPDATED RENDER QUESTION WITHOUT KEYPAD =====
 function renderQuestion() {
   const idx = progress.currentIndex;
   const container = document.getElementById('questionContainer');
@@ -2406,7 +2533,7 @@ function renderQuestion() {
   let optionsHTML = '';
   
   if (questionType === 'fill-blank') {
-    // NUMERICAL INPUT FOR FILL IN THE BLANK WITH 3x3 KEYPAD
+    // NUMERICAL INPUT FOR FILL IN THE BLANK WITHOUT KEYPAD
     optionsHTML = `
       <div class="fill-blank-container">
         <div style="margin: 20px 0; font-weight: bold; color: #4B0082; font-size: 18px;">
@@ -2432,6 +2559,7 @@ function renderQuestion() {
                  "
                  oninput="handleNumericalInput(this, ${idx})"
                  onkeypress="handleNumericalKeyPress(event, ${idx})"
+                 onblur="submitNumericalAnswerOnBlur(${idx})"
                  tabindex="0">
           <button class="submit-fill-blank-btn" 
                   onclick="submitNumericalAnswer(${idx})"
@@ -2450,36 +2578,8 @@ function renderQuestion() {
           </button>
         </div>
         
-        <!-- 3x3 Numerical Keypad -->
-        <div class="numerical-keypad">
-          <div class="keypad-grid">
-            ${[1,2,3,4,5,6,7,8,9].map(num => `
-              <button class="num-key-btn" 
-                      onclick="handleKeypadButton('${num}', ${idx})"
-                      tabindex="0">
-                ${num}
-              </button>
-            `).join('')}
-            <button class="num-key-btn special-btn" 
-                    onclick="handleKeypadButton('0', ${idx})"
-                    tabindex="0">
-              0
-            </button>
-            <button class="num-key-btn special-btn clear-btn" 
-                    onclick="handleKeypadButton('C', ${idx})"
-                    tabindex="0">
-              C
-            </button>
-            <button class="num-key-btn special-btn submit-num-btn" 
-                    onclick="handleKeypadButton('✓', ${idx})"
-                    tabindex="0">
-              ✓
-            </button>
-          </div>
-        </div>
-        
         <div style="margin-top: 15px; color: #666; font-size: 14px;">
-          <em>Note: Use keypad, type in input box, or use Tab to navigate</em>
+          <em>Note: Type your answer in the box above and press Enter or click Submit</em>
         </div>
       </div>
     `;
@@ -2566,26 +2666,11 @@ function handleNumericalKeyPress(event, questionIndex) {
   }
 }
 
-function handleKeypadButton(button, questionIndex) {
+function submitNumericalAnswerOnBlur(questionIndex) {
   const input = document.getElementById('fillBlankInput');
-  if (!input) return;
-  
-  let currentValue = input.value;
-  
-  switch(button) {
-    case 'C': // Clear
-      input.value = '';
-      break;
-    case '✓': // Submit
-      submitNumericalAnswer(questionIndex);
-      break;
-    default: // Numbers
-      input.value = currentValue + button;
-      break;
+  if (input && input.value.trim() !== '' && input.value !== progress.answers[questionIndex]) {
+    submitNumericalAnswer(questionIndex);
   }
-  
-  // Focus back on input
-  input.focus();
 }
 
 function submitNumericalAnswer(questionIndex) {
@@ -3756,6 +3841,10 @@ window.addEventListener('load', function() {
   console.log('• Chrome three-dots menu detection');
   console.log('• Instant full-screen restoration');
   console.log('• Blur overlay when menu detected');
+  console.log('🖱️ MOUSE CLICK DETECTION: 50% blur when clicking outside exam interface');
+  console.log('• Works unlimited times (N-number of times)');
+  console.log('• "ENTER FULL SCREEN" button to remove blur');
+  console.log('• Auto-returns after 10 seconds');
   
   document.getElementById('accessDenied').style.display = 'flex';
   document.getElementById('studentEntry').style.display = 'none';
@@ -3776,10 +3865,13 @@ console.log("✅ 75 questions with specified structure");
 console.log("✅ Maths: Q1-20 (MCQ), Q21-25 (Numerical Input)");
 console.log("✅ Physics: Q26-45 (MCQ), Q46-50 (Numerical Input)");
 console.log("✅ Chemistry: Q51-70 (MCQ), Q71-75 (Numerical Input)");
-console.log("✅ 3x3 Numerical Keypad for fill-in-blank questions");
+console.log("✅ SIMPLE Numerical Input (no keypad)");
 console.log("✅ AGGRESSIVE Full-screen - No waiting for user action");
 console.log("✅ Chrome Three-Dots Menu Detection & Blur");
 console.log("✅ Instant full-screen restoration");
+console.log("✅ MOUSE CLICK DETECTION outside exam interface");
+console.log("✅ 50% blur overlay with 'ENTER FULL SCREEN' button");
+console.log("✅ Works unlimited times for all questions");
 </script>
 </body>
 </html>
