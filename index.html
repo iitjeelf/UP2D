@@ -50,73 +50,6 @@ body {
   pointer-events: none;
 }
 
-#click-outside-warning {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: white;
-  padding: 40px;
-  border-radius: 15px;
-  box-shadow: 0 15px 40px rgba(0,0,0,0.4);
-  text-align: center;
-  z-index: 2147483646;
-  display: none;
-  min-width: 350px;
-  max-width: 90%;
-  border: 4px solid #ff0000;
-  animation: warningPulse 1.5s infinite;
-}
-
-@keyframes warningPulse {
-  0% { border-color: #ff0000; box-shadow: 0 0 15px rgba(255, 0, 0, 0.5); }
-  50% { border-color: #ff4444; box-shadow: 0 0 25px rgba(255, 0, 0, 0.8); }
-  100% { border-color: #ff0000; box-shadow: 0 0 15px rgba(255, 0, 0, 0.5); }
-}
-
-#click-outside-warning h2 {
-  color: #ff0000;
-  margin-bottom: 20px;
-  font-size: 28px;
-}
-
-#click-outside-warning p {
-  margin: 15px 0;
-  color: #333;
-  font-size: 16px;
-  line-height: 1.5;
-}
-
-#click-outside-warning strong {
-  color: #4B0082;
-  font-size: 18px;
-}
-
-#return-to-exam-btn {
-  background: linear-gradient(145deg, #4B0082, #6A0DAD);
-  color: white;
-  border: none;
-  padding: 15px 30px;
-  border-radius: 10px;
-  cursor: pointer;
-  font-size: 18px;
-  font-weight: bold;
-  margin-top: 25px;
-  transition: var(--transition);
-  box-shadow: 0 6px 0 rgba(75, 0, 130, 0.3);
-}
-
-#return-to-exam-btn:hover {
-  background: linear-gradient(145deg, #6A0DAD, #8A2BE2);
-  transform: translateY(-3px);
-  box-shadow: 0 8px 0 rgba(75, 0, 130, 0.4);
-}
-
-#return-to-exam-btn:active {
-  transform: translateY(2px);
-  box-shadow: 0 3px 0 rgba(75, 0, 130, 0.3);
-}
-
 /* ===== WINDOW VISIBILITY DETECTION ===== */
 #window-blur-overlay {
   position: fixed;
@@ -674,34 +607,6 @@ table td, table th {
     height: 35px;
     font-size: 12px;
   }
-  
-  #click-outside-warning {
-    width: 95%;
-    min-width: auto;
-    padding: 25px 15px;
-  }
-  
-  #click-outside-warning h2 {
-    font-size: 22px;
-  }
-}
-
-@media (min-width: 601px) and (max-width: 900px) {
-  #paletteContainer {
-    grid-template-columns: repeat(10, 1fr) !important;
-  }
-}
-
-@media (min-width: 901px) and (max-width: 1200px) {
-  #paletteContainer {
-    grid-template-columns: repeat(15, 1fr) !important;
-  }
-}
-
-@media (min-width: 1201px) {
-  #paletteContainer {
-    grid-template-columns: repeat(20, 1fr) !important;
-  }
 }
 
 /* ===== ERROR MESSAGE STYLES ===== */
@@ -1171,16 +1076,6 @@ table td, table th {
 <!-- Full Screen Blur Overlay for Clicks Outside Browser -->
 <div id="full-screen-blur-overlay"></div>
 
-<!-- Click Outside Warning -->
-<div id="click-outside-warning">
-    <h2>⚠️ SECURITY ALERT</h2>
-    <p>You clicked outside the exam browser window!</p>
-    <p><strong>Detected Action:</strong> Clicking on browser tabs, address bar, Chrome menu, or other browser elements</p>
-    <p>The entire screen is now blurred for security.</p>
-    <p>Click the button below to return to the exam.</p>
-    <button id="return-to-exam-btn">Return to Exam</button>
-</div>
-
 <!-- Window Blur Overlay -->
 <div id="window-blur-overlay"></div>
 
@@ -1408,34 +1303,28 @@ const QUESTION_STRUCTURE = {
   ]
 };
 
-// ===== BROWSER CLICK-OUTSIDE DETECTION SYSTEM =====
-class BrowserClickOutsideDetector {
+// ===== IMMEDIATE BLUR DETECTION SYSTEM (NO WARNING MESSAGE) =====
+class ImmediateBlurDetector {
     constructor() {
         this.isBlurActive = false;
-        this.blurOverlay = null;
-        this.warningBox = null;
+        this.blurOverlay = document.getElementById('full-screen-blur-overlay');
         this.lastFocusTime = Date.now();
         this.focusCheckInterval = null;
         this.clickOutsideCount = 0;
-        this.maxAllowedClicks = 3; // Maximum allowed clicks outside
+        this.maxAllowedClicks = 3;
         this.clickTimeout = null;
+        this.isMouseOutside = false;
+        this.lastMousePosition = { x: 0, y: 0 };
         
         this.init();
     }
     
     init() {
-        // Get elements
-        this.blurOverlay = document.getElementById('full-screen-blur-overlay');
-        this.warningBox = document.getElementById('click-outside-warning');
-        
-        // Setup return button
-        document.getElementById('return-to-exam-btn').addEventListener('click', () => {
-            this.returnToExam();
-        });
+        console.log('🔍 Initializing Immediate Blur Detection (No Warning Messages)');
     }
     
     enable() {
-        console.log('🔍 Enabling browser click-outside detection...');
+        console.log('🔍 Enabling immediate blur detection...');
         
         // Start monitoring window focus
         this.startFocusMonitoring();
@@ -1449,20 +1338,21 @@ class BrowserClickOutsideDetector {
         
         // Monitor mouse leaving window
         document.addEventListener('mouseleave', (e) => this.handleMouseLeave(e));
+        document.addEventListener('mouseenter', (e) => this.handleMouseEnter(e));
         
-        // Monitor iframe detection (for embedded scenarios)
-        this.monitorIframes();
+        // Monitor mouse movement
+        document.addEventListener('mousemove', (e) => this.handleMouseMove(e));
         
-        console.log('✅ Browser click-outside detection enabled');
+        console.log('✅ Immediate blur detection enabled - Screen will blur immediately without warning');
     }
     
     startFocusMonitoring() {
-        // Check focus every 100ms
+        // Check focus every 50ms for immediate response
         this.focusCheckInterval = setInterval(() => {
             if (!document.hasFocus() && examInProgress && !this.isBlurActive) {
-                this.handleClickOutside();
+                this.activateImmediateBlur('focus_lost');
             }
-        }, 100);
+        }, 50);
     }
     
     handleWindowBlur() {
@@ -1470,42 +1360,83 @@ class BrowserClickOutsideDetector {
             console.log('⚠️ Window blur detected (clicked outside browser)');
             setTimeout(() => {
                 if (!document.hasFocus()) {
-                    this.handleClickOutside();
+                    this.activateImmediateBlur('window_blur');
                 }
-            }, 50);
+            }, 10);
         }
     }
     
     handleWindowFocus() {
-        if (this.isBlurActive) {
-            // User returned to window, but blur is still active
-            console.log('✅ Window focus regained');
+        if (this.isBlurActive && examInProgress) {
+            console.log('✅ Window focus regained - Removing blur');
+            this.deactivateBlur();
         }
     }
     
     handleVisibilityChange() {
         if (document.hidden && examInProgress && !this.isBlurActive) {
             console.log('⚠️ Page hidden (switched tabs/windows)');
-            this.handleClickOutside();
+            this.activateImmediateBlur('tab_switch');
+        } else if (!document.hidden && this.isBlurActive) {
+            console.log('✅ Page visible again');
+            this.deactivateBlur();
         }
     }
     
     handleMouseLeave(e) {
-        if (examInProgress && e.clientY < 0 && !this.isBlurActive) {
+        if (examInProgress && e.clientY <= 0 && !this.isBlurActive) {
             // Mouse left through top of window (likely to browser UI)
-            console.log('⚠️ Mouse left window (likely clicked browser UI)');
-            this.handleClickOutside();
+            console.log('⚠️ Mouse left window top (browser UI)');
+            this.activateImmediateBlur('mouse_left_top');
         }
     }
     
-    handleClickOutside() {
+    handleMouseEnter(e) {
+        if (this.isBlurActive && examInProgress) {
+            console.log('✅ Mouse re-entered window');
+            this.deactivateBlur();
+        }
+    }
+    
+    handleMouseMove(e) {
+        this.lastMousePosition = { x: e.clientX, y: e.clientY };
+        
+        // Check if mouse is near edges (potential browser UI interaction)
+        if (examInProgress && !this.isBlurActive) {
+            const isNearTop = e.clientY < 5;
+            const isNearBottom = e.clientY > window.innerHeight - 5;
+            const isNearLeft = e.clientX < 5;
+            const isNearRight = e.clientX > window.innerWidth - 5;
+            
+            if (isNearTop || isNearBottom || isNearLeft || isNearRight) {
+                // Mouse is near browser UI areas
+                this.isMouseOutside = true;
+            } else {
+                this.isMouseOutside = false;
+            }
+        }
+    }
+    
+    activateImmediateBlur(reason) {
+        console.log(`⚠️ IMMEDIATE BLUR ACTIVATED - Reason: ${reason}`);
+        
+        this.isBlurActive = true;
+        
+        // Show full screen blur overlay immediately - NO WARNING MESSAGE
+        this.blurOverlay.style.display = 'block';
+        
+        // Disable exam interaction
+        this.disableExamInteraction();
+        
+        // Log the security event
+        this.logSecurityEvent('immediate_blur_activated', {
+            timestamp: new Date().toISOString(),
+            reason: reason,
+            examInProgress: examInProgress
+        });
+        
         // Increment click counter
         this.clickOutsideCount++;
-        
-        console.log(`🖱️ Click outside detected: ${this.clickOutsideCount}/${this.maxAllowedClicks}`);
-        
-        // Activate blur warning
-        this.activateBlur();
         
         // Reset counter after 5 seconds
         if (this.clickTimeout) {
@@ -1514,38 +1445,31 @@ class BrowserClickOutsideDetector {
         
         this.clickTimeout = setTimeout(() => {
             this.clickOutsideCount = 0;
-            console.log('🔄 Click counter reset');
         }, 5000);
         
         // Check if maximum clicks reached
         if (this.clickOutsideCount >= this.maxAllowedClicks) {
-            this.handleMaxClicksReached();
+            this.handleMaxViolations();
         }
     }
     
-    activateBlur() {
-        console.log('⚠️ Activating full screen blur - Click outside browser detected');
+    deactivateBlur() {
+        if (!this.isBlurActive) return;
         
-        this.isBlurActive = true;
+        console.log('🔄 Deactivating blur');
         
-        // Show full screen blur overlay
-        this.blurOverlay.style.display = 'block';
+        this.isBlurActive = false;
         
-        // Show warning message
-        this.warningBox.style.display = 'block';
+        // Remove blur overlay
+        this.blurOverlay.style.display = 'none';
         
-        // Disable exam interaction
-        this.disableExamInteraction();
+        // Enable exam interaction
+        this.enableExamInteraction();
         
-        // Log the security event
-        this.logSecurityEvent('browser_click_outside', {
-            timestamp: new Date().toISOString(),
-            clickCount: this.clickOutsideCount,
-            maxAllowed: this.maxAllowedClicks
+        // Log deactivation
+        this.logSecurityEvent('blur_deactivated', {
+            timestamp: new Date().toISOString()
         });
-        
-        // Play warning sound (optional)
-        this.playWarningSound();
     }
     
     disableExamInteraction() {
@@ -1592,102 +1516,21 @@ class BrowserClickOutsideDetector {
         }
     }
     
-    returnToExam() {
-        console.log('🔄 Returning to exam...');
+    handleMaxViolations() {
+        console.log('🚨 Maximum violations reached - Auto-submitting exam');
         
-        this.isBlurActive = false;
+        // Force exam submission
+        if (typeof submitExam === 'function') {
+            setTimeout(() => {
+                submitExam();
+            }, 1000);
+        }
         
-        // Remove blur overlay
-        this.blurOverlay.style.display = 'none';
-        
-        // Hide warning message
-        this.warningBox.style.display = 'none';
-        
-        // Enable exam interaction
-        this.enableExamInteraction();
-        
-        // Focus back on exam
-        window.focus();
-        
-        // Log return event
-        this.logSecurityEvent('return_to_exam', {
-            timestamp: new Date().toISOString(),
-            totalClicksOutside: this.clickOutsideCount
-        });
-        
-        // Show confirmation message
-        this.showReturnConfirmation();
-    }
-    
-    handleMaxClicksReached() {
-        console.log('🚨 Maximum clicks outside reached - Severe warning');
-        
-        // Update warning message
-        this.warningBox.innerHTML = `
-            <h2>🚨 SEVERE SECURITY ALERT</h2>
-            <p><strong>Multiple clicks outside browser detected!</strong></p>
-            <p>You have clicked outside the exam browser ${this.clickOutsideCount} times.</p>
-            <p>This is a serious violation of exam rules.</p>
-            <p style="color: red; font-weight: bold;">Next violation may result in automatic exam submission!</p>
-            <button id="return-to-exam-btn" style="background: linear-gradient(145deg, #ff0000, #cc0000);">Acknowledge & Return</button>
-        `;
-        
-        // Update button event listener
-        document.getElementById('return-to-exam-btn').addEventListener('click', () => {
-            this.returnToExam();
-        });
-        
-        // Log severe warning
-        this.logSecurityEvent('max_clicks_reached', {
+        // Log severe violation
+        this.logSecurityEvent('max_violations_reached', {
             timestamp: new Date().toISOString(),
             clickCount: this.clickOutsideCount
         });
-    }
-    
-    showReturnConfirmation() {
-        // Show quick confirmation toast
-        const toast = document.createElement('div');
-        toast.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: linear-gradient(145deg, #32CD32, #228B22);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 5px;
-            z-index: 10000;
-            font-weight: bold;
-            animation: slideIn 0.3s ease;
-        `;
-        toast.textContent = '✅ Returned to exam';
-        document.body.appendChild(toast);
-        
-        setTimeout(() => {
-            toast.style.animation = 'slideOut 0.3s ease';
-            setTimeout(() => toast.remove(), 300);
-        }, 2000);
-    }
-    
-    playWarningSound() {
-        // Create a warning beep sound
-        try {
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            oscillator.frequency.value = 800;
-            oscillator.type = 'sine';
-            gainNode.gain.value = 0.1;
-            
-            oscillator.start();
-            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.5);
-            oscillator.stop(audioContext.currentTime + 0.5);
-        } catch (e) {
-            console.log('Audio not supported');
-        }
     }
     
     logSecurityEvent(eventType, data) {
@@ -1704,21 +1547,7 @@ class BrowserClickOutsideDetector {
         // Store in localStorage for review
         const logs = JSON.parse(localStorage.getItem('exam_security_logs') || '[]');
         logs.push(eventLog);
-        localStorage.setItem('exam_security_logs', JSON.stringify(logs.slice(-50))); // Keep last 50 events
-    }
-    
-    monitorIframes() {
-        // Check for iframes (some cheating methods use iframes)
-        setInterval(() => {
-            const iframes = document.querySelectorAll('iframe');
-            if (iframes.length > 0 && examInProgress) {
-                console.warn('⚠️ Iframes detected during exam!');
-                this.logSecurityEvent('iframe_detected', {
-                    iframeCount: iframes.length,
-                    urls: Array.from(iframes).map(f => f.src || 'no-src')
-                });
-            }
-        }, 5000);
+        localStorage.setItem('exam_security_logs', JSON.stringify(logs.slice(-50)));
     }
     
     disable() {
@@ -1736,18 +1565,19 @@ class BrowserClickOutsideDetector {
         window.removeEventListener('blur', () => this.handleWindowBlur());
         window.removeEventListener('focus', () => this.handleWindowFocus());
         document.removeEventListener('mouseleave', (e) => this.handleMouseLeave(e));
+        document.removeEventListener('mouseenter', (e) => this.handleMouseEnter(e));
+        document.removeEventListener('mousemove', (e) => this.handleMouseMove(e));
         
         // Remove blur if active
         this.isBlurActive = false;
         this.blurOverlay.style.display = 'none';
-        this.warningBox.style.display = 'none';
         
-        console.log('🔓 Browser click-outside detection disabled');
+        console.log('🔓 Immediate blur detection disabled');
     }
 }
 
-// Initialize browser click detector
-const browserClickDetector = new BrowserClickOutsideDetector();
+// Initialize immediate blur detector
+const blurDetector = new ImmediateBlurDetector();
 
 // ===== WINDOW VISIBILITY DETECTOR =====
 class WindowVisibilityDetector {
@@ -1766,10 +1596,6 @@ class WindowVisibilityDetector {
         // Page visibility API
         document.addEventListener('visibilitychange', () => this.handleVisibility());
         
-        // Window blur/focus for extra detection
-        window.addEventListener('blur', () => this.handleWindowBlur());
-        window.addEventListener('focus', () => this.handleWindowFocus());
-        
         console.log('✅ Window visibility detection enabled');
     }
     
@@ -1780,20 +1606,6 @@ class WindowVisibilityDetector {
         } else if (!document.hidden && this.isTabSwitchDetected) {
             console.log('✅ Returned to exam tab');
             this.handleReturnToTab();
-        }
-    }
-    
-    handleWindowBlur() {
-        if (examInProgress && !document.hidden) {
-            // Window blurred but tab still visible (clicked browser UI)
-            console.log('⚠️ Window blur - clicked browser UI');
-            this.showBlurOverlay();
-        }
-    }
-    
-    handleWindowFocus() {
-        if (this.blurOverlay.style.display === 'block') {
-            this.hideBlurOverlay();
         }
     }
     
@@ -1817,18 +1629,12 @@ class WindowVisibilityDetector {
         // Check if max switches reached
         if (this.tabSwitchCount >= this.maxTabSwitches) {
             this.handleMaxTabSwitches();
-        } else {
-            // Show warning
-            this.showTabSwitchWarning();
         }
     }
     
     handleReturnToTab() {
         this.isTabSwitchDetected = false;
         this.hideBlurOverlay();
-        
-        // Show return message
-        this.showReturnMessage();
     }
     
     showBlurOverlay() {
@@ -1839,62 +1645,23 @@ class WindowVisibilityDetector {
         this.blurOverlay.style.display = 'none';
     }
     
-    showTabSwitchWarning() {
-        // You can add a toast notification here
-        console.log(`⚠️ Tab switch warning: ${this.tabSwitchCount}/${this.maxTabSwitches}`);
-        
-        // Optional: Show a small warning toast
-        if (this.tabSwitchCount === 1) {
-            this.showToast(`Warning: Tab switch detected (${this.tabSwitchCount}/${this.maxTabSwitches})`, 'warning');
-        }
-    }
-    
     handleMaxTabSwitches() {
         console.log('🚨 Maximum tab switches reached!');
         
-        // Show severe warning
-        this.showToast('🚨 Maximum tab switches! Next will auto-submit!', 'error');
-        
-        // Force focus back to exam
-        window.focus();
+        // Force exam submission
+        if (typeof submitExam === 'function') {
+            setTimeout(() => {
+                submitExam();
+            }, 1000);
+        }
         
         // Log security event
-        if (typeof browserClickDetector?.logSecurityEvent === 'function') {
-            browserClickDetector.logSecurityEvent('max_tab_switches', {
+        if (typeof blurDetector?.logSecurityEvent === 'function') {
+            blurDetector.logSecurityEvent('max_tab_switches', {
                 count: this.tabSwitchCount,
                 timestamp: new Date().toISOString()
             });
         }
-    }
-    
-    showReturnMessage() {
-        this.showToast('✅ Returned to exam tab', 'success');
-    }
-    
-    showToast(message, type = 'info') {
-        const toast = document.createElement('div');
-        toast.style.cssText = `
-            position: fixed;
-            top: 60px;
-            right: 20px;
-            background: ${type === 'warning' ? 'linear-gradient(145deg, #FFA500, #FF8C00)' : 
-                        type === 'error' ? 'linear-gradient(145deg, #FF4500, #DC143C)' : 
-                        'linear-gradient(145deg, #32CD32, #228B22)'};
-            color: white;
-            padding: 10px 20px;
-            border-radius: 5px;
-            z-index: 10000;
-            font-weight: bold;
-            animation: slideIn 0.3s ease;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        `;
-        toast.textContent = message;
-        document.body.appendChild(toast);
-        
-        setTimeout(() => {
-            toast.style.animation = 'slideOut 0.3s ease';
-            setTimeout(() => toast.remove(), 300);
-        }, 3000);
     }
     
     disable() {
@@ -2858,30 +2625,6 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// ===== TAB SWITCH DETECTION =====
-let tabSwitchCount = 0;
-let lastTabSwitchTime = 0;
-const MAX_TAB_SWITCHES = 2;
-const TAB_SWITCH_WINDOW_MS = 30000;
-
-document.addEventListener('visibilitychange', function() {
-    if (document.hidden && examInProgress) {
-        const currentTime = Date.now();
-        if (currentTime - lastTabSwitchTime > TAB_SWITCH_WINDOW_MS) tabSwitchCount = 0;
-        tabSwitchCount++;
-        lastTabSwitchTime = currentTime;
-        
-        console.log(`Tab switch detected: ${tabSwitchCount}/${MAX_TAB_SWITCHES}`);
-        
-        if (tabSwitchCount >= MAX_TAB_SWITCHES) {
-            alert('⚠️ Multiple tab switches detected. Exam will be submitted automatically for security.');
-            submitExam();
-        } else {
-            alert(`⚠️ Warning: Tab switching detected (${tabSwitchCount}/${MAX_TAB_SWITCHES}). Multiple switches may result in automatic submission.`);
-        }
-    }
-});
-
 // ===== EVENT LISTENERS =====
 ["stuName", "stuSection", "stuRoll", "stuAdm"].forEach(id => {
   document.getElementById(id).addEventListener("input", validateStudentInputs);
@@ -2924,7 +2667,7 @@ function startWithSecurity(ok) {
   const studentKey = `${stuName.value}|${stuSection.value}|${stuRoll.value}|${stuAdm.value}`;
   
   // Enable all security systems
-  browserClickDetector.enable();
+  blurDetector.enable();
   windowVisibilityDetector.enable();
   
   startExam(studentKey);
@@ -3156,7 +2899,7 @@ function submitExam() {
   examInProgress = false;
   
   // Disable security systems
-  browserClickDetector.disable();
+  blurDetector.disable();
   windowVisibilityDetector.disable();
   
   const subjData = {};
@@ -3421,7 +3164,7 @@ function resetForm() {
   validateStudentInputs();
 }
 
-// ===== CONFIRMATION MODAL - BOTH BUTTONS WORKING =====
+// ===== FIXED CONFIRMATION MODAL - BOTH YES/NO BUTTONS WORKING =====
 function showConfirm(message, callback) {
   const modal = document.getElementById('confirmModal');
   const text = document.getElementById('confirmText');
@@ -3431,7 +3174,7 @@ function showConfirm(message, callback) {
   text.textContent = message;
   modal.style.display = 'flex';
   
-  // Remove existing event listeners
+  // Remove existing event listeners by cloning buttons
   const newYesBtn = yesBtn.cloneNode(true);
   const newNoBtn = noBtn.cloneNode(true);
   
@@ -3439,28 +3182,34 @@ function showConfirm(message, callback) {
   noBtn.parentNode.replaceChild(newNoBtn, noBtn);
   
   // Add new event listeners
-  newYesBtn.onclick = () => { 
-    modal.style.display = 'none'; 
-    callback(true); 
+  newYesBtn.onclick = function() {
+    modal.style.display = 'none';
+    if (callback) callback(true);
+    document.removeEventListener('keydown', handleKeyPress);
   };
   
-  newNoBtn.onclick = () => { 
-    modal.style.display = 'none'; 
-    callback(false); 
+  newNoBtn.onclick = function() {
+    modal.style.display = 'none';
+    if (callback) callback(false);
+    document.removeEventListener('keydown', handleKeyPress);
   };
   
-  // Also handle Escape key
-  const handleEscape = (e) => {
-    if (e.key === 'Escape') {
+  // Handle keyboard events
+  function handleKeyPress(e) {
+    if (e.key === 'Enter') {
       modal.style.display = 'none';
-      callback(false);
-      document.removeEventListener('keydown', handleEscape);
+      if (callback) callback(true);
+      document.removeEventListener('keydown', handleKeyPress);
+    } else if (e.key === 'Escape') {
+      modal.style.display = 'none';
+      if (callback) callback(false);
+      document.removeEventListener('keydown', handleKeyPress);
     }
-  };
+  }
   
-  document.addEventListener('keydown', handleEscape);
+  document.addEventListener('keydown', handleKeyPress);
   
-  // Focus on "No" button by default (safer)
+  // Focus on "No" button by default (safer choice)
   setTimeout(() => {
     newNoBtn.focus();
   }, 100);
@@ -3563,15 +3312,14 @@ window.addEventListener('load', function() {
   console.log('• Physics: Q26-45 (MCQ), Q46-50 (Numerical Input)');
   console.log('• Chemistry: Q51-70 (MCQ), Q71-75 (Numerical Input)');
   console.log('🛡️ SECURITY SYSTEMS ENABLED:');
-  console.log('1. Browser Click-Outside Detection');
-  console.log('   - Detects clicks on browser tabs, Chrome menu, address bar');
-  console.log('   - Shows full screen blur with warning');
-  console.log('   - Counts violations (3 strikes)');
+  console.log('1. IMMEDIATE BLUR DETECTION (No Warning Messages)');
+  console.log('   - Screen blurs immediately when clicking outside browser');
+  console.log('   - No warning messages shown');
+  console.log('   - Blur removes when returning to exam');
+  console.log('   - Counts violations (3 strikes = auto-submit)');
   console.log('2. Window Visibility Detection');
-  console.log('   - Detects tab/window switching');
-  console.log('   - Shows blur overlay');
   console.log('3. No numeric keypad for fill-in-blank');
-  console.log('4. Both Yes/No buttons work in confirmation');
+  console.log('4. Fixed Yes/No buttons in confirmation modal');
   
   document.getElementById('accessDenied').style.display = 'flex';
   document.getElementById('studentEntry').style.display = 'none';
@@ -3589,10 +3337,11 @@ window.addEventListener('load', function() {
 
 console.log("🎯 LFJC Online Exam System Loaded Successfully");
 console.log("✅ 75 questions with specified structure");
-console.log("🛡️ CLICK OUTSIDE BROWSER DETECTION ACTIVE");
-console.log("✅ Detects: Browser tabs, Chrome menu, address bar, bookmarks");
-console.log("✅ Action: Full screen blur + warning message");
-console.log("✅ Counts violations (3 clicks = severe warning)");
+console.log("🛡️ IMMEDIATE BLUR SECURITY ACTIVE");
+console.log("✅ Detects: Clicks outside browser, tab switching, mouse leaving window");
+console.log("✅ Action: IMMEDIATE BLUR - No warning messages shown");
+console.log("✅ Blur removes automatically when returning to exam");
+console.log("✅ Counts violations (3 clicks = auto-submit)");
 console.log("❌ NO Numeric Keypad for fill-in-blank questions");
 console.log("✅ Both Yes/No buttons work in confirmation modal");
 </script>
