@@ -930,57 +930,56 @@ table td, table th {
   margin: 10px;
 }
 
-/* ===== UPDATED SMALLER NUMERICAL KEYPAD STYLES ===== */
+/* ===== UPDATED SMALLER 3x3 NUMERICAL KEYPAD STYLES ===== */
 .numerical-keypad {
   margin: 10px auto;
-  max-width: 260px;
-  transform: scale(0.9);
+  max-width: 210px;
 }
 
 .keypad-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 6px;
-  padding: 12px;
+  padding: 8px;
   background: #f8f9fa;
-  border-radius: 12px;
-  border: 2px solid #4B0082;
-  box-shadow: 0 4px 12px rgba(75, 0, 130, 0.1);
+  border-radius: 8px;
+  border: 1px solid #4B0082;
+  box-shadow: 0 2px 4px rgba(75, 0, 130, 0.1);
 }
 
 .num-key-btn {
-  width: 65px;
-  height: 65px;
-  font-size: 24px;
+  width: 45px;
+  height: 45px;
+  font-size: 18px;
   font-weight: bold;
-  border: 2px solid #4B0082;
-  border-radius: 12px;
+  border: 1px solid #4B0082;
+  border-radius: 6px;
   background: linear-gradient(145deg, #ffffff, #f0f0ff);
   color: #4B0082;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 0 rgba(75, 0, 130, 0.2);
+  box-shadow: 0 2px 0 rgba(75, 0, 130, 0.2);
 }
 
 .num-key-btn:hover {
   background: linear-gradient(145deg, #f0f0ff, #e6e6fa);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 0 rgba(75, 0, 130, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 0 rgba(75, 0, 130, 0.3);
 }
 
 .num-key-btn:active {
-  transform: translateY(2px);
-  box-shadow: 0 2px 0 rgba(75, 0, 130, 0.2);
+  transform: translateY(1px);
+  box-shadow: 0 1px 0 rgba(75, 0, 130, 0.2);
 }
 
 .num-key-btn:focus {
-  outline: 3px solid #4B0082 !important;
-  outline-offset: 2px;
-  box-shadow: 0 0 0 3px rgba(75, 0, 130, 0.2) !important;
+  outline: 2px solid #4B0082 !important;
+  outline-offset: 1px;
+  box-shadow: 0 0 0 2px rgba(75, 0, 130, 0.2) !important;
 }
 
 .special-btn {
-  font-size: 22px;
+  font-size: 18px;
 }
 
 .clear-btn {
@@ -993,59 +992,46 @@ table td, table th {
   background: linear-gradient(145deg, #32CD32, #228B22);
   color: white;
   border-color: #228B22;
-  font-size: 22px;
-}
-
-/* Mobile responsive */
-@media (max-width: 400px) {
-  .numerical-keypad {
-    max-width: 220px;
-    transform: scale(0.85);
-  }
-  
-  .keypad-grid {
-    gap: 5px;
-    padding: 8px;
-  }
-  
-  .num-key-btn {
-    width: 55px;
-    height: 55px;
-    font-size: 20px;
-  }
-  
-  .special-btn {
-    font-size: 18px;
-  }
-  
-  .submit-num-btn {
-    font-size: 18px;
-  }
+  font-size: 20px;
 }
 
 /* Tab navigation focus styles */
 .fill-blank-input:focus {
-  outline: 3px solid #4B0082 !important;
-  outline-offset: 2px;
-  box-shadow: 0 0 0 3px rgba(75, 0, 130, 0.2) !important;
+  outline: 2px solid #4B0082 !important;
+  outline-offset: 1px;
+  box-shadow: 0 0 0 2px rgba(75, 0, 130, 0.2) !important;
 }
 
 .optBtn:focus {
-  outline: 3px solid #4B0082 !important;
-  outline-offset: 2px;
-  box-shadow: 0 0 0 3px rgba(75, 0, 130, 0.2) !important;
+  outline: 2px solid #4B0082 !important;
+  outline-offset: 1px;
+  box-shadow: 0 0 0 2px rgba(75, 0, 130, 0.2) !important;
 }
 
 .navBtn:focus {
-  outline: 3px solid #4B0082 !important;
-  outline-offset: 2px;
-  box-shadow: 0 0 0 3px rgba(75, 0, 130, 0.2) !important;
+  outline: 2px solid #4B0082 !important;
+  outline-offset: 1px;
+  box-shadow: 0 0 0 2px rgba(75, 0, 130, 0.2) !important;
 }
 
 .palette-btn:focus {
-  outline: 3px solid #4B0082 !important;
-  outline-offset: 2px;
-  box-shadow: 0 0 0 3px rgba(75, 0, 130, 0.2) !important;
+  outline: 2px solid #4B0082 !important;
+  outline-offset: 1px;
+  box-shadow: 0 0 0 2px rgba(75, 0, 130, 0.2) !important;
+}
+
+/* Responsive keypad */
+@media (max-width: 400px) {
+  .keypad-grid {
+    gap: 5px;
+    padding: 6px;
+  }
+  
+  .num-key-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
 }
 
 /* ===== TOAST NOTIFICATION STYLES ===== */
@@ -1127,124 +1113,6 @@ table td, table th {
   transition: opacity 0.3s ease;
 }
 
-/* ===== UPDATED FULL-SCREEN BOX STYLES ===== */
-.fullscreen-requirement {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 1000;
-}
-
-.fullscreen-box {
-  background: linear-gradient(145deg, #1a1a1a, #2d2d2d);
-  border-radius: 20px;
-  padding: 20px 25px;
-  box-shadow: 
-    0 10px 40px rgba(0, 0, 0, 0.3),
-    0 0 0 1px rgba(255, 255, 255, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  min-width: 280px;
-  animation: float 6s ease-in-out infinite;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-}
-
-.fullscreen-box .icon {
-  font-size: 28px;
-  margin-bottom: 10px;
-  display: block;
-}
-
-.fullscreen-box .status {
-  font-size: 14px;
-  font-weight: 500;
-  letter-spacing: 0.5px;
-  opacity: 0.9;
-}
-
-.fullscreen-box.active {
-  background: linear-gradient(145deg, #007AFF, #5856D6);
-}
-
-.fullscreen-box.active .icon {
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0% { opacity: 1; }
-  50% { opacity: 0.7; }
-  100% { opacity: 1; }
-}
-
-/* ===== STYLISH WARNING BOXES ===== */
-.warning-box {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  padding: 25px 35px;
-  border-radius: 20px;
-  box-shadow: 
-    0 20px 60px rgba(0, 0, 0, 0.3),
-    0 0 0 1px rgba(255, 255, 255, 0.1);
-  z-index: 2147483647;
-  text-align: center;
-  max-width: 450px;
-  width: 90%;
-  backdrop-filter: blur(10px);
-  animation: slideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.warning-box h3 {
-  margin: 0 0 15px 0;
-  font-size: 22px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-}
-
-.warning-box p {
-  margin: 0 0 20px 0;
-  font-size: 16px;
-  line-height: 1.5;
-  opacity: 0.9;
-}
-
-.warning-box .warning-icon {
-  font-size: 28px;
-  animation: pulse 1.5s infinite;
-}
-
-.warning-box .count {
-  font-weight: bold;
-  font-size: 24px;
-  background: rgba(255, 255, 255, 0.2);
-  padding: 5px 15px;
-  border-radius: 10px;
-  margin: 0 5px;
-}
-
-.warning-box.warning-1 {
-  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
-  color: #333;
-}
-
-.warning-box.warning-2 {
-  background: linear-gradient(135deg, #FF4500 0%, #DC143C 100%);
-  color: white;
-}
-
 /* ===== FULL-SCREEN WARNING OVERLAY STYLES ===== */
 #fullscreen-warning-overlay {
   position: fixed;
@@ -1307,6 +1175,13 @@ table td, table th {
 
 #enter-fullscreen-btn:active {
   transform: translateY(0);
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+  20% { opacity: 1; transform: translateX(-50%) translateY(0); }
+  80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
 }
 
 #chromeMenuWarning {
@@ -1390,15 +1265,6 @@ table td, table th {
 </div>
 
 <div id="examArea" style="display:none;">
-  <!-- Full Screen Requirement Box -->
-  <div class="fullscreen-requirement">
-    <div class="fullscreen-box active" id="fullScreenBox">
-      <span class="icon">🖥️</span>
-      <div class="status">FULL SCREEN REQUIRED</div>
-    </div>
-  </div>
-
-  <!-- Exam Header - Fixed to show question info only once -->
   <div id="examHeader" style="display:flex;align-items:center;width:100%;font-weight:bold;">
     <div id="stuInfo" style="flex:0 0 auto;text-align:left; white-space:nowrap;"></div>
     <div id="stuQInfo" style="flex:1;text-align:center; white-space:nowrap;"></div>
@@ -1530,11 +1396,6 @@ const ACCESS_CODE = "lfjc2025";
 const ADMIN_PASSWORD = "admin2025";
 const RESUBMISSION_PASSWORD = "resubmit2025";
 const RESUBMISSION_WINDOW_HOURS = 24;
-
-// Tab switching configuration
-const MAX_TAB_SWITCHES = 3; // 3 violations for entire exam
-let tabSwitchCount = 0;
-let examAutoSubmitted = false;
 
 // QUESTION STRUCTURE CONFIGURATION
 const QUESTION_STRUCTURE = {
@@ -1948,175 +1809,6 @@ class FullScreenSecurity {
 // Initialize security system
 const examSecurity = new FullScreenSecurity();
 
-// ===== TAB SWITCH DETECTION SYSTEM =====
-class TabSwitchDetector {
-    constructor() {
-        this.tabSwitchCount = 0;
-        this.maxSwitches = MAX_TAB_SWITCHES;
-        this.examAutoSubmitted = false;
-        this.lastSwitchTime = null;
-        this.warningDisplayed = false;
-        
-        this.setupEventListeners();
-    }
-    
-    setupEventListeners() {
-        // Track visibility changes
-        document.addEventListener('visibilitychange', () => {
-            if (document.hidden && examInProgress) {
-                this.handleTabSwitch();
-            }
-        });
-        
-        // Track focus/blur events as backup
-        window.addEventListener('blur', () => {
-            if (document.hasFocus() === false && examInProgress) {
-                setTimeout(() => {
-                    if (document.hidden && examInProgress) {
-                        this.handleTabSwitch();
-                    }
-                }, 100);
-            }
-        });
-    }
-    
-    handleTabSwitch() {
-        if (examAutoSubmitted || !examInProgress) return;
-        
-        this.tabSwitchCount++;
-        this.lastSwitchTime = new Date();
-        
-        console.log(`🔄 Tab switch detected: ${this.tabSwitchCount}/${this.maxSwitches}`);
-        
-        // Show warning based on count
-        if (this.tabSwitchCount < this.maxSwitches) {
-            this.showWarning(this.tabSwitchCount);
-        } else if (this.tabSwitchCount >= this.maxSwitches) {
-            this.autoSubmitExam();
-        }
-        
-        // Save tab switch count
-        this.saveTabSwitchCount();
-    }
-    
-    showWarning(count) {
-        // Remove any existing warning
-        this.removeExistingWarning();
-        
-        const warningBox = document.createElement('div');
-        warningBox.className = `warning-box warning-${count}`;
-        
-        let message = '';
-        if (count === 1) {
-            message = `Warning: Tab switching detected (${count}/${this.maxSwitches}). Multiple switches may result in automatic submission.`;
-        } else {
-            message = `Warning: Tab switching detected (${count}/${this.maxSwitches}). One more switch will result in automatic submission.`;
-        }
-        
-        warningBox.innerHTML = `
-            <h3><span class="warning-icon">⚠️</span> SECURITY WARNING</h3>
-            <p>${message}</p>
-            <div style="font-size: 14px; opacity: 0.8;">
-                Switch count: <span class="count">${count}</span> / <span class="count">${this.maxSwitches}</span>
-            </div>
-        `;
-        
-        document.body.appendChild(warningBox);
-        
-        // Auto-remove after 4 seconds
-        setTimeout(() => {
-            if (warningBox.parentNode) {
-                warningBox.style.animation = 'slideOut 0.4s ease';
-                setTimeout(() => {
-                    if (warningBox.parentNode) {
-                        warningBox.parentNode.removeChild(warningBox);
-                    }
-                }, 400);
-            }
-        }, 4000);
-    }
-    
-    showFinalWarning() {
-        this.removeExistingWarning();
-        
-        const warningBox = document.createElement('div');
-        warningBox.className = 'warning-box warning-2';
-        
-        warningBox.innerHTML = `
-            <h3><span class="warning-icon">🚨</span> EXAM AUTO-SUBMISSION</h3>
-            <p>Multiple tab switches detected. Exam will be submitted automatically for security.</p>
-            <div style="font-size: 14px; opacity: 0.8; margin-top: 15px;">
-                <div>Switches detected: <span class="count">${this.tabSwitchCount}</span></div>
-                <div>Maximum allowed: <span class="count">${this.maxSwitches}</span></div>
-            </div>
-        `;
-        
-        document.body.appendChild(warningBox);
-        
-        // Keep this warning visible until exam is submitted
-        return warningBox;
-    }
-    
-    removeExistingWarning() {
-        const existingWarnings = document.querySelectorAll('.warning-box');
-        existingWarnings.forEach(warning => {
-            if (warning.parentNode) {
-                warning.parentNode.removeChild(warning);
-            }
-        });
-    }
-    
-    autoSubmitExam() {
-        if (examAutoSubmitted) return;
-        
-        examAutoSubmitted = true;
-        
-        // Show final warning
-        const finalWarning = this.showFinalWarning();
-        
-        // Submit exam after 3 seconds
-        setTimeout(() => {
-            if (finalWarning.parentNode) {
-                finalWarning.parentNode.removeChild(finalWarning);
-            }
-            
-            if (examInProgress) {
-                console.log('🚨 Auto-submitting exam due to tab switching violations');
-                showToast('⚠️ Exam auto-submitted due to tab switching violations', 'error', 3000);
-                submitExam();
-            }
-        }, 3000);
-    }
-    
-    saveTabSwitchCount() {
-        if (progress && progress.student) {
-            const studentKey = `${progress.student.name}|${progress.student.sec}|${progress.student.roll}|${progress.student.adm}`;
-            localStorage.setItem(`tab_switches_${studentKey}`, this.tabSwitchCount);
-        }
-    }
-    
-    loadTabSwitchCount() {
-        if (progress && progress.student) {
-            const studentKey = `${progress.student.name}|${progress.student.sec}|${progress.student.roll}|${progress.student.adm}`;
-            const savedCount = localStorage.getItem(`tab_switches_${studentKey}`);
-            if (savedCount) {
-                this.tabSwitchCount = parseInt(savedCount);
-            }
-        }
-    }
-    
-    reset() {
-        this.tabSwitchCount = 0;
-        this.examAutoSubmitted = false;
-        this.lastSwitchTime = null;
-        this.warningDisplayed = false;
-        this.removeExistingWarning();
-    }
-}
-
-// Initialize tab switch detector
-const tabSwitchDetector = new TabSwitchDetector();
-
 // ===== CHROME THREE-DOTS MENU BLUR DETECTION =====
 class ChromeMenuBlurDetector {
     constructor() {
@@ -2385,6 +2077,7 @@ let isResubmission = false;
 let submissionInProgress = new Set();
 let googleFormsSubmissionStatus = 'pending';
 let chromeMenuBlurDetector = null; // Chrome menu blur detector
+let tabSwitchCount = 0; // Track tab switching count for entire exam
 
 const subjects = ["Maths", "Physics", "Chemistry"];
 let examData = {files: [], subjectNames: [], keys: [], originalOrder: [], questionTypes: []};
@@ -2682,7 +2375,7 @@ function prepareExamData() {
   console.log("Chemistry:", typeCount.Chemistry);
 }
 
-// ===== UPDATED RENDER QUESTION WITH SMALLER KEYPAD =====
+// ===== UPDATED RENDER QUESTION WITH FIXED DUPLICATE TEXT =====
 function renderQuestion() {
   const idx = progress.currentIndex;
   const container = document.getElementById('questionContainer');
@@ -2700,10 +2393,10 @@ function renderQuestion() {
     // NUMERICAL INPUT FOR FILL IN THE BLANK WITH SMALLER KEYPAD
     optionsHTML = `
       <div class="fill-blank-container">
-        <div style="margin: 15px 0; font-weight: bold; color: #4B0082; font-size: 18px;">
+        <div style="margin: 20px 0; font-weight: bold; color: #4B0082; font-size: 18px;">
           Enter numerical answer:
         </div>
-        <div style="display: flex; justify-content: center; align-items: center; gap: 12px; margin: 20px 0;">
+        <div style="display: flex; justify-content: center; align-items: center; gap: 15px; margin: 25px 0;">
           <input type="number" 
                  id="fillBlankInput" 
                  class="fill-blank-input"
@@ -2712,11 +2405,11 @@ function renderQuestion() {
                  min="0"
                  step="any"
                  style="
-                   padding: 12px 15px;
-                   font-size: 20px;
+                   padding: 12px 18px;
+                   font-size: 22px;
                    border: 2px solid #4B0082;
                    border-radius: 8px;
-                   width: 180px;
+                   width: 200px;
                    text-align: center;
                    outline: none;
                    font-weight: bold;
@@ -2728,7 +2421,7 @@ function renderQuestion() {
                   onclick="submitNumericalAnswer(${idx})"
                   tabindex="0"
                   style="
-                    padding: 12px 20px;
+                    padding: 12px 24px;
                     background: linear-gradient(145deg, #32CD32, #228B22);
                     color: white;
                     border: none;
@@ -2769,7 +2462,7 @@ function renderQuestion() {
           </div>
         </div>
         
-        <div style="margin-top: 12px; color: #666; font-size: 13px;">
+        <div style="margin-top: 15px; color: #666; font-size: 14px;">
           <em>Note: Use keypad, type in input box, or use Tab to navigate</em>
         </div>
       </div>
@@ -2786,10 +2479,11 @@ function renderQuestion() {
     `;
   }
   
+  // FIX: Only show question info ONCE
   container.innerHTML = `
     <div class="question-transition question-fade-in">
       <div class="question-number">Question ${questionNumber} of 75</div>
-      <div class="sectionTitle">${subject} (${questionType === 'fill-blank' ? 'Numerical Input' : 'MCQ'})</div>
+      <div class="sectionTitle">${subject} ${questionType === 'fill-blank' ? '(Numerical Input)' : '(MCQ)'}</div>
       
       <div style="width: 100%; overflow: auto; min-height: 300px; display: flex; justify-content: center; align-items: center;">
         <img src="${imagePath}" 
@@ -3349,6 +3043,27 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
+// ===== UPDATED TAB SWITCH DETECTION (3 FOR ENTIRE EXAM) =====
+document.addEventListener('visibilitychange', function() {
+    if (document.hidden && examInProgress) {
+        tabSwitchCount++;
+        
+        console.log(`Tab switch detected: ${tabSwitchCount}/3 for entire exam`);
+        
+        if (tabSwitchCount >= 3) {
+            console.log('🚨 3 tab switches detected - submitting exam');
+            showToast('⚠️ Multiple tab switches detected. Exam will be submitted automatically for security.', 'error', 3000);
+            setTimeout(() => {
+                submitExam();
+            }, 3000);
+        } else if (tabSwitchCount === 1) {
+            showToast('⚠️ Warning: Tab switching detected (1/3).', 'warning', 2000);
+        } else if (tabSwitchCount === 2) {
+            showToast('⚠️ Warning: Tab switching detected (2/3). One more switch will submit exam!', 'warning', 3000);
+        }
+    }
+});
+
 // ===== EVENT LISTENERS =====
 ["stuName", "stuSection", "stuRoll", "stuAdm"].forEach(id => {
   document.getElementById(id).addEventListener("input", validateStudentInputs);
@@ -3383,8 +3098,8 @@ function shuffleArray(arr) {
 function startWithSecurity(ok) {
   if (!ok) return;
   
-  // Reset tab switch detector
-  tabSwitchDetector.reset();
+  // Reset tab switch count
+  tabSwitchCount = 0;
   
   // Initialize Chrome menu detector
   chromeMenuBlurDetector = new ChromeMenuBlurDetector();
@@ -3502,7 +3217,8 @@ function updateQuestionInfo() {
   const stuQInfoEl = document.getElementById('stuQInfo');
   
   if (stuInfoEl) stuInfoEl.textContent = `${progress.student.name} | ${progress.student.sec} | Roll: ${progress.student.roll}`;
-  if (stuQInfoEl) stuQInfoEl.textContent = `Q${idx+1} of 75 | ${examData.subjectNames[idx]} | ${examData.questionTypes[idx] === 'fill-blank' ? 'Numerical Input' : 'MCQ'}`;
+  // FIX: Only show question info ONCE, not duplicated
+  if (stuQInfoEl) stuQInfoEl.textContent = `Q${idx+1} of 75 | ${examData.subjectNames[idx]}`;
 }
 
 // ===== PALETTE FUNCTIONS UPDATED FOR 75 QUESTIONS =====
@@ -3598,12 +3314,40 @@ document.getElementById('markReviewBtn').onclick = () => {
   updatePalette();
 };
 
-// ===== UPDATED SUBMIT BUTTON WITH WORKING YES/NO =====
+// ===== UPDATED SUBMIT BUTTON WITH WORKING BOTH YES/NO BUTTONS =====
 document.getElementById('submitBtn').onclick = () => {
-  showConfirm("Submit Exam? You cannot change answers after submission.", submitExam);
+  showConfirmWithBothButtons("Submit Exam? You cannot change answers after submission.");
 };
 
-// ===== UPDATED CONFIRMATION MODAL =====
+// ===== UPDATED CONFIRMATION MODAL WITH WORKING BOTH BUTTONS =====
+function showConfirmWithBothButtons(message) {
+  const modal = document.getElementById('confirmModal');
+  const text = document.getElementById('confirmText');
+  const yesBtn = document.getElementById('confirmYes');
+  const noBtn = document.getElementById('confirmNo');
+  
+  text.textContent = message;
+  modal.style.display = 'flex';
+  
+  // Clear previous event listeners
+  const newYesBtn = yesBtn.cloneNode(true);
+  const newNoBtn = noBtn.cloneNode(true);
+  yesBtn.parentNode.replaceChild(newYesBtn, yesBtn);
+  noBtn.parentNode.replaceChild(newNoBtn, noBtn);
+  
+  // Add new event listeners
+  newYesBtn.onclick = () => { 
+    modal.style.display = 'none'; 
+    submitExam(); 
+  };
+  
+  newNoBtn.onclick = () => { 
+    modal.style.display = 'none'; 
+    // Do nothing - exam continues
+    console.log('User chose not to submit exam');
+  };
+}
+
 function showConfirm(message, callback) {
   const modal = document.getElementById('confirmModal');
   const text = document.getElementById('confirmText');
@@ -3614,26 +3358,19 @@ function showConfirm(message, callback) {
   modal.style.display = 'flex';
   
   // Clear previous event listeners
-  yesBtn.onclick = null;
-  noBtn.onclick = null;
+  const newYesBtn = yesBtn.cloneNode(true);
+  const newNoBtn = noBtn.cloneNode(true);
+  yesBtn.parentNode.replaceChild(newYesBtn, yesBtn);
+  noBtn.parentNode.replaceChild(newNoBtn, noBtn);
   
-  // Set new event listeners
-  yesBtn.onclick = () => { 
+  newYesBtn.onclick = () => { 
     modal.style.display = 'none'; 
     callback(true); 
   };
   
-  noBtn.onclick = () => { 
+  newNoBtn.onclick = () => { 
     modal.style.display = 'none'; 
     callback(false); 
-  };
-  
-  // Also close modal when clicking outside
-  modal.onclick = function(event) {
-    if (event.target === modal) {
-      modal.style.display = 'none';
-      callback(false);
-    }
   };
 }
 
@@ -3716,6 +3453,7 @@ function submitExam() {
   console.log("🎯 FINAL SUBMISSION DATA (75 questions):");
   console.log("Student:", progress.student.name);
   console.log("Subject Data:", subjData);
+  console.log("Tab switches during exam:", tabSwitchCount);
 
   // Submit to Google Forms
   sendToGoogleFormWithGuarantee(subjData, progress.student);
@@ -4061,8 +3799,6 @@ window.addEventListener('load', function() {
   console.log('• First exit per question: Silent auto-return');
   console.log('• Second+ exit: Warning overlay with button');
   console.log('• Screen blurred until full-screen is entered');
-  console.log('🔄 Tab Switch Detection: 3 violations for entire exam');
-  console.log('✅ Yes/No buttons both working in confirmation modal');
   
   document.getElementById('accessDenied').style.display = 'flex';
   document.getElementById('studentEntry').style.display = 'none';
@@ -4080,12 +3816,11 @@ window.addEventListener('load', function() {
 
 console.log("🎯 LFJC Online Exam System Loaded Successfully");
 console.log("✅ 75 questions with specified structure");
-console.log("✅ Smaller numeric keypad for fill-in-the-blank questions");
-console.log("✅ Tab switching: 3 violations for entire exam (not per minute)");
-console.log("✅ Both Yes/No buttons working in confirmation modal");
-console.log("✅ Question number appears only once in interface");
-console.log("✅ Stylish Apple-like full-screen box");
-console.log("✅ Enhanced stylish warning boxes for tab switching");
+console.log("✅ Smaller numerical keypad (45px) for fill-in-blank questions");
+console.log("✅ Tab switching detection: 3 switches total submit exam");
+console.log("✅ Both Yes/No buttons work in confirmation modal");
+console.log("✅ Fixed duplicate 'question number 2 out of 75, physics mcq' appearing twice");
+console.log("✅ Full-screen warning system: First exit allowed, second+ shows warning");
 </script>
 </body>
 </html>
