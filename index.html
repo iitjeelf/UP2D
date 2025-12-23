@@ -33,219 +33,120 @@ body {
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
+  transition: filter 0.5s ease;
 }
 
-/* ===== FULL SCREEN ENFORCEMENT STYLES ===== */
-#fullScreenWarning {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.95);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  z-index: 2147483646;
-  display: none;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  color: white;
-  text-align: center;
-  padding: 20px;
+/* ===== FULL-SCREEN ENFORCEMENT STYLES ===== */
+.full-screen-warning-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 2147483647;
+    color: white;
+    text-align: center;
+    padding: 20px;
+    backdrop-filter: blur(10px);
 }
 
-#fullScreenWarning h2 {
-  font-size: 36px;
-  color: #ff9900;
-  margin-bottom: 30px;
-  text-shadow: 0 2px 10px rgba(255, 153, 0, 0.5);
+.full-screen-warning-overlay h2 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    color: #ff6b6b;
+    animation: pulseWarning 1.5s infinite;
 }
 
-#fullScreenWarning p {
-  font-size: 20px;
-  margin: 15px 0;
-  max-width: 800px;
-  line-height: 1.6;
+.full-screen-warning-overlay p {
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+    max-width: 600px;
+    line-height: 1.6;
 }
 
-#enterFullScreenBtn {
-  background: linear-gradient(145deg, #4B0082, #6A0DAD);
-  color: white;
-  border: none;
-  padding: 18px 40px;
-  border-radius: 12px;
-  cursor: pointer;
-  font-size: 22px;
-  font-weight: bold;
-  margin-top: 40px;
-  transition: var(--transition);
-  box-shadow: 0 8px 0 rgba(75, 0, 130, 0.4);
-  animation: pulseWarning 2s infinite;
+.full-screen-warning-btn {
+    background: linear-gradient(145deg, #32CD32, #228B22);
+    color: white;
+    border: none;
+    padding: 15px 40px;
+    font-size: 1.3rem;
+    border-radius: 50px;
+    cursor: pointer;
+    margin-top: 30px;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }
 
-#enterFullScreenBtn:hover {
-  background: linear-gradient(145deg, #6A0DAD, #8A2BE2);
-  transform: translateY(-3px);
-  box-shadow: 0 10px 0 rgba(75, 0, 130, 0.5);
-}
-
-#enterFullScreenBtn:active {
-  transform: translateY(2px);
-  box-shadow: 0 5px 0 rgba(75, 0, 130, 0.3);
+.full-screen-warning-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
 }
 
 @keyframes pulseWarning {
-  0% { transform: scale(1); box-shadow: 0 8px 0 rgba(75, 0, 130, 0.4); }
-  50% { transform: scale(1.05); box-shadow: 0 8px 20px rgba(75, 0, 130, 0.6); }
-  100% { transform: scale(1); box-shadow: 0 8px 0 rgba(75, 0, 130, 0.4); }
+    0% { opacity: 0.8; }
+    50% { opacity: 1; }
+    100% { opacity: 0.8; }
 }
 
-.full-screen-mode #examArea {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: white;
-  z-index: 2147483640;
-  overflow-y: auto;
-  padding: 10px;
+/* Body blur effect */
+body.full-screen-blur {
+    filter: blur(8px);
+    overflow: hidden;
+    pointer-events: none;
 }
 
-.full-screen-mode #examHeader {
-  position: sticky;
-  top: 0;
-  background: white;
-  z-index: 100;
-  padding: 15px 0;
-  border-bottom: 3px solid #4B0082;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+body.full-screen-blur *:not(.full-screen-warning-overlay) {
+    pointer-events: none;
 }
 
-.full-screen-mode #questionContainer {
-  min-height: calc(100vh - 200px);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 20px 0;
+/* Full-screen status indicator */
+.full-screen-status {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    z-index: 2147483646;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
 }
 
-.full-screen-mode .questionImg {
-  max-width: 90vw;
-  max-height: 70vh;
-  object-fit: contain;
+.full-screen-status.full {
+    background: rgba(34, 139, 34, 0.8);
+    border-color: #32CD32;
 }
 
-.full-screen-mode .navContainer {
-  position: sticky;
-  bottom: 0;
-  background: white;
-  padding: 15px 0;
-  border-top: 3px solid #4B0082;
-  box-shadow: 0 -4px 10px rgba(0,0,0,0.1);
+.full-screen-status.exit {
+    background: rgba(220, 53, 69, 0.8);
+    border-color: #ff6b6b;
 }
 
-.full-screen-mode #paletteContainer {
-  margin-top: 10px;
-  margin-bottom: 20px;
+.status-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
 }
 
-/* ===== FULL SCREEN BLUR OVERLAY FOR CLICKS OUTSIDE ===== */
-#full-screen-blur-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(25px);
-  -webkit-backdrop-filter: blur(25px);
-  z-index: 2147483645;
-  display: none;
-  pointer-events: none;
+.status-indicator.full {
+    background-color: #32CD32;
+    box-shadow: 0 0 10px #32CD32;
 }
 
-#click-outside-warning {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: white;
-  padding: 40px;
-  border-radius: 15px;
-  box-shadow: 0 15px 40px rgba(0,0,0,0.4);
-  text-align: center;
-  z-index: 2147483646;
-  display: none;
-  min-width: 350px;
-  max-width: 90%;
-  border: 4px solid #ff0000;
-  animation: warningPulse 1.5s infinite;
-}
-
-@keyframes warningPulse {
-  0% { border-color: #ff0000; box-shadow: 0 0 15px rgba(255, 0, 0, 0.5); }
-  50% { border-color: #ff4444; box-shadow: 0 0 25px rgba(255, 0, 0, 0.8); }
-  100% { border-color: #ff0000; box-shadow: 0 0 15px rgba(255, 0, 0, 0.5); }
-}
-
-#click-outside-warning h2 {
-  color: #ff0000;
-  margin-bottom: 20px;
-  font-size: 28px;
-}
-
-#click-outside-warning p {
-  margin: 15px 0;
-  color: #333;
-  font-size: 16px;
-  line-height: 1.5;
-}
-
-#click-outside-warning strong {
-  color: #4B0082;
-  font-size: 18px;
-}
-
-#return-to-exam-btn {
-  background: linear-gradient(145deg, #4B0082, #6A0DAD);
-  color: white;
-  border: none;
-  padding: 15px 30px;
-  border-radius: 10px;
-  cursor: pointer;
-  font-size: 18px;
-  font-weight: bold;
-  margin-top: 25px;
-  transition: var(--transition);
-  box-shadow: 0 6px 0 rgba(75, 0, 130, 0.3);
-}
-
-#return-to-exam-btn:hover {
-  background: linear-gradient(145deg, #6A0DAD, #8A2BE2);
-  transform: translateY(-3px);
-  box-shadow: 0 8px 0 rgba(75, 0, 130, 0.4);
-}
-
-#return-to-exam-btn:active {
-  transform: translateY(2px);
-  box-shadow: 0 3px 0 rgba(75, 0, 130, 0.3);
-}
-
-/* ===== WINDOW VISIBILITY DETECTION ===== */
-#window-blur-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
-  z-index: 2147483647;
-  display: none;
-  pointer-events: none;
+.status-indicator.exit {
+    background-color: #ff6b6b;
+    box-shadow: 0 0 10px #ff6b6b;
 }
 
 /* Disable right-click context menu */
@@ -322,7 +223,6 @@ footer {
   position: fixed;
   width: 100%;
   bottom: 0;
-  z-index: 1000;
 }
 
 /* ===== STUDENT ENTRY SECTION ===== */
@@ -791,27 +691,24 @@ table td, table th {
     font-size: 12px;
   }
   
-  #click-outside-warning {
-    width: 95%;
-    min-width: auto;
-    padding: 25px 15px;
+  .full-screen-warning-overlay h2 {
+    font-size: 1.8rem;
   }
   
-  #click-outside-warning h2 {
-    font-size: 22px;
+  .full-screen-warning-overlay p {
+    font-size: 1rem;
   }
   
-  #fullScreenWarning h2 {
-    font-size: 24px;
+  .full-screen-warning-btn {
+    padding: 12px 25px;
+    font-size: 1.1rem;
   }
   
-  #fullScreenWarning p {
-    font-size: 16px;
-  }
-  
-  #enterFullScreenBtn {
-    padding: 14px 30px;
-    font-size: 18px;
+  .full-screen-status {
+    top: 5px;
+    right: 5px;
+    padding: 5px 10px;
+    font-size: 0.8rem;
   }
 }
 
@@ -1167,42 +1064,69 @@ table td, table th {
   margin: 10px;
 }
 
-/* ===== FILL BLANK INPUT STYLES WITHOUT NUMERIC KEYPAD ===== */
-.fill-blank-input {
-  width: 200px;
-  padding: 12px 18px;
-  font-size: 22px;
+/* ===== UPDATED 3x3 NUMERICAL KEYPAD STYLES ===== */
+.numerical-keypad {
+  margin: 25px auto;
+  max-width: 320px;
+}
+
+.keypad-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 15px;
   border: 2px solid #4B0082;
-  border-radius: 8px;
-  text-align: center;
-  outline: none;
+  box-shadow: 0 8px 16px rgba(75, 0, 130, 0.1);
+}
+
+.num-key-btn {
+  width: 70px;
+  height: 70px;
+  font-size: 28px;
   font-weight: bold;
-  margin: 20px 0;
-  background: white;
-  color: #333;
+  border: 3px solid #4B0082;
+  border-radius: 15px;
+  background: linear-gradient(145deg, #ffffff, #f0f0ff);
+  color: #4B0082;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 6px 0 rgba(75, 0, 130, 0.2);
 }
 
-.fill-blank-input:focus {
-  border-color: #6A0DAD;
-  box-shadow: 0 0 0 3px rgba(75, 0, 130, 0.2);
+.num-key-btn:hover {
+  background: linear-gradient(145deg, #f0f0ff, #e6e6fa);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 0 rgba(75, 0, 130, 0.3);
 }
 
-.submit-fill-blank-btn {
-  padding: 12px 24px;
+.num-key-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 rgba(75, 0, 130, 0.2);
+}
+
+.num-key-btn:focus {
+  outline: 3px solid #4B0082 !important;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(75, 0, 130, 0.2) !important;
+}
+
+.special-btn {
+  font-size: 24px;
+}
+
+.clear-btn {
+  background: linear-gradient(145deg, #ff9900, #ff8c00);
+  color: white;
+  border-color: #ff8c00;
+}
+
+.submit-num-btn {
   background: linear-gradient(145deg, #32CD32, #228B22);
   color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: bold;
-  cursor: pointer;
-  margin-left: 15px;
-  transition: all 0.2s ease;
-}
-
-.submit-fill-blank-btn:hover {
-  background: linear-gradient(145deg, #228B22, #1C7A1C);
-  transform: translateY(-2px);
+  border-color: #228B22;
+  font-size: 26px;
 }
 
 /* Tab navigation focus styles */
@@ -1228,6 +1152,20 @@ table td, table th {
   outline: 3px solid #4B0082 !important;
   outline-offset: 2px;
   box-shadow: 0 0 0 3px rgba(75, 0, 130, 0.2) !important;
+}
+
+/* Responsive keypad */
+@media (max-width: 400px) {
+  .keypad-grid {
+    gap: 8px;
+    padding: 10px;
+  }
+  
+  .num-key-btn {
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
+  }
 }
 
 /* ===== TOAST NOTIFICATION STYLES ===== */
@@ -1292,35 +1230,58 @@ table td, table th {
   80% { opacity: 1; transform: translateY(0); }
   100% { opacity: 0; transform: translateY(-10px); }
 }
+
+/* ===== CHROME MENU BLUR OVERLAY STYLES ===== */
+#chromeMenuBlurOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 50%;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 2147483647;
+  pointer-events: none;
+  display: none;
+  transition: opacity 0.3s ease;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+  20% { opacity: 1; transform: translateX(-50%) translateY(0); }
+  80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+}
+
+#chromeMenuWarning {
+  font-size: 16px;
+  border: 2px solid white;
+}
+
+#chromeMenuWarning small {
+  font-size: 12px;
+  opacity: 0.9;
+}
 </style>
 </head>
 
 <body>
 
-<!-- Full Screen Warning -->
-<div id="fullScreenWarning">
+<!-- Full-screen warning overlay -->
+<div class="full-screen-warning-overlay" id="fullScreenWarning">
     <h2>⚠️ FULL SCREEN REQUIRED</h2>
-    <p>The exam must be taken in full-screen mode for security reasons.</p>
-    <p>Please enter full-screen mode to continue with the exam.</p>
-    <p><strong>Note:</strong> Pressing ESC key or F11 will exit full-screen mode and pause the exam.</p>
-    <button id="enterFullScreenBtn">Enter Full Screen</button>
+    <p>This exam must be taken in full-screen mode.</p>
+    <p>Please click the button below to enter full-screen mode.</p>
+    <p><strong>Important:</strong> Do not exit full-screen mode during the exam.</p>
+    <button class="full-screen-warning-btn" id="enterFullScreenBtn">ENTER FULL SCREEN</button>
 </div>
 
-<!-- Full Screen Blur Overlay for Clicks Outside Browser -->
-<div id="full-screen-blur-overlay"></div>
-
-<!-- Click Outside Warning -->
-<div id="click-outside-warning">
-    <h2>⚠️ SECURITY ALERT</h2>
-    <p>You clicked outside the exam browser window!</p>
-    <p><strong>Detected Action:</strong> Clicking on browser tabs, address bar, Chrome menu, or other browser elements</p>
-    <p>The entire screen is now blurred for security.</p>
-    <p>Click the button below to return to the exam.</p>
-    <button id="return-to-exam-btn">Return to Exam</button>
+<!-- Full-screen status indicator -->
+<div class="full-screen-status" id="fullScreenStatus">
+    <span class="status-indicator" id="fullScreenIndicator"></span>
+    <span id="statusText">Checking Full Screen...</span>
 </div>
-
-<!-- Window Blur Overlay -->
-<div id="window-blur-overlay"></div>
 
 <!-- Access Denied Screen - ALWAYS SHOWS FIRST -->
 <div id="accessDenied" class="access-denied">
@@ -1346,7 +1307,7 @@ table td, table th {
 
 <div id="studentEntry" style="display:none;">
   <div class="warning-banner" id="examWarning" style="display:none;">
-    <p>⚠️ WARNING: Exam in progress. Do not click outside browser window!</p>
+    <p>⚠️ WARNING: Exam in progress. Do not refresh or close this window!</p>
   </div>
   
   <div class="form-group"><label>NAME</label><input type="text" id="stuName" placeholder="Only letters & spaces" autocomplete="off"></div>
@@ -1506,7 +1467,217 @@ table td, table th {
 </div>
 <div id="screenshotBlock"></div>
 
+<!-- Chrome Menu Blur Overlay -->
+<div id="chromeMenuBlurOverlay"></div>
+
 <script>
+// ===== FULL-SCREEN ENFORCEMENT SYSTEM =====
+class FullScreenEnforcer {
+    constructor() {
+        this.isFullScreen = false;
+        this.enforcementActive = false;
+        this.checkInterval = null;
+        this.autoRestoreTimeout = null;
+        this.warningShown = false;
+        this.retryCount = 0;
+        this.maxRetries = 3;
+        
+        this.warningOverlay = document.getElementById('fullScreenWarning');
+        this.enterFullScreenBtn = document.getElementById('enterFullScreenBtn');
+        this.statusIndicator = document.getElementById('fullScreenStatus');
+        this.statusText = document.getElementById('statusText');
+        this.fullScreenIndicator = document.getElementById('fullScreenIndicator');
+        
+        this.initialize();
+    }
+    
+    initialize() {
+        // Add event listeners
+        this.enterFullScreenBtn.addEventListener('click', () => this.enterFullScreen());
+        
+        // Add fullscreen change event listeners
+        document.addEventListener('fullscreenchange', () => this.handleFullscreenChange());
+        document.addEventListener('webkitfullscreenchange', () => this.handleFullscreenChange());
+        document.addEventListener('mozfullscreenchange', () => this.handleFullscreenChange());
+        document.addEventListener('MSFullscreenChange', () => this.handleFullscreenChange());
+        
+        // Block escape key
+        document.addEventListener('keydown', (e) => this.handleKeyDown(e));
+        
+        // Start checking fullscreen status
+        this.startChecking();
+        
+        console.log('🔒 Full-screen enforcement system initialized');
+    }
+    
+    startChecking() {
+        this.checkInterval = setInterval(() => {
+            this.checkFullScreenStatus();
+        }, 1000);
+    }
+    
+    checkFullScreenStatus() {
+        const isFs = !!(document.fullscreenElement || 
+                       document.webkitFullscreenElement || 
+                       document.mozFullScreenElement || 
+                       document.msFullscreenElement);
+        
+        if (isFs !== this.isFullScreen) {
+            this.isFullScreen = isFs;
+            this.updateStatusDisplay();
+        }
+        
+        // If enforcement is active and not in fullscreen, show warning
+        if (this.enforcementActive && !isFs && examInProgress) {
+            this.showWarning();
+        } else if (isFs && this.warningShown) {
+            this.hideWarning();
+        }
+        
+        return isFs;
+    }
+    
+    handleFullscreenChange() {
+        const isFs = this.checkFullScreenStatus();
+        
+        // If exited fullscreen during exam, try to restore
+        if (!isFs && this.enforcementActive && examInProgress) {
+            console.log('⚠️ Full-screen exited during exam');
+            this.attemptAutoRestore();
+        }
+    }
+    
+    attemptAutoRestore() {
+        if (this.retryCount >= this.maxRetries) {
+            console.log('❌ Max retries reached, showing warning');
+            this.showWarning();
+            return;
+        }
+        
+        this.retryCount++;
+        console.log(`🔄 Attempting auto-restore (${this.retryCount}/${this.maxRetries})`);
+        
+        // Try to restore fullscreen after a short delay
+        if (this.autoRestoreTimeout) {
+            clearTimeout(this.autoRestoreTimeout);
+        }
+        
+        this.autoRestoreTimeout = setTimeout(() => {
+            this.enterFullScreen();
+        }, 300);
+    }
+    
+    enterFullScreen() {
+        const element = document.documentElement;
+        
+        if (element.requestFullscreen) {
+            element.requestFullscreen().catch(err => {
+                console.error('Error entering fullscreen:', err);
+                this.showWarning();
+            });
+        } else if (element.webkitRequestFullscreen) {
+            element.webkitRequestFullscreen().catch(err => {
+                console.error('Error entering fullscreen:', err);
+                this.showWarning();
+            });
+        } else if (element.mozRequestFullScreen) {
+            element.mozRequestFullScreen().catch(err => {
+                console.error('Error entering fullscreen:', err);
+                this.showWarning();
+            });
+        } else if (element.msRequestFullscreen) {
+            element.msRequestFullscreen().catch(err => {
+                console.error('Error entering fullscreen:', err);
+                this.showWarning();
+            });
+        } else {
+            console.error('Fullscreen API not supported');
+            this.showWarning();
+        }
+    }
+    
+    showWarning() {
+        if (!this.warningShown) {
+            this.warningShown = true;
+            this.warningOverlay.style.display = 'flex';
+            document.body.classList.add('full-screen-blur');
+            console.log('⚠️ Showing full-screen warning');
+        }
+    }
+    
+    hideWarning() {
+        this.warningShown = false;
+        this.warningOverlay.style.display = 'none';
+        document.body.classList.remove('full-screen-blur');
+        this.retryCount = 0;
+        console.log('✅ Hiding full-screen warning');
+    }
+    
+    updateStatusDisplay() {
+        if (this.isFullScreen) {
+            this.statusIndicator.className = 'status-indicator full';
+            this.statusText.textContent = 'Full Screen Active';
+            this.statusIndicator.parentElement.className = 'full-screen-status full';
+        } else {
+            this.statusIndicator.className = 'status-indicator exit';
+            this.statusText.textContent = 'Full Screen Required';
+            this.statusIndicator.parentElement.className = 'full-screen-status exit';
+        }
+    }
+    
+    handleKeyDown(e) {
+        // Block escape key when enforcement is active
+        if (this.enforcementActive && examInProgress && e.key === 'Escape') {
+            console.log('🔒 Blocked Escape key');
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Try to restore fullscreen
+            this.attemptAutoRestore();
+            return false;
+        }
+        
+        // Block F11
+        if (this.enforcementActive && examInProgress && e.key === 'F11') {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('🔒 Blocked F11 key');
+            return false;
+        }
+    }
+    
+    enable() {
+        this.enforcementActive = true;
+        console.log('🔒 Full-screen enforcement enabled');
+        
+        // Show status indicator
+        this.statusIndicator.style.display = 'inline-block';
+        this.statusText.style.display = 'inline';
+        
+        // Enter fullscreen immediately
+        this.enterFullScreen();
+    }
+    
+    disable() {
+        this.enforcementActive = false;
+        console.log('🔓 Full-screen enforcement disabled');
+        
+        // Hide warning if shown
+        this.hideWarning();
+        
+        // Clear intervals
+        if (this.checkInterval) {
+            clearInterval(this.checkInterval);
+        }
+        if (this.autoRestoreTimeout) {
+            clearTimeout(this.autoRestoreTimeout);
+        }
+    }
+}
+
+// Initialize full-screen enforcer
+const fullScreenEnforcer = new FullScreenEnforcer();
+
 // ===== CONFIGURATION =====
 const MARK_PER_CORRECT = 4, MARK_PER_WRONG = -1;
 const EXAM_DURATION_MINUTES = 180; // 3 hours for 75 questions
@@ -1546,733 +1717,214 @@ const QUESTION_STRUCTURE = {
   ]
 };
 
-// ===== FULL SCREEN MANAGER =====
-class FullScreenManager {
+// ===== CHROME THREE-DOTS MENU BLUR DETECTION =====
+class ChromeMenuBlurDetector {
     constructor() {
-        this.isFullScreen = false;
-        this.fullScreenWarning = document.getElementById('fullScreenWarning');
-        this.enterFullScreenBtn = document.getElementById('enterFullScreenBtn');
-        this.examArea = document.getElementById('examArea');
-        this.body = document.body;
+        this.isBlurred = false;
+        this.blurElement = null;
+        this.observationTimer = null;
+        this.lastMenuClickTime = 0;
+        this.menuClickCooldown = 1000; // 1 second cooldown
         
-        this.init();
+        // Create blur overlay element
+        this.createBlurOverlay();
+        
+        // Start observing for menu clicks
+        this.startMenuObservation();
     }
     
-    init() {
-        // Add event listeners
-        this.enterFullScreenBtn.addEventListener('click', () => this.enterFullScreen());
-        
-        // Listen for fullscreen change events
-        document.addEventListener('fullscreenchange', () => this.handleFullScreenChange());
-        document.addEventListener('webkitfullscreenchange', () => this.handleFullScreenChange());
-        document.addEventListener('mozfullscreenchange', () => this.handleFullScreenChange());
-        document.addEventListener('MSFullscreenChange', () => this.handleFullScreenChange());
-        
-        // Listen for ESC key press
-        document.addEventListener('keydown', (e) => this.handleKeyDown(e));
-    }
-    
-    enterFullScreen() {
-        const element = document.documentElement;
-        
-        if (element.requestFullscreen) {
-            element.requestFullscreen();
-        } else if (element.webkitRequestFullscreen) {
-            element.webkitRequestFullscreen();
-        } else if (element.mozRequestFullScreen) {
-            element.mozRequestFullScreen();
-        } else if (element.msRequestFullscreen) {
-            element.msRequestFullscreen();
+    createBlurOverlay() {
+        // Create blur overlay element
+        this.blurElement = document.getElementById('chromeMenuBlurOverlay');
+        if (!this.blurElement) {
+            this.blurElement = document.createElement('div');
+            this.blurElement.id = 'chromeMenuBlurOverlay';
+            this.blurElement.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 50%;
+                background: rgba(0, 0, 0, 0.7);
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+                z-index: 2147483647;
+                pointer-events: none;
+                display: none;
+                transition: opacity 0.3s ease;
+            `;
+            document.body.appendChild(this.blurElement);
         }
     }
     
-    exitFullScreen() {
-        if (document.exitFullscreen) {
-            document.exitFullscreen();
-        } else if (document.webkitExitFullscreen) {
-            document.webkitExitFullscreen();
-        } else if (document.mozCancelFullScreen) {
-            document.mozCancelFullScreen();
-        } else if (document.msExitFullscreen) {
-            document.msExitFullscreen();
-        }
+    startMenuObservation() {
+        // Check for Chrome three-dots menu every 500ms
+        this.observationTimer = setInterval(() => {
+            this.checkForChromeMenu();
+        }, 500);
+        
+        // Also observe for context menu (right-click) which might open the menu
+        document.addEventListener('contextmenu', (e) => {
+            if (examInProgress) {
+                this.handlePotentialMenuOpen();
+            }
+        });
+        
+        // Observe for keyboard shortcuts that might open Chrome menu
+        document.addEventListener('keydown', (e) => {
+            if (examInProgress && (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I'))) {
+                this.handlePotentialMenuOpen();
+            }
+        });
     }
     
-    handleFullScreenChange() {
-        this.isFullScreen = !!(
-            document.fullscreenElement ||
-            document.webkitFullscreenElement ||
-            document.mozFullScreenElement ||
-            document.msFullscreenElement
+    checkForChromeMenu() {
+        if (!examInProgress) return;
+        
+        // Check for Chrome's menu by looking for specific elements
+        const potentialMenuElements = document.querySelectorAll(
+            'div[role="menu"], div[role="dialog"], .dropdown-menu, .chrome-menu, [aria-label*="menu"], [class*="menu"]'
         );
         
-        if (this.isFullScreen && examInProgress) {
-            // Full screen is active
-            this.fullScreenWarning.style.display = 'none';
-            this.body.classList.add('full-screen-mode');
-            
-            // Resume timer if it was paused
-            if (typeof resumeTimer === 'function') {
-                resumeTimer();
+        // Also check for elements that might be the three-dots menu
+        const threeDotsElements = document.querySelectorAll(
+            'button[aria-label*="More"], button[title*="More"], [class*="more"], [class*="settings"]'
+        );
+        
+        // Check if any menu is visible
+        let menuFound = false;
+        
+        potentialMenuElements.forEach(el => {
+            const style = window.getComputedStyle(el);
+            if (style.display !== 'none' && style.visibility !== 'hidden') {
+                menuFound = true;
             }
-            
-            // Log security event
-            if (typeof browserClickDetector?.logSecurityEvent === 'function') {
-                browserClickDetector.logSecurityEvent('fullscreen_entered', {
-                    timestamp: new Date().toISOString()
-                });
-            }
-        } else if (!this.isFullScreen && examInProgress) {
-            // Full screen was exited during exam
-            this.showFullScreenWarning();
-            this.body.classList.remove('full-screen-mode');
-            
-            // Pause timer
-            if (typeof pauseTimer === 'function') {
-                pauseTimer();
-            }
-            
-            // Log security event
-            if (typeof browserClickDetector?.logSecurityEvent === 'function') {
-                browserClickDetector.logSecurityEvent('fullscreen_exited', {
-                    timestamp: new Date().toISOString()
-                });
-            }
-        }
-    }
-    
-    showFullScreenWarning() {
-        this.fullScreenWarning.style.display = 'flex';
-        this.fullScreenWarning.innerHTML = `
-            <h2>⚠️ FULL SCREEN REQUIRED</h2>
-            <p>The exam must be taken in full-screen mode for security reasons.</p>
-            <p>You exited full-screen mode. Please re-enter full-screen mode to continue.</p>
-            <p><strong>Warning:</strong> The timer is paused until you return to full-screen mode.</p>
-            <p><strong>Time Left:</strong> ${formatTime(progress.timeLeftSec)}</p>
-            <button id="enterFullScreenBtn">Enter Full Screen</button>
-        `;
-        
-        // Re-attach event listener
-        document.getElementById('enterFullScreenBtn').addEventListener('click', () => this.enterFullScreen());
-    }
-    
-    handleKeyDown(e) {
-        // Prevent F11 from exiting fullscreen
-        if (e.key === 'F11' && examInProgress) {
-            e.preventDefault();
-            this.showToast('F11 is disabled during exam. Use the button below to exit fullscreen.', 'warning');
-        }
-        
-        // Handle ESC key - show warning but don't immediately exit
-        if (e.key === 'Escape' && examInProgress && this.isFullScreen) {
-            e.preventDefault();
-            this.showExitWarning();
-        }
-    }
-    
-    showExitWarning() {
-        const warning = document.createElement('div');
-        warning.style.cssText = `
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            z-index: 100000;
-            text-align: center;
-            border: 3px solid #ff9900;
-            animation: slideIn 0.3s ease;
-        `;
-        
-        warning.innerHTML = `
-            <h3 style="color: #ff9900; margin-bottom: 15px;">⚠️ Exit Full Screen?</h3>
-            <p>Exiting full-screen will pause your exam and show a warning screen.</p>
-            <p>Are you sure you want to exit full-screen mode?</p>
-            <div style="margin-top: 20px;">
-                <button id="cancelExitBtn" style="background: #4CAF50; color: white; padding: 10px 20px; margin: 0 10px; border: none; border-radius: 5px; cursor: pointer;">Cancel</button>
-                <button id="confirmExitBtn" style="background: #f44336; color: white; padding: 10px 20px; margin: 0 10px; border: none; border-radius: 5px; cursor: pointer;">Exit</button>
-            </div>
-        `;
-        
-        document.body.appendChild(warning);
-        
-        document.getElementById('cancelExitBtn').addEventListener('click', () => {
-            document.body.removeChild(warning);
         });
         
-        document.getElementById('confirmExitBtn').addEventListener('click', () => {
-            this.exitFullScreen();
-            document.body.removeChild(warning);
-        });
-    }
-    
-    showToast(message, type = 'info') {
-        const toast = document.createElement('div');
-        toast.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: ${type === 'warning' ? 'linear-gradient(145deg, #FFA500, #FF8C00)' : 
-                        type === 'error' ? 'linear-gradient(145deg, #FF4500, #DC143C)' : 
-                        'linear-gradient(145deg, #32CD32, #228B22)'};
-            color: white;
-            padding: 12px 24px;
-            border-radius: 8px;
-            z-index: 100000;
-            font-weight: bold;
-            animation: slideIn 0.3s ease;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        `;
-        toast.textContent = message;
-        document.body.appendChild(toast);
-        
-        setTimeout(() => {
-            toast.style.animation = 'slideOut 0.3s ease';
-            setTimeout(() => {
-                if (toast.parentNode) {
-                    document.body.removeChild(toast);
+        threeDotsElements.forEach(el => {
+            const rect = el.getBindingRect();
+            if (rect.width > 0 && rect.height > 0) {
+                // Check if it's likely the three-dots menu
+                if (el.textContent.includes('⋯') || el.textContent.includes('...') || 
+                    el.innerHTML.includes('⋮') || el.getAttribute('aria-label')?.includes('menu')) {
+                    menuFound = true;
                 }
-            }, 300);
-        }, 3000);
-    }
-    
-    enableExamMode() {
-        // Check if browser supports fullscreen
-        if (!document.fullscreenEnabled && 
-            !document.webkitFullscreenEnabled && 
-            !document.mozFullScreenEnabled && 
-            !document.msFullscreenEnabled) {
-            
-            console.warn('Fullscreen API not supported');
-            this.showToast('Fullscreen mode not supported by your browser. Exam continues in normal mode.', 'warning');
-            return true;
-        }
-        
-        // Show initial fullscreen warning
-        this.showFullScreenWarning();
-        return false;
-    }
-    
-    disable() {
-        this.exitFullScreen();
-        this.body.classList.remove('full-screen-mode');
-        this.fullScreenWarning.style.display = 'none';
-    }
-    
-    isFullScreenActive() {
-        return this.isFullScreen;
-    }
-}
-
-function formatTime(seconds) {
-    const minutes = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-}
-
-// Initialize full screen manager
-const fullScreenManager = new FullScreenManager();
-
-// ===== BROWSER CLICK-OUTSIDE DETECTION SYSTEM =====
-class BrowserClickOutsideDetector {
-    constructor() {
-        this.isBlurActive = false;
-        this.blurOverlay = null;
-        this.warningBox = null;
-        this.lastFocusTime = Date.now();
-        this.focusCheckInterval = null;
-        this.clickOutsideCount = 0;
-        this.maxAllowedClicks = 3; // Maximum allowed clicks outside
-        this.clickTimeout = null;
-        
-        this.init();
-    }
-    
-    init() {
-        // Get elements
-        this.blurOverlay = document.getElementById('full-screen-blur-overlay');
-        this.warningBox = document.getElementById('click-outside-warning');
-        
-        // Setup return button
-        document.getElementById('return-to-exam-btn').addEventListener('click', () => {
-            this.returnToExam();
-        });
-    }
-    
-    enable() {
-        console.log('🔍 Enabling browser click-outside detection...');
-        
-        // Start monitoring window focus
-        this.startFocusMonitoring();
-        
-        // Add visibility change detection
-        document.addEventListener('visibilitychange', () => this.handleVisibilityChange());
-        
-        // Add blur/focus events for window
-        window.addEventListener('blur', () => this.handleWindowBlur());
-        window.addEventListener('focus', () => this.handleWindowFocus());
-        
-        // Monitor mouse leaving window
-        document.addEventListener('mouseleave', (e) => this.handleMouseLeave(e));
-        
-        // Monitor iframe detection (for embedded scenarios)
-        this.monitorIframes();
-        
-        console.log('✅ Browser click-outside detection enabled');
-    }
-    
-    startFocusMonitoring() {
-        // Check focus every 100ms
-        this.focusCheckInterval = setInterval(() => {
-            if (!document.hasFocus() && examInProgress && !this.isBlurActive && fullScreenManager.isFullScreenActive()) {
-                this.handleClickOutside();
             }
-        }, 100);
-    }
-    
-    handleWindowBlur() {
-        if (examInProgress && !this.isBlurActive && fullScreenManager.isFullScreenActive()) {
-            console.log('⚠️ Window blur detected (clicked outside browser)');
-            setTimeout(() => {
-                if (!document.hasFocus()) {
-                    this.handleClickOutside();
-                }
-            }, 50);
+        });
+        
+        if (menuFound) {
+            this.activateBlur();
+        } else if (this.isBlurred && this.shouldRemoveBlur()) {
+            this.deactivateBlur();
         }
     }
     
-    handleWindowFocus() {
-        if (this.isBlurActive) {
-            // User returned to window, but blur is still active
-            console.log('✅ Window focus regained');
-        }
-    }
-    
-    handleVisibilityChange() {
-        if (document.hidden && examInProgress && !this.isBlurActive && fullScreenManager.isFullScreenActive()) {
-            console.log('⚠️ Page hidden (switched tabs/windows)');
-            this.handleClickOutside();
-        }
-    }
-    
-    handleMouseLeave(e) {
-        if (examInProgress && e.clientY < 0 && !this.isBlurActive && fullScreenManager.isFullScreenActive()) {
-            // Mouse left through top of window (likely clicked browser UI)
-            console.log('⚠️ Mouse left window (likely clicked browser UI)');
-            this.handleClickOutside();
-        }
-    }
-    
-    handleClickOutside() {
-        // Increment click counter
-        this.clickOutsideCount++;
-        
-        console.log(`🖱️ Click outside detected: ${this.clickOutsideCount}/${this.maxAllowedClicks}`);
-        
-        // Activate blur warning
-        this.activateBlur();
-        
-        // Reset counter after 5 seconds
-        if (this.clickTimeout) {
-            clearTimeout(this.clickTimeout);
-        }
-        
-        this.clickTimeout = setTimeout(() => {
-            this.clickOutsideCount = 0;
-            console.log('🔄 Click counter reset');
-        }, 5000);
-        
-        // Check if maximum clicks reached
-        if (this.clickOutsideCount >= this.maxAllowedClicks) {
-            this.handleMaxClicksReached();
+    handlePotentialMenuOpen() {
+        const currentTime = Date.now();
+        if (currentTime - this.lastMenuClickTime > this.menuClickCooldown) {
+            this.lastMenuClickTime = currentTime;
+            this.activateBlur();
+            
+            // Show a warning message
+            this.showMenuWarning();
         }
     }
     
     activateBlur() {
-        console.log('⚠️ Activating full screen blur - Click outside browser detected');
-        
-        this.isBlurActive = true;
-        
-        // Show full screen blur overlay
-        this.blurOverlay.style.display = 'block';
-        
-        // Show warning message
-        this.warningBox.style.display = 'block';
-        
-        // Disable exam interaction
-        this.disableExamInteraction();
-        
-        // Log the security event
-        this.logSecurityEvent('browser_click_outside', {
-            timestamp: new Date().toISOString(),
-            clickCount: this.clickOutsideCount,
-            maxAllowed: this.maxAllowedClicks
-        });
-        
-        // Play warning sound (optional)
-        this.playWarningSound();
-    }
-    
-    disableExamInteraction() {
-        // Disable all exam buttons
-        const examButtons = document.querySelectorAll('#examArea button, .navBtn, .optBtn, .palette-btn');
-        examButtons.forEach(btn => {
-            btn.style.pointerEvents = 'none';
-            btn.style.opacity = '0.5';
-            btn.style.cursor = 'not-allowed';
-        });
-        
-        // Disable input fields
-        const inputs = document.querySelectorAll('#examArea input, #fillBlankInput');
-        inputs.forEach(input => {
-            input.disabled = true;
-            input.style.opacity = '0.5';
-        });
-        
-        // Pause timer if exists
-        if (typeof pauseTimer === 'function') {
-            pauseTimer();
+        if (!this.isBlurred && examInProgress) {
+            this.isBlurred = true;
+            this.blurElement.style.display = 'block';
+            this.blurElement.style.opacity = '1';
+            
+            console.log('⚠️ Chrome menu detected - Top 50% screen blurred');
         }
     }
     
-    enableExamInteraction() {
-        // Enable all exam buttons
-        const examButtons = document.querySelectorAll('#examArea button, .navBtn, .optBtn, .palette-btn');
-        examButtons.forEach(btn => {
-            btn.style.pointerEvents = 'auto';
-            btn.style.opacity = '1';
-            btn.style.cursor = 'pointer';
-        });
-        
-        // Enable input fields
-        const inputs = document.querySelectorAll('#examArea input, #fillBlankInput');
-        inputs.forEach(input => {
-            input.disabled = false;
-            input.style.opacity = '1';
-        });
-        
-        // Resume timer if exists
-        if (typeof resumeTimer === 'function') {
-            resumeTimer();
+    deactivateBlur() {
+        if (this.isBlurred) {
+            this.isBlurred = false;
+            this.blurElement.style.opacity = '0';
+            
+            setTimeout(() => {
+                if (!this.isBlurred) {
+                    this.blurElement.style.display = 'none';
+                }
+            }, 300);
+            
+            console.log('✅ Chrome menu closed - Blur removed');
         }
     }
     
-    returnToExam() {
-        console.log('🔄 Returning to exam...');
+    shouldRemoveBlur() {
+        // Remove blur if user clicks on navigation buttons or interacts with exam
+        const activeElement = document.activeElement;
+        const isInteractingWithExam = activeElement && (
+            activeElement.classList.contains('navBtn') ||
+            activeElement.classList.contains('optBtn') ||
+            activeElement.classList.contains('num-key-btn') ||
+            activeElement.id === 'fillBlankInput' ||
+            activeElement.id === 'prevBtn' ||
+            activeElement.id === 'nextBtn' ||
+            activeElement.id === 'markReviewBtn'
+        );
         
-        this.isBlurActive = false;
-        
-        // Remove blur overlay
-        this.blurOverlay.style.display = 'none';
-        
-        // Hide warning message
-        this.warningBox.style.display = 'none';
-        
-        // Enable exam interaction
-        this.enableExamInteraction();
-        
-        // Focus back on exam
-        window.focus();
-        
-        // Log return event
-        this.logSecurityEvent('return_to_exam', {
-            timestamp: new Date().toISOString(),
-            totalClicksOutside: this.clickOutsideCount
-        });
-        
-        // Show confirmation message
-        this.showReturnConfirmation();
+        return isInteractingWithExam;
     }
     
-    handleMaxClicksReached() {
-        console.log('🚨 Maximum clicks outside reached - Severe warning');
+    showMenuWarning() {
+        // Remove existing warning
+        const existingWarning = document.getElementById('chromeMenuWarning');
+        if (existingWarning) {
+            existingWarning.remove();
+        }
         
-        // Update warning message
-        this.warningBox.innerHTML = `
-            <h2>🚨 SEVERE SECURITY ALERT</h2>
-            <p><strong>Multiple clicks outside browser detected!</strong></p>
-            <p>You have clicked outside the exam browser ${this.clickOutsideCount} times.</p>
-            <p>This is a serious violation of exam rules.</p>
-            <p style="color: red; font-weight: bold;">Next violation may result in automatic exam submission!</p>
-            <button id="return-to-exam-btn" style="background: linear-gradient(145deg, #ff0000, #cc0000);">Acknowledge & Return</button>
-        `;
-        
-        // Update button event listener
-        document.getElementById('return-to-exam-btn').addEventListener('click', () => {
-            this.returnToExam();
-        });
-        
-        // Log severe warning
-        this.logSecurityEvent('max_clicks_reached', {
-            timestamp: new Date().toISOString(),
-            clickCount: this.clickOutsideCount
-        });
-    }
-    
-    showReturnConfirmation() {
-        // Show quick confirmation toast
-        const toast = document.createElement('div');
-        toast.style.cssText = `
+        // Create a warning message
+        const warningDiv = document.createElement('div');
+        warningDiv.id = 'chromeMenuWarning';
+        warningDiv.style.cssText = `
             position: fixed;
-            top: 20px;
-            right: 20px;
-            background: linear-gradient(145deg, #32CD32, #228B22);
+            top: calc(50% + 20px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 0, 0, 0.9);
             color: white;
-            padding: 10px 20px;
-            border-radius: 5px;
-            z-index: 10000;
+            padding: 15px 25px;
+            border-radius: 8px;
+            z-index: 2147483648;
             font-weight: bold;
-            animation: slideIn 0.3s ease;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            animation: fadeInOut 3s ease;
         `;
-        toast.textContent = '✅ Returned to exam';
-        document.body.appendChild(toast);
         
+        warningDiv.innerHTML = `
+            ⚠️ CHROME MENU DETECTED<br>
+            <small>Click on any exam button to remove blur</small>
+        `;
+        
+        document.body.appendChild(warningDiv);
+        
+        // Remove warning after 3 seconds
         setTimeout(() => {
-            toast.style.animation = 'slideOut 0.3s ease';
-            setTimeout(() => toast.remove(), 300);
-        }, 2000);
-    }
-    
-    playWarningSound() {
-        // Create a warning beep sound
-        try {
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
-            
-            oscillator.frequency.value = 800;
-            oscillator.type = 'sine';
-            gainNode.gain.value = 0.1;
-            
-            oscillator.start();
-            gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.5);
-            oscillator.stop(audioContext.currentTime + 0.5);
-        } catch (e) {
-            console.log('Audio not supported');
-        }
-    }
-    
-    logSecurityEvent(eventType, data) {
-        const eventLog = {
-            type: eventType,
-            timestamp: new Date().toISOString(),
-            examInProgress: examInProgress,
-            student: progress ? progress.student.name : 'N/A',
-            data: data
-        };
-        
-        console.log('🔒 Security Event:', eventLog);
-        
-        // Store in localStorage for review
-        const logs = JSON.parse(localStorage.getItem('exam_security_logs') || '[]');
-        logs.push(eventLog);
-        localStorage.setItem('exam_security_logs', JSON.stringify(logs.slice(-50))); // Keep last 50 events
-    }
-    
-    monitorIframes() {
-        // Check for iframes (some cheating methods use iframes)
-        setInterval(() => {
-            const iframes = document.querySelectorAll('iframe');
-            if (iframes.length > 0 && examInProgress) {
-                console.warn('⚠️ Iframes detected during exam!');
-                this.logSecurityEvent('iframe_detected', {
-                    iframeCount: iframes.length,
-                    urls: Array.from(iframes).map(f => f.src || 'no-src')
-                });
+            if (warningDiv.parentNode) {
+                warningDiv.remove();
             }
-        }, 5000);
-    }
-    
-    disable() {
-        // Clear intervals
-        if (this.focusCheckInterval) {
-            clearInterval(this.focusCheckInterval);
-        }
-        
-        if (this.clickTimeout) {
-            clearTimeout(this.clickTimeout);
-        }
-        
-        // Remove event listeners
-        document.removeEventListener('visibilitychange', () => this.handleVisibilityChange());
-        window.removeEventListener('blur', () => this.handleWindowBlur());
-        window.removeEventListener('focus', () => this.handleWindowFocus());
-        document.removeEventListener('mouseleave', (e) => this.handleMouseLeave(e));
-        
-        // Remove blur if active
-        this.isBlurActive = false;
-        this.blurOverlay.style.display = 'none';
-        this.warningBox.style.display = 'none';
-        
-        console.log('🔓 Browser click-outside detection disabled');
-    }
-}
-
-// Initialize browser click detector
-const browserClickDetector = new BrowserClickOutsideDetector();
-
-// ===== WINDOW VISIBILITY DETECTOR =====
-class WindowVisibilityDetector {
-    constructor() {
-        this.blurOverlay = document.getElementById('window-blur-overlay');
-        this.isTabSwitchDetected = false;
-        this.tabSwitchCount = 0;
-        this.maxTabSwitches = 2;
-        this.lastSwitchTime = 0;
-        this.switchTimeout = 30000; // 30 seconds
-    }
-    
-    enable() {
-        console.log('👁️ Enabling window visibility detection...');
-        
-        // Page visibility API
-        document.addEventListener('visibilitychange', () => this.handleVisibility());
-        
-        // Window blur/focus for extra detection
-        window.addEventListener('blur', () => this.handleWindowBlur());
-        window.addEventListener('focus', () => this.handleWindowFocus());
-        
-        console.log('✅ Window visibility detection enabled');
-    }
-    
-    handleVisibility() {
-        if (document.hidden && examInProgress) {
-            console.log('⚠️ Tab/window switched away');
-            this.handleTabSwitch();
-        } else if (!document.hidden && this.isTabSwitchDetected) {
-            console.log('✅ Returned to exam tab');
-            this.handleReturnToTab();
-        }
-    }
-    
-    handleWindowBlur() {
-        if (examInProgress && !document.hidden) {
-            // Window blurred but tab still visible (clicked browser UI)
-            console.log('⚠️ Window blur - clicked browser UI');
-            this.showBlurOverlay();
-        }
-    }
-    
-    handleWindowFocus() {
-        if (this.blurOverlay.style.display === 'block') {
-            this.hideBlurOverlay();
-        }
-    }
-    
-    handleTabSwitch() {
-        const currentTime = Date.now();
-        
-        // Reset count if outside time window
-        if (currentTime - this.lastSwitchTime > this.switchTimeout) {
-            this.tabSwitchCount = 0;
-        }
-        
-        this.tabSwitchCount++;
-        this.lastSwitchTime = currentTime;
-        this.isTabSwitchDetected = true;
-        
-        console.log(`🔄 Tab switch: ${this.tabSwitchCount}/${this.maxTabSwitches}`);
-        
-        // Show blur overlay
-        this.showBlurOverlay();
-        
-        // Check if max switches reached
-        if (this.tabSwitchCount >= this.maxTabSwitches) {
-            this.handleMaxTabSwitches();
-        } else {
-            // Show warning
-            this.showTabSwitchWarning();
-        }
-    }
-    
-    handleReturnToTab() {
-        this.isTabSwitchDetected = false;
-        this.hideBlurOverlay();
-        
-        // Show return message
-        this.showReturnMessage();
-    }
-    
-    showBlurOverlay() {
-        this.blurOverlay.style.display = 'block';
-    }
-    
-    hideBlurOverlay() {
-        this.blurOverlay.style.display = 'none';
-    }
-    
-    showTabSwitchWarning() {
-        // You can add a toast notification here
-        console.log(`⚠️ Tab switch warning: ${this.tabSwitchCount}/${this.maxTabSwitches}`);
-        
-        // Optional: Show a small warning toast
-        if (this.tabSwitchCount === 1) {
-            this.showToast(`Warning: Tab switch detected (${this.tabSwitchCount}/${this.maxTabSwitches})`, 'warning');
-        }
-    }
-    
-    handleMaxTabSwitches() {
-        console.log('🚨 Maximum tab switches reached!');
-        
-        // Show severe warning
-        this.showToast('🚨 Maximum tab switches! Next will auto-submit!', 'error');
-        
-        // Force focus back to exam
-        window.focus();
-        
-        // Log security event
-        if (typeof browserClickDetector?.logSecurityEvent === 'function') {
-            browserClickDetector.logSecurityEvent('max_tab_switches', {
-                count: this.tabSwitchCount,
-                timestamp: new Date().toISOString()
-            });
-        }
-    }
-    
-    showReturnMessage() {
-        this.showToast('✅ Returned to exam tab', 'success');
-    }
-    
-    showToast(message, type = 'info') {
-        const toast = document.createElement('div');
-        toast.style.cssText = `
-            position: fixed;
-            top: 60px;
-            right: 20px;
-            background: ${type === 'warning' ? 'linear-gradient(145deg, #FFA500, #FF8C00)' : 
-                        type === 'error' ? 'linear-gradient(145deg, #FF4500, #DC143C)' : 
-                        'linear-gradient(145deg, #32CD32, #228B22)'};
-            color: white;
-            padding: 10px 20px;
-            border-radius: 5px;
-            z-index: 10000;
-            font-weight: bold;
-            animation: slideIn 0.3s ease;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        `;
-        toast.textContent = message;
-        document.body.appendChild(toast);
-        
-        setTimeout(() => {
-            toast.style.animation = 'slideOut 0.3s ease';
-            setTimeout(() => toast.remove(), 300);
         }, 3000);
     }
     
-    disable() {
-        this.hideBlurOverlay();
-        console.log('🔓 Window visibility detection disabled');
+    stopObservation() {
+        if (this.observationTimer) {
+            clearInterval(this.observationTimer);
+        }
+        this.deactivateBlur();
+        
+        // Remove warning if exists
+        const warning = document.getElementById('chromeMenuWarning');
+        if (warning) {
+            warning.remove();
+        }
     }
 }
-
-// Initialize window visibility detector
-const windowVisibilityDetector = new WindowVisibilityDetector();
 
 // ===== ENHANCED GOOGLE FORMS INTEGRATION =====
 const GOOGLE_FORMS = {
@@ -2332,37 +1984,11 @@ let assignedForm = 'A';
 let isResubmission = false;
 let submissionInProgress = new Set();
 let googleFormsSubmissionStatus = 'pending';
-let timerPaused = false;
-let elapsedTimeBeforePause = 0;
-let pauseStartTime = null;
+let chromeMenuBlurDetector = null; // Chrome menu blur detector
 
 const subjects = ["Maths", "Physics", "Chemistry"];
 let examData = {files: [], subjectNames: [], keys: [], originalOrder: [], questionTypes: []};
 let progress = null, timerInterval = null;
-
-// ===== TIMER PAUSE/RESUME FUNCTIONS =====
-function pauseTimer() {
-    if (timerInterval && !timerPaused) {
-        clearInterval(timerInterval);
-        timerPaused = true;
-        pauseStartTime = Date.now();
-        console.log('⏸️ Timer paused');
-    }
-}
-
-function resumeTimer() {
-    if (timerPaused && pauseStartTime) {
-        const pauseDuration = Math.floor((Date.now() - pauseStartTime) / 1000);
-        // Adjust time left by subtracting pause duration
-        progress.timeLeftSec -= pauseDuration;
-        if (progress.timeLeftSec < 0) progress.timeLeftSec = 0;
-        
-        startTimer(); // Restart the timer
-        timerPaused = false;
-        pauseStartTime = null;
-        console.log('▶️ Timer resumed');
-    }
-}
 
 // ===== GOOGLE FORMS HELPER FUNCTIONS =====
 function getFormFields(section) {
@@ -2656,7 +2282,7 @@ function prepareExamData() {
   console.log("Chemistry:", typeCount.Chemistry);
 }
 
-// ===== UPDATED RENDER QUESTION WITHOUT NUMERIC KEYPAD =====
+// ===== UPDATED RENDER QUESTION WITH 3x3 KEYPAD =====
 function renderQuestion() {
   const idx = progress.currentIndex;
   const container = document.getElementById('questionContainer');
@@ -2671,7 +2297,7 @@ function renderQuestion() {
   let optionsHTML = '';
   
   if (questionType === 'fill-blank') {
-    // NUMERICAL INPUT FOR FILL IN THE BLANK WITHOUT KEYPAD
+    // NUMERICAL INPUT FOR FILL IN THE BLANK WITH 3x3 KEYPAD
     optionsHTML = `
       <div class="fill-blank-container">
         <div style="margin: 20px 0; font-weight: bold; color: #4B0082; font-size: 18px;">
@@ -2685,18 +2311,66 @@ function renderQuestion() {
                  value="${progress.answers[idx] || ''}"
                  min="0"
                  step="any"
+                 style="
+                   padding: 12px 18px;
+                   font-size: 22px;
+                   border: 2px solid #4B0082;
+                   border-radius: 8px;
+                   width: 200px;
+                   text-align: center;
+                   outline: none;
+                   font-weight: bold;
+                 "
                  oninput="handleNumericalInput(this, ${idx})"
                  onkeypress="handleNumericalKeyPress(event, ${idx})"
                  tabindex="0">
           <button class="submit-fill-blank-btn" 
                   onclick="submitNumericalAnswer(${idx})"
-                  tabindex="0">
+                  tabindex="0"
+                  style="
+                    padding: 12px 24px;
+                    background: linear-gradient(145deg, #32CD32, #228B22);
+                    color: white;
+                    border: none;
+                    border-radius: 8px;
+                    font-size: 16px;
+                    font-weight: bold;
+                    cursor: pointer;
+                  ">
             Submit
           </button>
         </div>
         
+        <!-- 3x3 Numerical Keypad -->
+        <div class="numerical-keypad">
+          <div class="keypad-grid">
+            ${[1,2,3,4,5,6,7,8,9].map(num => `
+              <button class="num-key-btn" 
+                      onclick="handleKeypadButton('${num}', ${idx})"
+                      tabindex="0">
+                ${num}
+              </button>
+            `).join('')}
+            <button class="num-key-btn special-btn" 
+                    onclick="handleKeypadButton('0', ${idx})"
+                    tabindex="0">
+              0
+            </button>
+            <button class="num-key-btn special-btn clear-btn" 
+                    onclick="handleKeypadButton('C', ${idx})"
+                    tabindex="0">
+              C
+            </button>
+            <button class="num-key-btn special-btn submit-num-btn" 
+                    onclick="handleKeypadButton('✓', ${idx})"
+                    tabindex="0">
+              ✓
+            </button>
+          </div>
+        </div>
+        
         <div style="margin-top: 15px; color: #666; font-size: 14px;">
-          <em>Note: Type your answer in the input box above</em>
+          <em>Note: Use keypad, type in input box, or use Tab to navigate</em>
         </div>
       </div>
     `;
@@ -2781,6 +2455,28 @@ function handleNumericalKeyPress(event, questionIndex) {
     submitNumericalAnswer(questionIndex);
     event.preventDefault();
   }
+}
+
+function handleKeypadButton(button, questionIndex) {
+  const input = document.getElementById('fillBlankInput');
+  if (!input) return;
+  
+  let currentValue = input.value;
+  
+  switch(button) {
+    case 'C': // Clear
+      input.value = '';
+      break;
+    case '✓': // Submit
+      submitNumericalAnswer(questionIndex);
+      break;
+    default: // Numbers
+      input.value = currentValue + button;
+      break;
+  }
+  
+  // Focus back on input
+  input.focus();
 }
 
 function submitNumericalAnswer(questionIndex) {
@@ -3307,9 +3003,12 @@ function shuffleArray(arr) {
     return c;
 }
 
-// ===== EXAM START WITH SECURITY =====
+// ===== MODIFIED: EXAM START WITH FULL-SCREEN ENFORCEMENT =====
 function startWithSecurity(ok) {
   if (!ok) return;
+  
+  // Initialize Chrome menu detector
+  chromeMenuBlurDetector = new ChromeMenuBlurDetector();
   
   const stuName = document.getElementById('stuName');
   const stuSection = document.getElementById('stuSection');
@@ -3318,13 +3017,10 @@ function startWithSecurity(ok) {
   
   const studentKey = `${stuName.value}|${stuSection.value}|${stuRoll.value}|${stuAdm.value}`;
   
-  // Enable all security systems
-  browserClickDetector.enable();
-  windowVisibilityDetector.enable();
+  // Enable full-screen enforcement
+  fullScreenEnforcer.enable();
   
-  // Enable full screen mode
-  const needsFullScreen = fullScreenManager.enableExamMode();
-  
+  // Start the exam
   startExam(studentKey);
 }
 
@@ -3545,7 +3241,7 @@ function startTimer() {
   }, 1000);
 }
 
-// ===== SUBMISSION FUNCTIONS =====
+// ===== MODIFIED: SUBMISSION FUNCTIONS =====
 function submitExam() {
   if (hasSubmitted) return;
   clearInterval(timerInterval);
@@ -3553,10 +3249,14 @@ function submitExam() {
   hasSubmitted = true;
   examInProgress = false;
   
-  // Disable all security systems
-  browserClickDetector.disable();
-  windowVisibilityDetector.disable();
-  fullScreenManager.disable();
+  // Disable full-screen enforcement
+  fullScreenEnforcer.disable();
+  
+  // Stop Chrome menu detector
+  if (chromeMenuBlurDetector) {
+    chromeMenuBlurDetector.stopObservation();
+    chromeMenuBlurDetector = null;
+  }
   
   const subjData = {};
   examData.subjectNames.forEach((s, i) => {
@@ -3820,7 +3520,7 @@ function resetForm() {
   validateStudentInputs();
 }
 
-// ===== CONFIRMATION MODAL - BOTH BUTTONS WORKING =====
+// ===== CONFIRMATION MODAL =====
 function showConfirm(message, callback) {
   const modal = document.getElementById('confirmModal');
   const text = document.getElementById('confirmText');
@@ -3830,39 +3530,8 @@ function showConfirm(message, callback) {
   text.textContent = message;
   modal.style.display = 'flex';
   
-  // Remove existing event listeners
-  const newYesBtn = yesBtn.cloneNode(true);
-  const newNoBtn = noBtn.cloneNode(true);
-  
-  yesBtn.parentNode.replaceChild(newYesBtn, yesBtn);
-  noBtn.parentNode.replaceChild(newNoBtn, noBtn);
-  
-  // Add new event listeners
-  newYesBtn.onclick = () => { 
-    modal.style.display = 'none'; 
-    callback(true); 
-  };
-  
-  newNoBtn.onclick = () => { 
-    modal.style.display = 'none'; 
-    callback(false); 
-  };
-  
-  // Also handle Escape key
-  const handleEscape = (e) => {
-    if (e.key === 'Escape') {
-      modal.style.display = 'none';
-      callback(false);
-      document.removeEventListener('keydown', handleEscape);
-    }
-  };
-  
-  document.addEventListener('keydown', handleEscape);
-  
-  // Focus on "No" button by default (safer)
-  setTimeout(() => {
-    newNoBtn.focus();
-  }, 100);
+  yesBtn.onclick = () => { modal.style.display = 'none'; callback(true); };
+  noBtn.onclick = () => { modal.style.display = 'none'; callback(false); };
 }
 
 // ===== ADMIN PASSWORD =====
@@ -3954,6 +3623,31 @@ document.addEventListener('keydown', function(e) {
   }
 });
 
+// ===== ENHANCE EXISTING EVENT LISTENERS FOR CHROME MENU BLUR =====
+document.addEventListener('click', function(e) {
+  if (examInProgress && chromeMenuBlurDetector && chromeMenuBlurDetector.isBlurred) {
+    // Check if click is on exam elements (should remove blur)
+    const target = e.target;
+    const isExamElement = target.closest('.navBtn, .optBtn, .num-key-btn, .palette-btn, #fillBlankInput, #prevBtn, #nextBtn, #markReviewBtn, #submitBtn');
+    
+    if (isExamElement) {
+      chromeMenuBlurDetector.deactivateBlur();
+    }
+  }
+});
+
+// Also handle keyboard navigation
+document.addEventListener('keydown', function(e) {
+  if (examInProgress && chromeMenuBlurDetector && chromeMenuBlurDetector.isBlurred) {
+    // Arrow keys, Tab, Enter, number keys should remove blur
+    const allowedKeys = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab', 'Enter', ' ', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];
+    
+    if (allowedKeys.includes(e.key)) {
+      chromeMenuBlurDetector.deactivateBlur();
+    }
+  }
+});
+
 // ===== INITIAL SETUP =====
 window.addEventListener('load', function() {
   console.log('LFJC Online Exam System Initialized (75 Questions)');
@@ -3961,16 +3655,11 @@ window.addEventListener('load', function() {
   console.log('• Maths: Q1-20 (MCQ), Q21-25 (Numerical Input)');
   console.log('• Physics: Q26-45 (MCQ), Q46-50 (Numerical Input)');
   console.log('• Chemistry: Q51-70 (MCQ), Q71-75 (Numerical Input)');
-  console.log('🛡️ SECURITY SYSTEMS ENABLED:');
-  console.log('1. Full-Screen Enforcement');
-  console.log('   - Every question displayed in full-screen only');
-  console.log('   - Exit detection with warning message');
-  console.log('   - Screen blur until full-screen re-entered');
-  console.log('   - Timer pauses when not in full-screen');
-  console.log('2. Browser Click-Outside Detection');
-  console.log('3. Window Visibility Detection');
-  console.log('4. No numeric keypad for fill-in-blank');
-  console.log('5. Both Yes/No buttons work in confirmation');
+  console.log('🔒 Full-Screen Enforcement System Active');
+  
+  // Show warning overlay initially
+  document.getElementById('fullScreenWarning').style.display = 'flex';
+  document.body.classList.add('full-screen-blur');
   
   document.getElementById('accessDenied').style.display = 'flex';
   document.getElementById('studentEntry').style.display = 'none';
@@ -3988,13 +3677,14 @@ window.addEventListener('load', function() {
 
 console.log("🎯 LFJC Online Exam System Loaded Successfully");
 console.log("✅ 75 questions with specified structure");
-console.log("🛡️ FULL-SCREEN ENFORCEMENT ACTIVE");
-console.log("✅ Every question displayed in full-screen only");
-console.log("✅ Exit detection with warning message");
-console.log("✅ Screen blur until full-screen re-entered");
-console.log("✅ Timer pauses when not in full-screen");
-console.log("❌ NO Numeric Keypad for fill-in-blank questions");
-console.log("✅ Both Yes/No buttons work in confirmation modal");
+console.log("✅ Maths: Q1-20 (MCQ), Q21-25 (Numerical Input)");
+console.log("✅ Physics: Q26-45 (MCQ), Q46-50 (Numerical Input)");
+console.log("✅ Chemistry: Q51-70 (MCQ), Q71-75 (Numerical Input)");
+console.log("✅ 3x3 Numerical Keypad for fill-in-blank questions");
+console.log("✅ FULL-SCREEN ENFORCEMENT: Three-tier protection system");
+console.log("✅ Tab key navigation enabled");
+console.log("✅ 2-second submission messages");
+console.log("✅ Chrome Three-Dots Menu Blur Protection");
 </script>
 </body>
 </html>
