@@ -93,7 +93,7 @@ body {
     100% { opacity: 0.8; }
 }
 
-/* Body blur effect */
+/* Body blur effect - ONLY during exam */
 body.full-screen-blur {
     filter: blur(8px);
     overflow: hidden;
@@ -104,7 +104,7 @@ body.full-screen-blur *:not(.full-screen-warning-overlay) {
     pointer-events: none;
 }
 
-/* Full-screen status indicator */
+/* Full-screen status indicator - ONLY during exam */
 .full-screen-status {
     position: fixed;
     top: 10px;
@@ -115,11 +115,15 @@ body.full-screen-blur *:not(.full-screen-warning-overlay) {
     border-radius: 20px;
     font-size: 0.9rem;
     z-index: 2147483646;
-    display: flex;
+    display: none; /* Hidden by default */
     align-items: center;
     gap: 8px;
     border: 2px solid transparent;
     transition: all 0.3s ease;
+}
+
+.full-screen-status.visible {
+    display: flex;
 }
 
 .full-screen-status.full {
@@ -1268,8 +1272,8 @@ table td, table th {
 
 <body>
 
-<!-- Full-screen warning overlay -->
-<div class="full-screen-warning-overlay" id="fullScreenWarning">
+<!-- Full-screen warning overlay - HIDDEN INITIALLY -->
+<div class="full-screen-warning-overlay" id="fullScreenWarning" style="display: none;">
     <h2>⚠️ FULL SCREEN REQUIRED</h2>
     <p>This exam must be taken in full-screen mode.</p>
     <p>Please click the button below to enter full-screen mode.</p>
@@ -1277,7 +1281,7 @@ table td, table th {
     <button class="full-screen-warning-btn" id="enterFullScreenBtn">ENTER FULL SCREEN</button>
 </div>
 
-<!-- Full-screen status indicator -->
+<!-- Full-screen status indicator - HIDDEN INITIALLY -->
 <div class="full-screen-status" id="fullScreenStatus">
     <span class="status-indicator" id="fullScreenIndicator"></span>
     <span id="statusText">Checking Full Screen...</span>
@@ -1501,7 +1505,7 @@ class FullScreenEnforcer {
         document.addEventListener('mozfullscreenchange', () => this.handleFullscreenChange());
         document.addEventListener('MSFullscreenChange', () => this.handleFullscreenChange());
         
-        // Block escape key
+        // Block escape key ONLY during exam
         document.addEventListener('keydown', (e) => this.handleKeyDown(e));
         
         // Start checking fullscreen status
@@ -1597,7 +1601,7 @@ class FullScreenEnforcer {
     }
     
     showWarning() {
-        if (!this.warningShown) {
+        if (!this.warningShown && this.enforcementActive && examInProgress) {
             this.warningShown = true;
             this.warningOverlay.style.display = 'flex';
             document.body.classList.add('full-screen-blur');
@@ -1626,7 +1630,7 @@ class FullScreenEnforcer {
     }
     
     handleKeyDown(e) {
-        // Block escape key when enforcement is active
+        // Block escape key ONLY when enforcement is active and exam is in progress
         if (this.enforcementActive && examInProgress && e.key === 'Escape') {
             console.log('🔒 Blocked Escape key');
             e.preventDefault();
@@ -1637,7 +1641,7 @@ class FullScreenEnforcer {
             return false;
         }
         
-        // Block F11
+        // Block F11 during exam
         if (this.enforcementActive && examInProgress && e.key === 'F11') {
             e.preventDefault();
             e.stopPropagation();
@@ -1653,6 +1657,7 @@ class FullScreenEnforcer {
         // Show status indicator
         this.statusIndicator.style.display = 'inline-block';
         this.statusText.style.display = 'inline';
+        this.statusIndicator.parentElement.classList.add('visible');
         
         // Enter fullscreen immediately
         this.enterFullScreen();
@@ -1665,12 +1670,26 @@ class FullScreenEnforcer {
         // Hide warning if shown
         this.hideWarning();
         
+        // Hide status indicator
+        this.statusIndicator.parentElement.classList.remove('visible');
+        
         // Clear intervals
         if (this.checkInterval) {
             clearInterval(this.checkInterval);
         }
         if (this.autoRestoreTimeout) {
             clearTimeout(this.autoRestoreTimeout);
+        }
+        
+        // Exit full screen
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+        } else if (document.mozCancelFullScreen) {
+            document.mozCancelFullScreen();
+        } else if (document.msExitFullscreen) {
+            document.msExitFullscreen();
         }
     }
 }
@@ -1802,7 +1821,7 @@ class ChromeMenuBlurDetector {
         });
         
         threeDotsElements.forEach(el => {
-            const rect = el.getBindingRect();
+            const rect = el.getBoundingClientRect();
             if (rect.width > 0 && rect.height > 0) {
                 // Check if it's likely the three-dots menu
                 if (el.textContent.includes('⋯') || el.textContent.includes('...') || 
@@ -2401,8 +2420,7 @@ function renderQuestion() {
       </div>
       
       ${optionsHTML}
-    </div>
-  `;
+    `;
   
   // Add event listeners for MCQ
   if (questionType !== 'fill-blank') {
@@ -3655,11 +3673,10 @@ window.addEventListener('load', function() {
   console.log('• Maths: Q1-20 (MCQ), Q21-25 (Numerical Input)');
   console.log('• Physics: Q26-45 (MCQ), Q46-50 (Numerical Input)');
   console.log('• Chemistry: Q51-70 (MCQ), Q71-75 (Numerical Input)');
-  console.log('🔒 Full-Screen Enforcement System Active');
+  console.log('🔒 Full-Screen Enforcement System Active (Exam only)');
   
-  // Show warning overlay initially
-  document.getElementById('fullScreenWarning').style.display = 'flex';
-  document.body.classList.add('full-screen-blur');
+  // IMPORTANT: DO NOT show warning overlay initially
+  // Only show when exam starts
   
   document.getElementById('accessDenied').style.display = 'flex';
   document.getElementById('studentEntry').style.display = 'none';
@@ -3681,7 +3698,7 @@ console.log("✅ Maths: Q1-20 (MCQ), Q21-25 (Numerical Input)");
 console.log("✅ Physics: Q26-45 (MCQ), Q46-50 (Numerical Input)");
 console.log("✅ Chemistry: Q51-70 (MCQ), Q71-75 (Numerical Input)");
 console.log("✅ 3x3 Numerical Keypad for fill-in-blank questions");
-console.log("✅ FULL-SCREEN ENFORCEMENT: Three-tier protection system");
+console.log("✅ FULL-SCREEN ENFORCEMENT: Student entry in normal screen, exam in full-screen");
 console.log("✅ Tab key navigation enabled");
 console.log("✅ 2-second submission messages");
 console.log("✅ Chrome Three-Dots Menu Blur Protection");
