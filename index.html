@@ -35,6 +35,122 @@ body {
   user-select: none;
 }
 
+/* ===== FULL SCREEN ENFORCEMENT STYLES ===== */
+#fullScreenWarning {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  z-index: 2147483646;
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  text-align: center;
+  padding: 20px;
+}
+
+#fullScreenWarning h2 {
+  font-size: 36px;
+  color: #ff9900;
+  margin-bottom: 30px;
+  text-shadow: 0 2px 10px rgba(255, 153, 0, 0.5);
+}
+
+#fullScreenWarning p {
+  font-size: 20px;
+  margin: 15px 0;
+  max-width: 800px;
+  line-height: 1.6;
+}
+
+#enterFullScreenBtn {
+  background: linear-gradient(145deg, #4B0082, #6A0DAD);
+  color: white;
+  border: none;
+  padding: 18px 40px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 22px;
+  font-weight: bold;
+  margin-top: 40px;
+  transition: var(--transition);
+  box-shadow: 0 8px 0 rgba(75, 0, 130, 0.4);
+  animation: pulseWarning 2s infinite;
+}
+
+#enterFullScreenBtn:hover {
+  background: linear-gradient(145deg, #6A0DAD, #8A2BE2);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 0 rgba(75, 0, 130, 0.5);
+}
+
+#enterFullScreenBtn:active {
+  transform: translateY(2px);
+  box-shadow: 0 5px 0 rgba(75, 0, 130, 0.3);
+}
+
+@keyframes pulseWarning {
+  0% { transform: scale(1); box-shadow: 0 8px 0 rgba(75, 0, 130, 0.4); }
+  50% { transform: scale(1.05); box-shadow: 0 8px 20px rgba(75, 0, 130, 0.6); }
+  100% { transform: scale(1); box-shadow: 0 8px 0 rgba(75, 0, 130, 0.4); }
+}
+
+.full-screen-mode #examArea {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: white;
+  z-index: 2147483640;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+.full-screen-mode #examHeader {
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 100;
+  padding: 15px 0;
+  border-bottom: 3px solid #4B0082;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.full-screen-mode #questionContainer {
+  min-height: calc(100vh - 200px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 20px 0;
+}
+
+.full-screen-mode .questionImg {
+  max-width: 90vw;
+  max-height: 70vh;
+  object-fit: contain;
+}
+
+.full-screen-mode .navContainer {
+  position: sticky;
+  bottom: 0;
+  background: white;
+  padding: 15px 0;
+  border-top: 3px solid #4B0082;
+  box-shadow: 0 -4px 10px rgba(0,0,0,0.1);
+}
+
+.full-screen-mode #paletteContainer {
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+
 /* ===== FULL SCREEN BLUR OVERLAY FOR CLICKS OUTSIDE ===== */
 #full-screen-blur-overlay {
   position: fixed;
@@ -684,6 +800,19 @@ table td, table th {
   #click-outside-warning h2 {
     font-size: 22px;
   }
+  
+  #fullScreenWarning h2 {
+    font-size: 24px;
+  }
+  
+  #fullScreenWarning p {
+    font-size: 16px;
+  }
+  
+  #enterFullScreenBtn {
+    padding: 14px 30px;
+    font-size: 18px;
+  }
 }
 
 @media (min-width: 601px) and (max-width: 900px) {
@@ -1168,6 +1297,15 @@ table td, table th {
 
 <body>
 
+<!-- Full Screen Warning -->
+<div id="fullScreenWarning">
+    <h2>⚠️ FULL SCREEN REQUIRED</h2>
+    <p>The exam must be taken in full-screen mode for security reasons.</p>
+    <p>Please enter full-screen mode to continue with the exam.</p>
+    <p><strong>Note:</strong> Pressing ESC key or F11 will exit full-screen mode and pause the exam.</p>
+    <button id="enterFullScreenBtn">Enter Full Screen</button>
+</div>
+
 <!-- Full Screen Blur Overlay for Clicks Outside Browser -->
 <div id="full-screen-blur-overlay"></div>
 
@@ -1408,6 +1546,236 @@ const QUESTION_STRUCTURE = {
   ]
 };
 
+// ===== FULL SCREEN MANAGER =====
+class FullScreenManager {
+    constructor() {
+        this.isFullScreen = false;
+        this.fullScreenWarning = document.getElementById('fullScreenWarning');
+        this.enterFullScreenBtn = document.getElementById('enterFullScreenBtn');
+        this.examArea = document.getElementById('examArea');
+        this.body = document.body;
+        
+        this.init();
+    }
+    
+    init() {
+        // Add event listeners
+        this.enterFullScreenBtn.addEventListener('click', () => this.enterFullScreen());
+        
+        // Listen for fullscreen change events
+        document.addEventListener('fullscreenchange', () => this.handleFullScreenChange());
+        document.addEventListener('webkitfullscreenchange', () => this.handleFullScreenChange());
+        document.addEventListener('mozfullscreenchange', () => this.handleFullScreenChange());
+        document.addEventListener('MSFullscreenChange', () => this.handleFullScreenChange());
+        
+        // Listen for ESC key press
+        document.addEventListener('keydown', (e) => this.handleKeyDown(e));
+    }
+    
+    enterFullScreen() {
+        const element = document.documentElement;
+        
+        if (element.requestFullscreen) {
+            element.requestFullscreen();
+        } else if (element.webkitRequestFullscreen) {
+            element.webkitRequestFullscreen();
+        } else if (element.mozRequestFullScreen) {
+            element.mozRequestFullScreen();
+        } else if (element.msRequestFullscreen) {
+            element.msRequestFullscreen();
+        }
+    }
+    
+    exitFullScreen() {
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+        } else if (document.mozCancelFullScreen) {
+            document.mozCancelFullScreen();
+        } else if (document.msExitFullscreen) {
+            document.msExitFullscreen();
+        }
+    }
+    
+    handleFullScreenChange() {
+        this.isFullScreen = !!(
+            document.fullscreenElement ||
+            document.webkitFullscreenElement ||
+            document.mozFullScreenElement ||
+            document.msFullscreenElement
+        );
+        
+        if (this.isFullScreen && examInProgress) {
+            // Full screen is active
+            this.fullScreenWarning.style.display = 'none';
+            this.body.classList.add('full-screen-mode');
+            
+            // Resume timer if it was paused
+            if (typeof resumeTimer === 'function') {
+                resumeTimer();
+            }
+            
+            // Log security event
+            if (typeof browserClickDetector?.logSecurityEvent === 'function') {
+                browserClickDetector.logSecurityEvent('fullscreen_entered', {
+                    timestamp: new Date().toISOString()
+                });
+            }
+        } else if (!this.isFullScreen && examInProgress) {
+            // Full screen was exited during exam
+            this.showFullScreenWarning();
+            this.body.classList.remove('full-screen-mode');
+            
+            // Pause timer
+            if (typeof pauseTimer === 'function') {
+                pauseTimer();
+            }
+            
+            // Log security event
+            if (typeof browserClickDetector?.logSecurityEvent === 'function') {
+                browserClickDetector.logSecurityEvent('fullscreen_exited', {
+                    timestamp: new Date().toISOString()
+                });
+            }
+        }
+    }
+    
+    showFullScreenWarning() {
+        this.fullScreenWarning.style.display = 'flex';
+        this.fullScreenWarning.innerHTML = `
+            <h2>⚠️ FULL SCREEN REQUIRED</h2>
+            <p>The exam must be taken in full-screen mode for security reasons.</p>
+            <p>You exited full-screen mode. Please re-enter full-screen mode to continue.</p>
+            <p><strong>Warning:</strong> The timer is paused until you return to full-screen mode.</p>
+            <p><strong>Time Left:</strong> ${formatTime(progress.timeLeftSec)}</p>
+            <button id="enterFullScreenBtn">Enter Full Screen</button>
+        `;
+        
+        // Re-attach event listener
+        document.getElementById('enterFullScreenBtn').addEventListener('click', () => this.enterFullScreen());
+    }
+    
+    handleKeyDown(e) {
+        // Prevent F11 from exiting fullscreen
+        if (e.key === 'F11' && examInProgress) {
+            e.preventDefault();
+            this.showToast('F11 is disabled during exam. Use the button below to exit fullscreen.', 'warning');
+        }
+        
+        // Handle ESC key - show warning but don't immediately exit
+        if (e.key === 'Escape' && examInProgress && this.isFullScreen) {
+            e.preventDefault();
+            this.showExitWarning();
+        }
+    }
+    
+    showExitWarning() {
+        const warning = document.createElement('div');
+        warning.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            z-index: 100000;
+            text-align: center;
+            border: 3px solid #ff9900;
+            animation: slideIn 0.3s ease;
+        `;
+        
+        warning.innerHTML = `
+            <h3 style="color: #ff9900; margin-bottom: 15px;">⚠️ Exit Full Screen?</h3>
+            <p>Exiting full-screen will pause your exam and show a warning screen.</p>
+            <p>Are you sure you want to exit full-screen mode?</p>
+            <div style="margin-top: 20px;">
+                <button id="cancelExitBtn" style="background: #4CAF50; color: white; padding: 10px 20px; margin: 0 10px; border: none; border-radius: 5px; cursor: pointer;">Cancel</button>
+                <button id="confirmExitBtn" style="background: #f44336; color: white; padding: 10px 20px; margin: 0 10px; border: none; border-radius: 5px; cursor: pointer;">Exit</button>
+            </div>
+        `;
+        
+        document.body.appendChild(warning);
+        
+        document.getElementById('cancelExitBtn').addEventListener('click', () => {
+            document.body.removeChild(warning);
+        });
+        
+        document.getElementById('confirmExitBtn').addEventListener('click', () => {
+            this.exitFullScreen();
+            document.body.removeChild(warning);
+        });
+    }
+    
+    showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: ${type === 'warning' ? 'linear-gradient(145deg, #FFA500, #FF8C00)' : 
+                        type === 'error' ? 'linear-gradient(145deg, #FF4500, #DC143C)' : 
+                        'linear-gradient(145deg, #32CD32, #228B22)'};
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            z-index: 100000;
+            font-weight: bold;
+            animation: slideIn 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        `;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.style.animation = 'slideOut 0.3s ease';
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    document.body.removeChild(toast);
+                }
+            }, 300);
+        }, 3000);
+    }
+    
+    enableExamMode() {
+        // Check if browser supports fullscreen
+        if (!document.fullscreenEnabled && 
+            !document.webkitFullscreenEnabled && 
+            !document.mozFullScreenEnabled && 
+            !document.msFullscreenEnabled) {
+            
+            console.warn('Fullscreen API not supported');
+            this.showToast('Fullscreen mode not supported by your browser. Exam continues in normal mode.', 'warning');
+            return true;
+        }
+        
+        // Show initial fullscreen warning
+        this.showFullScreenWarning();
+        return false;
+    }
+    
+    disable() {
+        this.exitFullScreen();
+        this.body.classList.remove('full-screen-mode');
+        this.fullScreenWarning.style.display = 'none';
+    }
+    
+    isFullScreenActive() {
+        return this.isFullScreen;
+    }
+}
+
+function formatTime(seconds) {
+    const minutes = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+}
+
+// Initialize full screen manager
+const fullScreenManager = new FullScreenManager();
+
 // ===== BROWSER CLICK-OUTSIDE DETECTION SYSTEM =====
 class BrowserClickOutsideDetector {
     constructor() {
@@ -1459,14 +1827,14 @@ class BrowserClickOutsideDetector {
     startFocusMonitoring() {
         // Check focus every 100ms
         this.focusCheckInterval = setInterval(() => {
-            if (!document.hasFocus() && examInProgress && !this.isBlurActive) {
+            if (!document.hasFocus() && examInProgress && !this.isBlurActive && fullScreenManager.isFullScreenActive()) {
                 this.handleClickOutside();
             }
         }, 100);
     }
     
     handleWindowBlur() {
-        if (examInProgress && !this.isBlurActive) {
+        if (examInProgress && !this.isBlurActive && fullScreenManager.isFullScreenActive()) {
             console.log('⚠️ Window blur detected (clicked outside browser)');
             setTimeout(() => {
                 if (!document.hasFocus()) {
@@ -1484,15 +1852,15 @@ class BrowserClickOutsideDetector {
     }
     
     handleVisibilityChange() {
-        if (document.hidden && examInProgress && !this.isBlurActive) {
+        if (document.hidden && examInProgress && !this.isBlurActive && fullScreenManager.isFullScreenActive()) {
             console.log('⚠️ Page hidden (switched tabs/windows)');
             this.handleClickOutside();
         }
     }
     
     handleMouseLeave(e) {
-        if (examInProgress && e.clientY < 0 && !this.isBlurActive) {
-            // Mouse left through top of window (likely to browser UI)
+        if (examInProgress && e.clientY < 0 && !this.isBlurActive && fullScreenManager.isFullScreenActive()) {
+            // Mouse left through top of window (likely clicked browser UI)
             console.log('⚠️ Mouse left window (likely clicked browser UI)');
             this.handleClickOutside();
         }
@@ -1964,10 +2332,37 @@ let assignedForm = 'A';
 let isResubmission = false;
 let submissionInProgress = new Set();
 let googleFormsSubmissionStatus = 'pending';
+let timerPaused = false;
+let elapsedTimeBeforePause = 0;
+let pauseStartTime = null;
 
 const subjects = ["Maths", "Physics", "Chemistry"];
 let examData = {files: [], subjectNames: [], keys: [], originalOrder: [], questionTypes: []};
 let progress = null, timerInterval = null;
+
+// ===== TIMER PAUSE/RESUME FUNCTIONS =====
+function pauseTimer() {
+    if (timerInterval && !timerPaused) {
+        clearInterval(timerInterval);
+        timerPaused = true;
+        pauseStartTime = Date.now();
+        console.log('⏸️ Timer paused');
+    }
+}
+
+function resumeTimer() {
+    if (timerPaused && pauseStartTime) {
+        const pauseDuration = Math.floor((Date.now() - pauseStartTime) / 1000);
+        // Adjust time left by subtracting pause duration
+        progress.timeLeftSec -= pauseDuration;
+        if (progress.timeLeftSec < 0) progress.timeLeftSec = 0;
+        
+        startTimer(); // Restart the timer
+        timerPaused = false;
+        pauseStartTime = null;
+        console.log('▶️ Timer resumed');
+    }
+}
 
 // ===== GOOGLE FORMS HELPER FUNCTIONS =====
 function getFormFields(section) {
@@ -2927,6 +3322,9 @@ function startWithSecurity(ok) {
   browserClickDetector.enable();
   windowVisibilityDetector.enable();
   
+  // Enable full screen mode
+  const needsFullScreen = fullScreenManager.enableExamMode();
+  
   startExam(studentKey);
 }
 
@@ -3155,9 +3553,10 @@ function submitExam() {
   hasSubmitted = true;
   examInProgress = false;
   
-  // Disable security systems
+  // Disable all security systems
   browserClickDetector.disable();
   windowVisibilityDetector.disable();
+  fullScreenManager.disable();
   
   const subjData = {};
   examData.subjectNames.forEach((s, i) => {
@@ -3563,15 +3962,15 @@ window.addEventListener('load', function() {
   console.log('• Physics: Q26-45 (MCQ), Q46-50 (Numerical Input)');
   console.log('• Chemistry: Q51-70 (MCQ), Q71-75 (Numerical Input)');
   console.log('🛡️ SECURITY SYSTEMS ENABLED:');
-  console.log('1. Browser Click-Outside Detection');
-  console.log('   - Detects clicks on browser tabs, Chrome menu, address bar');
-  console.log('   - Shows full screen blur with warning');
-  console.log('   - Counts violations (3 strikes)');
-  console.log('2. Window Visibility Detection');
-  console.log('   - Detects tab/window switching');
-  console.log('   - Shows blur overlay');
-  console.log('3. No numeric keypad for fill-in-blank');
-  console.log('4. Both Yes/No buttons work in confirmation');
+  console.log('1. Full-Screen Enforcement');
+  console.log('   - Every question displayed in full-screen only');
+  console.log('   - Exit detection with warning message');
+  console.log('   - Screen blur until full-screen re-entered');
+  console.log('   - Timer pauses when not in full-screen');
+  console.log('2. Browser Click-Outside Detection');
+  console.log('3. Window Visibility Detection');
+  console.log('4. No numeric keypad for fill-in-blank');
+  console.log('5. Both Yes/No buttons work in confirmation');
   
   document.getElementById('accessDenied').style.display = 'flex';
   document.getElementById('studentEntry').style.display = 'none';
@@ -3589,10 +3988,11 @@ window.addEventListener('load', function() {
 
 console.log("🎯 LFJC Online Exam System Loaded Successfully");
 console.log("✅ 75 questions with specified structure");
-console.log("🛡️ CLICK OUTSIDE BROWSER DETECTION ACTIVE");
-console.log("✅ Detects: Browser tabs, Chrome menu, address bar, bookmarks");
-console.log("✅ Action: Full screen blur + warning message");
-console.log("✅ Counts violations (3 clicks = severe warning)");
+console.log("🛡️ FULL-SCREEN ENFORCEMENT ACTIVE");
+console.log("✅ Every question displayed in full-screen only");
+console.log("✅ Exit detection with warning message");
+console.log("✅ Screen blur until full-screen re-entered");
+console.log("✅ Timer pauses when not in full-screen");
 console.log("❌ NO Numeric Keypad for fill-in-blank questions");
 console.log("✅ Both Yes/No buttons work in confirmation modal");
 </script>
