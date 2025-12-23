@@ -1074,10 +1074,41 @@ table td, table th {
   to { transform: translateX(100%); opacity: 0; }
 }
 
+/* ===== TAB SWITCH WARNING STYLES ===== */
+.tab-switch-warning {
+  position: fixed;
+  top: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(145deg, #FFA500, #FF8C00);
+  color: white;
+  padding: 20px 30px;
+  border-radius: 10px;
+  font-weight: bold;
+  z-index: 10001;
+  text-align: center;
+  box-shadow: 0 5px 20px rgba(255, 165, 0, 0.3);
+  animation: slideDown 0.5s ease;
+  font-size: 18px;
+  min-width: 350px;
+  max-width: 80%;
+  border: 2px solid #ff8c00;
+}
+
+@keyframes slideDown {
+  from { top: 50px; opacity: 0; }
+  to { top: 100px; opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { top: 100px; opacity: 1; }
+  to { top: 50px; opacity: 0; }
+}
+
 @keyframes shakeWarning {
-  0%, 100% { transform: translateX(0); }
-  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-  20%, 40%, 60%, 80% { transform: translateX(5px); }
+  0%, 100% { transform: translateX(-50%); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(calc(-50% - 5px)); }
+  20%, 40%, 60%, 80% { transform: translateX(calc(-50% + 5px)); }
 }
 
 @keyframes slideIn {
@@ -1424,6 +1455,141 @@ const QUESTION_STRUCTURE = {
     }
   ]
 };
+
+// ===== GLOBAL VARIABLES =====
+let images = [];
+let answerKey = [];
+let keyLoaded = false;
+let sheetReady = false;
+let hasSubmitted = false;
+let examStartTime = null;
+let waitingTimerInterval = null;
+let autoTransitionTimer = null;
+let examInProgress = false;
+let preloadedImages = {};
+let currentSubjData = null;
+let adminOverrideActive = false;
+let assignedForm = 'A';
+let isResubmission = false;
+let submissionInProgress = new Set();
+let googleFormsSubmissionStatus = 'pending';
+let chromeMenuBlurDetector = null; // Chrome menu blur detector
+let tabSwitchCount = 0; // Track tab switching count for entire exam
+
+const subjects = ["Maths", "Physics", "Chemistry"];
+let examData = {files: [], subjectNames: [], keys: [], originalOrder: [], questionTypes: []};
+let progress = null, timerInterval = null;
+
+// ===== TOAST NOTIFICATION FUNCTION =====
+function showToast(message, type = 'info', duration = 3000) {
+    // Remove existing toasts
+    const existingToasts = document.querySelectorAll('.toast');
+    existingToasts.forEach(toast => {
+        toast.style.animation = 'toastSlideOut 0.3s ease';
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 300);
+    });
+    
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 25px;
+        border-radius: 8px;
+        color: white;
+        font-weight: bold;
+        z-index: 10000;
+        animation: toastSlideIn 0.3s ease;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        font-size: 16px;
+        min-width: 300px;
+        text-align: center;
+    `;
+    
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    // Remove after specified duration
+    setTimeout(() => {
+        toast.style.animation = 'toastSlideOut 0.3s ease';
+        setTimeout(() => {
+            if (toast.parentNode) {
+                document.body.removeChild(toast);
+            }
+        }, 300);
+    }, duration);
+}
+
+// ===== TAB SWITCH WARNING FUNCTION =====
+function showTabSwitchWarning(count) {
+    // Remove existing warning
+    const existingWarning = document.querySelector('.tab-switch-warning');
+    if (existingWarning) {
+        existingWarning.style.animation = 'slideUp 0.5s ease';
+        setTimeout(() => {
+            if (existingWarning.parentNode) {
+                existingWarning.parentNode.removeChild(existingWarning);
+            }
+        }, 500);
+    }
+    
+    let message = '';
+    if (count === 1) {
+        message = '⚠️ Warning: Tab switching detected (1/3).';
+    } else if (count === 2) {
+        message = '⚠️ Warning: Tab switching detected (2/3). One more switch will submit exam!';
+    } else if (count >= 3) {
+        message = '🚨 3 tab switches detected! Submitting exam in 3 seconds...';
+    }
+    
+    const warningDiv = document.createElement('div');
+    warningDiv.className = 'tab-switch-warning';
+    warningDiv.style.cssText = `
+        position: fixed;
+        top: 100px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: linear-gradient(145deg, #FFA500, #FF8C00);
+        color: white;
+        padding: 20px 30px;
+        border-radius: 10px;
+        font-weight: bold;
+        z-index: 10001;
+        text-align: center;
+        box-shadow: 0 5px 20px rgba(255, 165, 0, 0.3);
+        animation: slideDown 0.5s ease, shakeWarning 0.5s ease;
+        font-size: 18px;
+        min-width: 350px;
+        max-width: 80%;
+        border: 2px solid #ff8c00;
+    `;
+    
+    warningDiv.textContent = message;
+    document.body.appendChild(warningDiv);
+    
+    // Remove warning after 5 seconds (except for final warning)
+    if (count < 3) {
+        setTimeout(() => {
+            warningDiv.style.animation = 'slideUp 0.5s ease';
+            setTimeout(() => {
+                if (warningDiv.parentNode) {
+                    document.body.removeChild(warningDiv);
+                }
+            }, 500);
+        }, 5000);
+    }
+    
+    // For 3rd switch, also show toast
+    if (count >= 3) {
+        showToast('🚨 3 tab switches detected! Exam will be submitted in 3 seconds.', 'error', 3000);
+    }
+}
 
 // ===== UPDATED FULL-SCREEN SECURITY SYSTEM WITH WARNING =====
 class FullScreenSecurity {
@@ -1809,6 +1975,38 @@ class FullScreenSecurity {
 // Initialize security system
 const examSecurity = new FullScreenSecurity();
 
+// ===== UPDATED TAB SWITCH DETECTION WITH PROPER WARNINGS =====
+document.addEventListener('visibilitychange', function() {
+    if (document.hidden && examInProgress) {
+        const currentTime = Date.now();
+        
+        // Don't count rapid switches (debounce)
+        if (currentTime - lastTabSwitchTime < 1000) {
+            return;
+        }
+        
+        lastTabSwitchTime = currentTime;
+        tabSwitchCount++;
+        
+        console.log(`Tab switch detected: ${tabSwitchCount}/3 for entire exam`);
+        
+        // Show warning message
+        showTabSwitchWarning(tabSwitchCount);
+        
+        if (tabSwitchCount >= 3) {
+            console.log('🚨 3 tab switches detected - submitting exam');
+            // Wait 3 seconds then submit
+            setTimeout(() => {
+                if (examInProgress) {
+                    submitExam();
+                }
+            }, 3000);
+        }
+    }
+});
+
+let lastTabSwitchTime = 0;
+
 // ===== CHROME THREE-DOTS MENU BLUR DETECTION =====
 class ChromeMenuBlurDetector {
     constructor() {
@@ -2058,30 +2256,6 @@ const ANSWERS_FIELDS = {
     'I': "entry.1618336199", // From Form I URL
     'J': "entry.1279707071"  // From Form J URL
 };
-
-// ===== GLOBAL VARIABLES =====
-let images = [];
-let answerKey = [];
-let keyLoaded = false;
-let sheetReady = false;
-let hasSubmitted = false;
-let examStartTime = null;
-let waitingTimerInterval = null;
-let autoTransitionTimer = null;
-let examInProgress = false;
-let preloadedImages = {};
-let currentSubjData = null;
-let adminOverrideActive = false;
-let assignedForm = 'A';
-let isResubmission = false;
-let submissionInProgress = new Set();
-let googleFormsSubmissionStatus = 'pending';
-let chromeMenuBlurDetector = null; // Chrome menu blur detector
-let tabSwitchCount = 0; // Track tab switching count for entire exam
-
-const subjects = ["Maths", "Physics", "Chemistry"];
-let examData = {files: [], subjectNames: [], keys: [], originalOrder: [], questionTypes: []};
-let progress = null, timerInterval = null;
 
 // ===== GOOGLE FORMS HELPER FUNCTIONS =====
 function getFormFields(section) {
@@ -2609,48 +2783,6 @@ function submitNumericalAnswer(questionIndex) {
   }, 1500);
 }
 
-function showToast(message, type = 'info', duration = 2000) {
-  // Remove existing toasts
-  const existingToasts = document.querySelectorAll('.toast');
-  existingToasts.forEach(toast => {
-    toast.style.animation = 'toastSlideOut 0.3s ease';
-    setTimeout(() => {
-      if (toast.parentNode) {
-        toast.parentNode.removeChild(toast);
-      }
-    }, 300);
-  });
-  
-  // Create toast element
-  const toast = document.createElement('div');
-  toast.className = `toast toast-${type}`;
-  toast.style.cssText = `
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    padding: 12px 24px;
-    border-radius: 8px;
-    color: white;
-    font-weight: bold;
-    z-index: 10000;
-    animation: toastSlideIn 0.3s ease;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  `;
-  
-  toast.textContent = message;
-  document.body.appendChild(toast);
-  
-  // Remove after specified duration (default 2 seconds)
-  setTimeout(() => {
-    toast.style.animation = 'toastSlideOut 0.3s ease';
-    setTimeout(() => {
-      if (toast.parentNode) {
-        document.body.removeChild(toast);
-      }
-    }, 300);
-  }, duration);
-}
-
 // ===== SIMPLE ERROR HANDLER =====
 function handleSimpleImageError(imgElement, questionIndex) {
     const attemptedPath = imgElement.src;
@@ -3043,27 +3175,6 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// ===== UPDATED TAB SWITCH DETECTION (3 FOR ENTIRE EXAM) =====
-document.addEventListener('visibilitychange', function() {
-    if (document.hidden && examInProgress) {
-        tabSwitchCount++;
-        
-        console.log(`Tab switch detected: ${tabSwitchCount}/3 for entire exam`);
-        
-        if (tabSwitchCount >= 3) {
-            console.log('🚨 3 tab switches detected - submitting exam');
-            showToast('⚠️ Multiple tab switches detected. Exam will be submitted automatically for security.', 'error', 3000);
-            setTimeout(() => {
-                submitExam();
-            }, 3000);
-        } else if (tabSwitchCount === 1) {
-            showToast('⚠️ Warning: Tab switching detected (1/3).', 'warning', 2000);
-        } else if (tabSwitchCount === 2) {
-            showToast('⚠️ Warning: Tab switching detected (2/3). One more switch will submit exam!', 'warning', 3000);
-        }
-    }
-});
-
 // ===== EVENT LISTENERS =====
 ["stuName", "stuSection", "stuRoll", "stuAdm"].forEach(id => {
   document.getElementById(id).addEventListener("input", validateStudentInputs);
@@ -3100,6 +3211,7 @@ function startWithSecurity(ok) {
   
   // Reset tab switch count
   tabSwitchCount = 0;
+  lastTabSwitchTime = 0;
   
   // Initialize Chrome menu detector
   chromeMenuBlurDetector = new ChromeMenuBlurDetector();
@@ -3796,9 +3908,8 @@ window.addEventListener('load', function() {
   console.log('• Physics: Q26-45 (MCQ), Q46-50 (Numerical Input)');
   console.log('• Chemistry: Q51-70 (MCQ), Q71-75 (Numerical Input)');
   console.log('🔒 Full-Screen Security with Warning System Active');
-  console.log('• First exit per question: Silent auto-return');
-  console.log('• Second+ exit: Warning overlay with button');
-  console.log('• Screen blurred until full-screen is entered');
+  console.log('📊 Tab Switching Detection: 3 switches total submit exam');
+  console.log('🔔 Tab switch warnings now visible');
   
   document.getElementById('accessDenied').style.display = 'flex';
   document.getElementById('studentEntry').style.display = 'none';
@@ -3818,9 +3929,9 @@ console.log("🎯 LFJC Online Exam System Loaded Successfully");
 console.log("✅ 75 questions with specified structure");
 console.log("✅ Smaller numerical keypad (45px) for fill-in-blank questions");
 console.log("✅ Tab switching detection: 3 switches total submit exam");
+console.log("✅ Tab switch warnings now properly display");
 console.log("✅ Both Yes/No buttons work in confirmation modal");
 console.log("✅ Fixed duplicate 'question number 2 out of 75, physics mcq' appearing twice");
-console.log("✅ Full-screen warning system: First exit allowed, second+ shows warning");
 </script>
 </body>
 </html>
