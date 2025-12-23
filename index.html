@@ -1475,6 +1475,8 @@ let submissionInProgress = new Set();
 let googleFormsSubmissionStatus = 'pending';
 let chromeMenuBlurDetector = null; // Chrome menu blur detector
 let tabSwitchCount = 0; // Track tab switching count for entire exam
+let lastTabSwitchTime = 0;
+let fullScreenExitTimeout = null;
 
 const subjects = ["Maths", "Physics", "Chemistry"];
 let examData = {files: [], subjectNames: [], keys: [], originalOrder: [], questionTypes: []};
@@ -1591,7 +1593,7 @@ function showTabSwitchWarning(count) {
     }
 }
 
-// ===== UPDATED FULL-SCREEN SECURITY SYSTEM WITH WARNING =====
+// ===== UPDATED FULL-SCREEN SECURITY SYSTEM WITH FIXES =====
 class FullScreenSecurity {
     constructor() {
         this.isFullScreen = false;
@@ -1607,6 +1609,11 @@ class FullScreenSecurity {
         this.fullScreenButton = null; // Full-screen button
         this.questionExitCounts = new Map(); // Track exits per question
         this.isShowingWarning = false; // Track if warning is currently shown
+        
+        // NEW: Add these properties to prevent getting stuck
+        this.pendingFullScreenOperation = false; // Track pending operations
+        this.lastFullScreenAttempt = 0; // Track last attempt time
+        this.fullScreenCooldown = 2000; // 2 second cooldown between attempts
         
         // Create warning overlay immediately
         this.createWarningOverlay();
@@ -1801,6 +1808,16 @@ class FullScreenSecurity {
     }
     
     handleFullScreenExit() {
+        const currentTime = Date.now();
+        
+        // Check cooldown to prevent rapid triggers
+        if (currentTime - this.lastFullScreenAttempt < this.fullScreenCooldown) {
+            console.log('⏸️ Too soon after last full-screen attempt, skipping...');
+            return;
+        }
+        
+        this.lastFullScreenAttempt = currentTime;
+        
         // Get current question index
         const currentQuestion = progress?.currentIndex || 0;
         
@@ -1857,31 +1874,62 @@ class FullScreenSecurity {
     
     async returnToFullScreenSilently() {
         console.log('🔄 Silently returning to full-screen...');
+        
+        // PREVENT RAPID RETRIES - Add timeout guard
+        if (this.isReturningToFullScreen) {
+            console.log('⏸️ Already returning to full-screen, skipping...');
+            return;
+        }
+        
         this.isReturningToFullScreen = true;
         
         try {
             const elem = document.documentElement;
             
-            if (elem.requestFullscreen) {
-                await elem.requestFullscreen();
-            } else if (elem.webkitRequestFullscreen) {
-                await elem.webkitRequestFullscreen();
-            } else if (elem.mozRequestFullScreen) {
-                await elem.mozRequestFullScreen();
-            } else if (elem.msRequestFullscreen) {
-                await elem.msRequestFullscreen();
-            }
+            // Add timeout to prevent hanging
+            const fullScreenPromise = new Promise((resolve, reject) => {
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen().then(resolve).catch(reject);
+                } else if (elem.webkitRequestFullscreen) {
+                    elem.webkitRequestFullscreen().then(resolve).catch(reject);
+                } else if (elem.mozRequestFullScreen) {
+                    elem.mozRequestFullScreen().then(resolve).catch(reject);
+                } else if (elem.msRequestFullscreen) {
+                    elem.msRequestFullscreen().then(resolve).catch(reject);
+                } else {
+                    reject(new Error('Fullscreen API not available'));
+                }
+            });
+            
+            // Add timeout to prevent getting stuck
+            await Promise.race([
+                fullScreenPromise,
+                new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('Fullscreen timeout')), 2000)
+                )
+            ]);
             
             console.log('✅ Successfully returned to full-screen silently');
+            
+            // Reset the flag after successful return
+            this.isReturningToFullScreen = false;
             
             // Force re-render of question to ensure full display
             if (document.getElementById('examArea').style.display === 'block') {
                 renderQuestion();
             }
         } catch (err) {
-            console.error('❌ Failed to return to full-screen:', err);
-            // Keep retrying
-            setTimeout(() => this.handleFullScreenExit(), 100);
+            console.error('❌ Failed to return to full-screen:', err.message);
+            
+            // Reset the flag on failure too
+            this.isReturningToFullScreen = false;
+            
+            // Don't retry immediately, wait a bit
+            setTimeout(() => {
+                if (!this.isFullScreen && this.securityActive && examInProgress) {
+                    this.handleFullScreenExit();
+                }
+            }, 1000);
         }
     }
     
@@ -1975,7 +2023,7 @@ class FullScreenSecurity {
 // Initialize security system
 const examSecurity = new FullScreenSecurity();
 
-// ===== UPDATED TAB SWITCH DETECTION WITH PROPER WARNINGS =====
+// ===== UPDATED TAB SWITCH DETECTION WITH FIXES =====
 document.addEventListener('visibilitychange', function() {
     if (document.hidden && examInProgress) {
         const currentTime = Date.now();
@@ -2002,10 +2050,13 @@ document.addEventListener('visibilitychange', function() {
                 }
             }, 3000);
         }
+        
+        // Clear any pending full-screen exit handling when tab switches
+        if (fullScreenExitTimeout) {
+            clearTimeout(fullScreenExitTimeout);
+        }
     }
 });
-
-let lastTabSwitchTime = 0;
 
 // ===== CHROME THREE-DOTS MENU BLUR DETECTION =====
 class ChromeMenuBlurDetector {
@@ -3910,6 +3961,7 @@ window.addEventListener('load', function() {
   console.log('🔒 Full-Screen Security with Warning System Active');
   console.log('📊 Tab Switching Detection: 3 switches total submit exam');
   console.log('🔔 Tab switch warnings now visible');
+  console.log('✅ Fixed: Code will not get stuck when tab switching or exiting full-screen');
   
   document.getElementById('accessDenied').style.display = 'flex';
   document.getElementById('studentEntry').style.display = 'none';
@@ -3932,6 +3984,7 @@ console.log("✅ Tab switching detection: 3 switches total submit exam");
 console.log("✅ Tab switch warnings now properly display");
 console.log("✅ Both Yes/No buttons work in confirmation modal");
 console.log("✅ Fixed duplicate 'question number 2 out of 75, physics mcq' appearing twice");
+console.log("✅ FIXED: Code will not get stuck when tab switching or exiting full-screen");
 </script>
 </body>
 </html>
