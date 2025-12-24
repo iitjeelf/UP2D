@@ -4028,6 +4028,249 @@ document.addEventListener('keydown', function(e) {
   }
 });
 
+// ===== SYSTEM TRAY & TASKBAR VIOLATION DETECTION =====
+let systemTrayViolations = 0;
+const MAX_SYSTEM_TRAY_VIOLATIONS = 3;
+let lastSystemTrayViolationTime = 0;
+let systemTrayCheckInterval = null;
+
+class SystemTrayViolationDetector {
+    constructor() {
+        this.blurCount = 0;
+        this.maxBlurCount = 2;
+        this.setupTaskbarDetection();
+        console.log('🔒 System Tray & Taskbar Violation System Ready');
+    }
+    
+    setupTaskbarDetection() {
+        // 1. DETECT WINDOWS KEY PRESSES (opens Start Menu/Search)
+        document.addEventListener('keydown', (e) => {
+            if (!examInProgress) return;
+            
+            const currentTime = Date.now();
+            if (currentTime - lastSystemTrayViolationTime < 500) return;
+            
+            // Windows/Command key (Meta key) - Opens Start Menu/Search
+            if (e.key === 'Meta' || e.key === 'Win' || e.keyCode === 91 || e.keyCode === 92) {
+                e.preventDefault();
+                e.stopPropagation();
+                handleSystemTrayViolation('Windows key pressed (opens Start Menu/Search)');
+                return false;
+            }
+            
+            // Windows+S (Windows Search)
+            if ((e.key === 's' || e.key === 'S') && (e.metaKey || e.ctrlKey)) {
+                e.preventDefault();
+                e.stopPropagation();
+                handleSystemTrayViolation('Windows+S pressed (opens Windows Search)');
+                return false;
+            }
+            
+            // Windows+R (Run dialog)
+            if ((e.key === 'r' || e.key === 'R') && e.metaKey) {
+                e.preventDefault();
+                e.stopPropagation();
+                handleSystemTrayViolation('Windows+R pressed (opens Run dialog)');
+                return false;
+            }
+            
+            // Windows+X (Power User menu)
+            if ((e.key === 'x' || e.key === 'X') && e.metaKey) {
+                e.preventDefault();
+                e.stopPropagation();
+                handleSystemTrayViolation('Windows+X pressed (opens Power User menu)');
+                return false;
+            }
+            
+            // Alt+Tab (Task switching)
+            if (e.key === 'Tab' && e.altKey) {
+                e.preventDefault();
+                e.stopPropagation();
+                handleSystemTrayViolation('Alt+Tab pressed (task switching)');
+                return false;
+            }
+            
+            // Windows+Tab (Task View)
+            if (e.key === 'Tab' && e.metaKey) {
+                e.preventDefault();
+                e.stopPropagation();
+                handleSystemTrayViolation('Windows+Tab pressed (Task View)');
+                return false;
+            }
+            
+            // Windows+D (Show desktop)
+            if ((e.key === 'd' || e.key === 'D') && e.metaKey) {
+                e.preventDefault();
+                e.stopPropagation();
+                handleSystemTrayViolation('Windows+D pressed (minimizes all windows)');
+                return false;
+            }
+        }, true);
+        
+        // 2. DETECT FOCUS LOSS TO SYSTEM TRAY
+        document.addEventListener('visibilitychange', () => {
+            if (!examInProgress) return;
+            
+            if (document.hidden) {
+                const currentTime = Date.now();
+                
+                // Check if this is a tab switch or system tray click
+                if (currentTime - lastTabSwitchTime > 2000) {
+                    // This might be a system tray click
+                    handleSystemTrayViolation('Possible system tray/taskbar click detected');
+                }
+            }
+        });
+        
+        // 3. PERIODIC CHECK FOR SYSTEM TRAY ACTIVITY
+        this.startPeriodicChecks();
+    }
+    
+    startPeriodicChecks() {
+        if (systemTrayCheckInterval) clearInterval(systemTrayCheckInterval);
+        
+        systemTrayCheckInterval = setInterval(() => {
+            if (!examInProgress) return;
+            
+            // Check if window lost focus without tab switch
+            if (!document.hasFocus()) {
+                const currentTime = Date.now();
+                if (currentTime - lastTabSwitchTime > 3000) {
+                    // Window lost focus but no recent tab switch - likely system tray
+                    handleSystemTrayViolation('Window focus lost to system tray/taskbar');
+                }
+            }
+        }, 1000);
+    }
+    
+    stopPeriodicChecks() {
+        if (systemTrayCheckInterval) {
+            clearInterval(systemTrayCheckInterval);
+            systemTrayCheckInterval = null;
+        }
+    }
+    
+    resetViolations() {
+        systemTrayViolations = 0;
+        lastSystemTrayViolationTime = 0;
+        console.log('🔄 System tray violations reset');
+    }
+}
+
+// Initialize system tray violation detector
+const systemTrayDetector = new SystemTrayViolationDetector();
+
+function handleSystemTrayViolation(violationType) {
+    if (!examInProgress) return;
+    
+    const currentTime = Date.now();
+    
+    // Prevent counting multiple violations in rapid succession
+    if (currentTime - lastSystemTrayViolationTime < 1000) {
+        console.log(`Ignoring rapid system tray violation: ${violationType}`);
+        return;
+    }
+    
+    lastSystemTrayViolationTime = currentTime;
+    systemTrayViolations++;
+    
+    console.log(`🚨 System Tray Violation #${systemTrayViolations}: ${violationType}`);
+    
+    // Show warning to student
+    showSystemTrayViolationWarning(systemTrayViolations, violationType);
+    
+    // SUBMIT EXAM AFTER 3 VIOLATIONS (Same as tab switches!)
+    if (systemTrayViolations >= MAX_SYSTEM_TRAY_VIOLATIONS) {
+        console.log('🚨 3 system tray violations detected - submitting exam!');
+        
+        // Show final warning
+        showViolationOverlay(`
+            🚨 EXAM VIOLATION DETECTED
+            <br><br>
+            ${violationType}
+            <br><br>
+            <strong>3 system tray violations reached!</strong>
+            <br>
+            Submitting exam in 3 seconds...
+        `, 'red');
+        
+        // Submit exam after delay
+        setTimeout(() => {
+            if (examInProgress) {
+                submitExam();
+            }
+        }, 3000);
+    }
+}
+
+function showSystemTrayViolationWarning(count, violationType) {
+    const messages = [
+        `⚠️ System Tray Access: ${violationType} (1/${MAX_SYSTEM_TRAY_VIOLATIONS})`,
+        `⚠️ System Tray Access: ${violationType} (2/${MAX_SYSTEM_TRAY_VIOLATIONS}) - One more violation will submit exam!`,
+        `🚨 3 system tray violations detected! ${violationType} - Submitting exam...`
+    ];
+    
+    const messageIndex = Math.min(count - 1, 2);
+    const message = messages[messageIndex];
+    
+    // Show toast notification
+    showToast(message, 'error', 5000);
+    
+    // Show big warning overlay for serious violations
+    if (count >= 2) {
+        showViolationOverlay(`
+            ⚠️ SYSTEM TRAY VIOLATION
+            <br><br>
+            ${violationType}
+            <br><br>
+            <strong>Count: ${count}/${MAX_SYSTEM_TRAY_VIOLATIONS}</strong>
+            <br>
+            Accessing system tray, taskbar, or Windows shortcuts is prohibited!
+        `, 'orange');
+    }
+}
+
+function showViolationOverlay(message, color) {
+    const existingOverlay = document.getElementById('violationWarningOverlay');
+    if (existingOverlay) {
+        existingOverlay.remove();
+    }
+    
+    const overlay = document.createElement('div');
+    overlay.id = 'violationWarningOverlay';
+    overlay.style.cssText = `
+        position: fixed;
+        top: 20%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: ${color === 'red' ? 'rgba(255, 0, 0, 0.95)' : 'rgba(255, 165, 0, 0.95)'};
+        color: white;
+        padding: 25px 35px;
+        border-radius: 15px;
+        z-index: 10002;
+        text-align: center;
+        font-weight: bold;
+        font-size: 20px;
+        border: 4px solid white;
+        box-shadow: 0 0 40px ${color === 'red' ? 'red' : 'orange'};
+        animation: pulse 1s infinite;
+        max-width: 80%;
+        min-width: 300px;
+    `;
+    
+    overlay.innerHTML = message;
+    document.body.appendChild(overlay);
+    
+    setTimeout(() => {
+        overlay.style.animation = 'fadeOut 0.5s ease';
+        setTimeout(() => {
+            if (overlay.parentNode) {
+                overlay.parentNode.removeChild(overlay);
+            }
+        }, 500);
+    }, 5000);
+}
+
 // ===== INITIAL SETUP =====
 window.addEventListener('load', function() {
   console.log('LFJC Online Exam System Initialized (75 Questions)');
@@ -4037,6 +4280,7 @@ window.addEventListener('load', function() {
   console.log('• Chemistry: Q51-70 (MCQ), Q71-75 (Numerical Input)');
   console.log('🔒 Full-Screen Security Active');
   console.log('📊 Tab Switching Detection: 3 switches total submit exam');
+  console.log('🔒 System Tray Detection: 3 violations total submit exam');
   console.log('⚡ POWER LOSS PROTECTION: Auto-save every 15 seconds');
   console.log('📤 GOOGLE FORMS SUBMISSION: Enabled');
   
@@ -4064,7 +4308,7 @@ console.log("🎯 LFJC Online Exam System Loaded Successfully");
 console.log("✅ 75 questions with specified structure");
 console.log("✅ Google Forms submission is now ACTIVE");
 console.log("✅ Results will be sent to assigned Google Form");
-console.log("✅ Fixed all missing functions");
+console.log("✅ System Tray/Taskbar violation detection ACTIVE");
 console.log("✅ Auto-save and power loss recovery working");
 </script>
 </body>
