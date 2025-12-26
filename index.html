@@ -33,6 +33,293 @@ body {
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
+  overflow: hidden;
+}
+
+/* ===== STRICT FULL-SCREEN FROM PAGE LOAD ===== */
+#fullScreenRestriction {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #1a1a2e 0%, #162447 100%);
+    z-index: 999999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    color: white;
+    text-align: center;
+    font-family: "SF Pro Display", Arial, sans-serif;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+.full-screen-warning-box {
+    background: linear-gradient(145deg, rgba(75, 0, 130, 0.95), rgba(138, 43, 226, 0.95));
+    padding: 50px;
+    border-radius: 25px;
+    border: 4px solid rgba(255, 215, 0, 0.3);
+    max-width: 800px;
+    width: 90%;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+    animation: pulseBorder 3s infinite;
+    position: relative;
+    overflow: hidden;
+}
+
+.full-screen-warning-box::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000);
+    z-index: -1;
+    border-radius: 27px;
+    animation: gradientBorder 3s linear infinite;
+    background-size: 400%;
+}
+
+.full-screen-warning-box h1 {
+    font-size: 48px;
+    margin-bottom: 25px;
+    color: white;
+    text-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.full-screen-warning-box h2 {
+    font-size: 32px;
+    margin-bottom: 25px;
+    color: #FFD700;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.full-screen-instructions {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 25px;
+    border-radius: 15px;
+    margin: 25px 0;
+    text-align: left;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.full-screen-instructions p {
+    font-size: 20px;
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+
+.full-screen-instructions ol {
+    margin: 0;
+    padding-left: 25px;
+    font-size: 18px;
+}
+
+.full-screen-instructions li {
+    margin-bottom: 12px;
+    padding-left: 10px;
+    line-height: 1.5;
+}
+
+.full-screen-countdown {
+    font-size: 64px;
+    font-weight: bold;
+    margin: 30px 0;
+    color: white;
+    font-family: 'Courier New', monospace;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 25px 50px;
+    border-radius: 20px;
+    display: inline-block;
+    border: 3px solid rgba(255, 215, 0, 0.5);
+    text-shadow: 0 0 20px rgba(255, 215, 0, 0.7);
+    animation: pulseCountdown 1.5s infinite alternate;
+}
+
+.full-screen-btn {
+    padding: 20px 60px;
+    font-size: 22px;
+    background: linear-gradient(145deg, #32CD32, #228B22);
+    color: white;
+    border: none;
+    border-radius: 15px;
+    cursor: pointer;
+    font-weight: bold;
+    margin: 25px 0;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 30px rgba(50, 205, 50, 0.4);
+    position: relative;
+    overflow: hidden;
+}
+
+.full-screen-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: 0.5s;
+}
+
+.full-screen-btn:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(50, 205, 50, 0.6);
+}
+
+.full-screen-btn:hover::before {
+    left: 100%;
+}
+
+.full-screen-btn:active {
+    transform: translateY(2px);
+}
+
+.full-screen-error {
+    color: #FF6B6B;
+    font-weight: bold;
+    margin-top: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 15px;
+    border-radius: 10px;
+    display: none;
+    animation: shakeError 0.5s;
+    border: 2px solid rgba(255, 107, 107, 0.5);
+}
+
+/* Browser compatibility warning */
+.browser-warning {
+    background: rgba(255, 165, 0, 0.9);
+    padding: 20px;
+    border-radius: 15px;
+    margin: 20px 0;
+    color: #856404;
+    border: 3px solid #ffc107;
+    animation: slideIn 0.8s ease;
+}
+
+.browser-warning h3 {
+    margin: 0 0 15px 0;
+    color: #856404;
+    font-size: 22px;
+}
+
+.browser-warning p {
+    margin: 0;
+    font-size: 18px;
+}
+
+/* Exit warning overlay */
+#exitFullScreenWarning {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.98);
+    z-index: 999999;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    backdrop-filter: blur(30px);
+}
+
+.exit-warning-box {
+    background: linear-gradient(145deg, rgba(220, 53, 69, 0.95), rgba(185, 28, 28, 0.95));
+    padding: 50px;
+    border-radius: 25px;
+    text-align: center;
+    max-width: 700px;
+    width: 90%;
+    border: 4px solid rgba(255, 215, 0, 0.3);
+    animation: shakeWarning 0.8s;
+    box-shadow: 0 25px 60px rgba(220, 53, 69, 0.4);
+}
+
+.exit-warning-box h2 {
+    font-size: 42px;
+    margin-bottom: 25px;
+    color: white;
+    text-shadow: 0 3px 15px rgba(0, 0, 0, 0.5);
+}
+
+.exit-warning-box p {
+    font-size: 22px;
+    margin-bottom: 25px;
+    line-height: 1.5;
+}
+
+.exit-countdown {
+    font-size: 72px;
+    font-weight: bold;
+    margin: 30px 0;
+    font-family: 'Courier New', monospace;
+    color: #FFD700;
+    text-shadow: 0 0 25px rgba(255, 215, 0, 0.8);
+    animation: pulseWarning 1s infinite;
+}
+
+.exit-stats {
+    font-size: 24px;
+    margin: 20px 0;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    display: inline-block;
+}
+
+/* Exam area hidden initially */
+#examArea, #studentEntry, #accessDenied, #summaryArea, #reviewArea {
+    display: none !important;
+}
+
+/* Animations */
+@keyframes pulseBorder {
+    0%, 100% { border-color: rgba(255, 215, 0, 0.3); }
+    50% { border-color: rgba(255, 215, 0, 0.7); }
+}
+
+@keyframes gradientBorder {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+@keyframes pulseCountdown {
+    0% { transform: scale(1); text-shadow: 0 0 20px rgba(255, 215, 0, 0.7); }
+    100% { transform: scale(1.05); text-shadow: 0 0 30px rgba(255, 215, 0, 1); }
+}
+
+@keyframes shakeError {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+    20%, 40%, 60%, 80% { transform: translateX(10px); }
+}
+
+@keyframes shakeWarning {
+    0%, 100% { transform: translateX(0) translateY(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-15px) translateY(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(15px) translateY(5px); }
+}
+
+@keyframes pulseWarning {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.8; transform: scale(1.1); }
+}
+
+@keyframes slideIn {
+    from { transform: translateY(-30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
 }
 
 /* Disable right-click context menu */
@@ -329,7 +616,6 @@ button:focus {
 #examArea {
   padding: 16px;
   text-align: center;
-  display: none;
 }
 
 #examHeader {
@@ -526,6 +812,36 @@ table td, table th {
 
 /* ===== RESPONSIVE STYLES ===== */
 @media (max-width: 600px) {
+  .full-screen-warning-box {
+    padding: 25px;
+  }
+  
+  .full-screen-warning-box h1 {
+    font-size: 32px;
+  }
+  
+  .full-screen-warning-box h2 {
+    font-size: 24px;
+  }
+  
+  .full-screen-countdown {
+    font-size: 42px;
+    padding: 20px 30px;
+  }
+  
+  .full-screen-btn {
+    padding: 15px 40px;
+    font-size: 18px;
+  }
+  
+  .exit-warning-box {
+    padding: 30px;
+  }
+  
+  .exit-countdown {
+    font-size: 52px;
+  }
+  
   #accessDeniedBox h1 {
     font-size: 28px;
   }
@@ -681,7 +997,6 @@ table td, table th {
 
 /* ===== AREA STYLES ===== */
 #summaryArea, #reviewArea {
-  display: none;
   padding: 20px;
 }
 
@@ -1105,22 +1420,6 @@ table td, table th {
   to { top: 50px; opacity: 0; }
 }
 
-@keyframes shakeWarning {
-  0%, 100% { transform: translateX(-50%); }
-  10%, 30%, 50%, 70%, 90% { transform: translateX(calc(-50% - 5px)); }
-  20%, 40%, 60%, 80% { transform: translateX(calc(-50% + 5px)); }
-}
-
-@keyframes slideIn {
-  from { transform: translateY(-20px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
-@keyframes slideOut {
-  from { transform: translateY(0); opacity: 1; }
-  to { transform: translateY(-20px); opacity: 0; }
-}
-
 @keyframes fadeInOut {
   0% { opacity: 0; transform: translateY(-10px); }
   20% { opacity: 1; transform: translateY(0); }
@@ -1142,188 +1441,6 @@ table td, table th {
   pointer-events: none;
   display: none;
   transition: opacity 0.3s ease;
-}
-
-/* ===== FULL-SCREEN WARNING OVERLAY STYLES ===== */
-#fullscreen-warning-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.95);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  z-index: 2147483646;
-  display: none;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  color: white;
-  font-family: Arial, sans-serif;
-  text-align: center;
-}
-
-#fullscreen-warning-overlay .warning-content {
-  background: rgba(255, 0, 0, 0.2);
-  padding: 40px;
-  border-radius: 20px;
-  border: 3px solid rgba(255, 0, 0, 0.5);
-  max-width: 500px;
-  width: 90%;
-  backdrop-filter: blur(10px);
-}
-
-#fullscreen-warning-overlay h2 {
-  color: #ff6b6b;
-  font-size: 28px;
-  margin-bottom: 15px;
-}
-
-#fullscreen-warning-overlay p {
-  font-size: 18px;
-  margin-bottom: 25px;
-  line-height: 1.5;
-}
-
-#enter-fullscreen-btn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border: none;
-  padding: 15px 40px;
-  font-size: 18px;
-  border-radius: 25px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: all 0.3s ease;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-}
-
-#enter-fullscreen-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
-}
-
-#enter-fullscreen-btn:active {
-  transform: translateY(0);
-}
-
-@keyframes fadeInOut {
-  0% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
-  20% { opacity: 1; transform: translateX(-50%) translateY(0); }
-  80% { opacity: 1; transform: translateX(-50%) translateY(0); }
-  100% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
-}
-
-#chromeMenuWarning {
-  font-size: 16px;
-  border: 2px solid white;
-}
-
-#chromeMenuWarning small {
-  font-size: 12px;
-  opacity: 0.9;
-}
-
-/* ===== POWER LOSS RECOVERY OVERLAY STYLES ===== */
-#powerLossRecoveryOverlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.95);
-  z-index: 99999;
-  display: none;
-  justify-content: center;
-  align-items: center;
-  color: white;
-  font-family: Arial, sans-serif;
-  text-align: center;
-}
-
-#powerLossRecoveryBox {
-  background: linear-gradient(145deg, #1a1a2e, #162447);
-  padding: 40px;
-  border-radius: 20px;
-  max-width: 600px;
-  width: 90%;
-  border: 3px solid #4B0082;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-}
-
-#powerLossRecoveryBox h2 {
-  color: #4B0082;
-  margin-bottom: 25px;
-  font-size: 28px;
-}
-
-.recovery-details {
-  background: rgba(255, 255, 255, 0.1);
-  padding: 20px;
-  border-radius: 10px;
-  margin: 20px 0;
-  text-align: left;
-}
-
-.recovery-details p {
-  margin: 10px 0;
-  font-size: 16px;
-}
-
-.recovery-progress {
-  margin: 20px 0;
-  padding: 15px;
-  background: rgba(75, 0, 130, 0.2);
-  border-radius: 10px;
-}
-
-.progress-bar {
-  width: 100%;
-  height: 10px;
-  background: #333;
-  border-radius: 5px;
-  margin: 10px 0;
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #4B0082, #8A2BE2);
-  border-radius: 5px;
-  transition: width 0.3s ease;
-}
-
-.recovery-options {
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-  margin-top: 30px;
-}
-
-.recovery-btn {
-  padding: 12px 30px;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-#resumeExamRecoveryBtn {
-  background: linear-gradient(145deg, #32CD32, #228B22);
-  color: white;
-}
-
-#discardExamRecoveryBtn {
-  background: linear-gradient(145deg, #dc3545, #c82333);
-  color: white;
-}
-
-.recovery-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }
 
 /* ===== CONNECTION STATUS STYLES ===== */
@@ -1437,6 +1554,66 @@ table td, table th {
 
 <body>
 
+<!-- ===== FULL-SCREEN RESTRICTION (SHOWS FIRST) ===== -->
+<div id="fullScreenRestriction" style="display: flex;">
+    <div class="full-screen-warning-box">
+        <h1>⚠️ FULL-SCREEN REQUIRED</h1>
+        <h2>LFJC ONLINE EXAMINATION SYSTEM</h2>
+        
+        <div class="full-screen-instructions">
+            <p><strong>This exam requires STRICT full-screen mode:</strong></p>
+            <ol>
+                <li>Full-screen mode is mandatory from start to finish</li>
+                <li>Do NOT exit full-screen during the exam</li>
+                <li>Maximum 2 full-screen exits allowed before auto-submission</li>
+                <li>ESC key, F11 key, and Windows key are disabled</li>
+                <li>Tab switching will submit exam after 3 attempts</li>
+                <li>System tray access is monitored and restricted</li>
+            </ol>
+        </div>
+        
+        <div id="fullScreenCountdown" class="full-screen-countdown">5</div>
+        
+        <button id="enterFullScreenNow" class="full-screen-btn">
+            ENTER FULL-SCREEN NOW
+        </button>
+        
+        <div id="fullScreenError" class="full-screen-error">
+            ⚠️ Full-screen failed. Please allow permissions and refresh the page.
+        </div>
+        
+        <div class="browser-warning" id="browserCompatibility" style="display: none;">
+            <h3>⚠️ Browser Compatibility Warning</h3>
+            <p>Your browser may not fully support strict full-screen restrictions.</p>
+            <p><strong>Recommended:</strong> Google Chrome 80+ or Firefox 75+</p>
+        </div>
+        
+        <div style="margin-top: 25px; font-size: 16px; color: rgba(255, 255, 255, 0.8);">
+            <p><strong>System Requirements:</strong> Chrome 80+, Firefox 75+, Edge 80+</p>
+            <p><strong>Note:</strong> Mobile devices and unsupported browsers will be blocked</p>
+        </div>
+    </div>
+</div>
+
+<!-- ===== EXIT FULL-SCREEN WARNING ===== -->
+<div id="exitFullScreenWarning">
+    <div class="exit-warning-box">
+        <h2>🚨 FULL-SCREEN VIOLATION</h2>
+        <p>You have exited full-screen mode!</p>
+        <div class="exit-countdown" id="exitCountdown">10</div>
+        <p>Return to full-screen within <span id="exitSeconds">10</span> seconds</p>
+        <div class="exit-stats">
+            Remaining exits: <span id="remainingExits">2</span>
+        </div>
+        <button id="returnToFullScreen" class="full-screen-btn">
+            RETURN TO FULL-SCREEN
+        </button>
+        <p style="margin-top: 20px; font-size: 16px; color: rgba(255, 255, 255, 0.8);">
+            Exceeding limits will automatically submit your exam
+        </p>
+    </div>
+</div>
+
 <!-- Power Loss Recovery Overlay -->
 <div id="powerLossRecoveryOverlay">
   <div id="powerLossRecoveryBox">
@@ -1467,7 +1644,7 @@ table td, table th {
   </div>
 </div>
 
-<!-- Access Denied Screen - ALWAYS SHOWS FIRST -->
+<!-- Access Denied Screen -->
 <div id="accessDenied" class="access-denied">
     <h1>LFJC ONLINE EXAMINATION</h1>
     <p style="font-size: 1.2em; margin: 10px 0;">TOTAL 75 QUESTIONS</p>
@@ -1667,6 +1844,449 @@ table td, table th {
 <div id="autoSaveIndicator">Auto-saved ✓</div>
 
 <script>
+// ===== STRICT FULL-SCREEN SYSTEM (LOADS FIRST) =====
+class StrictFullScreenSystem {
+    constructor() {
+        this.isFullScreen = false;
+        this.exitWarningActive = false;
+        this.exitCountdown = 10;
+        this.exitCountdownInterval = null;
+        this.fullScreenExitCount = 0;
+        this.MAX_FULL_SCREEN_EXITS = 2;
+        this.initialCountdownInterval = null;
+        this.pageLoaded = false;
+        this.escKeyPressed = false;
+        this.systemTrayViolations = 0;
+        
+        // Initialize immediately
+        this.initialize();
+    }
+    
+    initialize() {
+        console.log('🔒 Initializing strict full-screen system...');
+        
+        // Hide all other elements
+        this.hideAllElements();
+        
+        // Show full-screen restriction first
+        document.getElementById('fullScreenRestriction').style.display = 'flex';
+        
+        // Start initial countdown
+        this.startInitialCountdown();
+        
+        // Setup event listeners
+        this.setupEventListeners();
+        
+        // Check browser compatibility
+        this.checkBrowserCompatibility();
+        
+        // Setup full-screen listeners
+        this.setupFullScreenListeners();
+        
+        this.pageLoaded = true;
+    }
+    
+    hideAllElements() {
+        // Hide all exam elements
+        const elementsToHide = ['accessDenied', 'studentEntry', 'examArea', 'summaryArea', 'reviewArea'];
+        elementsToHide.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'none';
+        });
+    }
+    
+    startInitialCountdown() {
+        let count = 5;
+        const countdownEl = document.getElementById('fullScreenCountdown');
+        countdownEl.textContent = count;
+        
+        if (this.initialCountdownInterval) {
+            clearInterval(this.initialCountdownInterval);
+        }
+        
+        this.initialCountdownInterval = setInterval(() => {
+            count--;
+            countdownEl.textContent = count;
+            
+            if (count <= 0) {
+                clearInterval(this.initialCountdownInterval);
+                this.enterFullScreenImmediately();
+            }
+        }, 1000);
+    }
+    
+    setupEventListeners() {
+        // Enter full-screen button
+        document.getElementById('enterFullScreenNow').addEventListener('click', () => {
+            this.enterFullScreenImmediately();
+        });
+        
+        // Return to full-screen button
+        document.getElementById('returnToFullScreen').addEventListener('click', () => {
+            this.enterFullScreenImmediately();
+        });
+        
+        // Prevent all keyboard shortcuts
+        document.addEventListener('keydown', (e) => this.handleKeyDown(e), true);
+        
+        // Prevent right-click
+        document.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.showToast('Right-click is disabled', 'warning', 2000);
+            return false;
+        }, true);
+    }
+    
+    checkBrowserCompatibility() {
+        const isChrome = !!window.chrome && (!!window.chrome.webstore || !!window.chrome.runtime);
+        const isFirefox = typeof InstallTrigger !== 'undefined';
+        const isEdge = navigator.userAgent.indexOf("Edg") > -1;
+        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+        
+        if (isSafari) {
+            document.getElementById('browserCompatibility').style.display = 'block';
+            document.getElementById('browserCompatibility').innerHTML = `
+                <h3>⚠️ Safari Browser Detected</h3>
+                <p>Safari has limited full-screen support. Recommended: Chrome or Firefox.</p>
+                <p>You may experience issues with strict full-screen restrictions.</p>
+            `;
+        }
+    }
+    
+    setupFullScreenListeners() {
+        const events = [
+            'fullscreenchange',
+            'webkitfullscreenchange',
+            'mozfullscreenchange',
+            'MSFullscreenChange'
+        ];
+        
+        events.forEach(event => {
+            document.addEventListener(event, () => this.handleFullscreenChange());
+        });
+    }
+    
+    async enterFullScreenImmediately() {
+        try {
+            const elem = document.documentElement;
+            
+            // Clear any existing countdown
+            if (this.initialCountdownInterval) {
+                clearInterval(this.initialCountdownInterval);
+            }
+            
+            // Show loading state
+            document.getElementById('enterFullScreenNow').textContent = 'ENTERING FULL-SCREEN...';
+            document.getElementById('enterFullScreenNow').disabled = true;
+            
+            let success = false;
+            
+            if (elem.requestFullscreen) {
+                await elem.requestFullscreen();
+                success = true;
+            } else if (elem.webkitRequestFullscreen) {
+                await elem.webkitRequestFullscreen();
+                success = true;
+            } else if (elem.mozRequestFullScreen) {
+                await elem.mozRequestFullScreen();
+                success = true;
+            } else if (elem.msRequestFullscreen) {
+                await elem.msRequestFullscreen();
+                success = true;
+            }
+            
+            if (success) {
+                this.onFullScreenEnter();
+            } else {
+                throw new Error('No full-screen method available');
+            }
+            
+        } catch (err) {
+            console.error('❌ Full-screen failed:', err);
+            this.showFullScreenError();
+        }
+    }
+    
+    onFullScreenEnter() {
+        console.log('✅ Entered full-screen successfully');
+        this.isFullScreen = true;
+        
+        // Hide full-screen restriction
+        document.getElementById('fullScreenRestriction').style.display = 'none';
+        
+        // Hide exit warning if visible
+        document.getElementById('exitFullScreenWarning').style.display = 'none';
+        
+        // Show access denied page (password page)
+        document.getElementById('accessDenied').style.display = 'flex';
+        
+        // Focus on access code input
+        setTimeout(() => {
+            document.getElementById('accessCode').focus();
+        }, 500);
+        
+        // Show success toast
+        this.showToast('✅ Full-screen mode enabled', 'success', 3000);
+        
+        // Reset exit count
+        this.fullScreenExitCount = 0;
+        
+        // Clear any exit countdown
+        if (this.exitCountdownInterval) {
+            clearInterval(this.exitCountdownInterval);
+            this.exitCountdownInterval = null;
+        }
+    }
+    
+    handleFullscreenChange() {
+        const isFs = document.fullscreenElement || 
+                     document.webkitFullscreenElement || 
+                     document.mozFullScreenElement || 
+                     document.msFullscreenElement;
+        
+        this.isFullScreen = !!isFs;
+        
+        if (!isFs) {
+            // User exited full-screen
+            this.handleFullScreenExit();
+        } else {
+            // User entered full-screen
+            this.onFullScreenEnter();
+        }
+    }
+    
+    handleFullScreenExit() {
+        this.fullScreenExitCount++;
+        
+        if (this.fullScreenExitCount >= this.MAX_FULL_SCREEN_EXITS) {
+            // Max exits reached - show final warning
+            this.showFinalWarning();
+        } else {
+            // Show exit warning
+            this.showExitWarning();
+        }
+    }
+    
+    showExitWarning() {
+        if (this.exitWarningActive) return;
+        
+        this.exitWarningActive = true;
+        
+        // Calculate remaining exits
+        const remainingExits = this.MAX_FULL_SCREEN_EXITS - this.fullScreenExitCount;
+        document.getElementById('remainingExits').textContent = remainingExits;
+        
+        // Show warning
+        document.getElementById('exitFullScreenWarning').style.display = 'flex';
+        
+        // Start countdown
+        this.startExitCountdown();
+        
+        // Show warning toast
+        this.showToast(`⚠️ Full-screen exit detected. ${remainingExits} attempt${remainingExits > 1 ? 's' : ''} left`, 'warning', 3000);
+    }
+    
+    startExitCountdown() {
+        this.exitCountdown = 10;
+        const countdownEl = document.getElementById('exitCountdown');
+        const secondsEl = document.getElementById('exitSeconds');
+        
+        countdownEl.textContent = this.exitCountdown;
+        secondsEl.textContent = this.exitCountdown;
+        
+        if (this.exitCountdownInterval) {
+            clearInterval(this.exitCountdownInterval);
+        }
+        
+        this.exitCountdownInterval = setInterval(() => {
+            this.exitCountdown--;
+            countdownEl.textContent = this.exitCountdown;
+            secondsEl.textContent = this.exitCountdown;
+            
+            if (this.exitCountdown <= 0) {
+                clearInterval(this.exitCountdownInterval);
+                this.autoReturnToFullScreen();
+            }
+        }, 1000);
+    }
+    
+    autoReturnToFullScreen() {
+        this.enterFullScreenImmediately();
+        this.exitWarningActive = false;
+        document.getElementById('exitFullScreenWarning').style.display = 'none';
+    }
+    
+    showFinalWarning() {
+        document.getElementById('exitFullScreenWarning').style.display = 'flex';
+        document.getElementById('exitFullScreenWarning').innerHTML = `
+            <div class="exit-warning-box">
+                <h2>🚨 MAXIMUM EXITS REACHED</h2>
+                <p>You have exceeded the maximum full-screen exits.</p>
+                <div class="exit-countdown" id="finalCountdown">5</div>
+                <p>Returning to exam entry in <span id="finalSeconds">5</span> seconds</p>
+                <p style="margin-top: 20px; font-size: 16px; color: rgba(255, 255, 255, 0.8);">
+                    You must restart the exam process
+                </p>
+            </div>
+        `;
+        
+        let countdown = 5;
+        const countdownEl = document.getElementById('finalCountdown');
+        const secondsEl = document.getElementById('finalSeconds');
+        
+        const finalInterval = setInterval(() => {
+            countdown--;
+            countdownEl.textContent = countdown;
+            secondsEl.textContent = countdown;
+            
+            if (countdown <= 0) {
+                clearInterval(finalInterval);
+                this.returnToEntryScreen();
+            }
+        }, 1000);
+    }
+    
+    returnToEntryScreen() {
+        // Reset everything
+        this.fullScreenExitCount = 0;
+        this.exitWarningActive = false;
+        
+        // Hide warning
+        document.getElementById('exitFullScreenWarning').style.display = 'none';
+        
+        // Show full-screen restriction again
+        document.getElementById('fullScreenRestriction').style.display = 'flex';
+        
+        // Reset button
+        document.getElementById('enterFullScreenNow').textContent = 'ENTER FULL-SCREEN NOW';
+        document.getElementById('enterFullScreenNow').disabled = false;
+        
+        // Restart countdown
+        this.startInitialCountdown();
+        
+        this.showToast('Please re-enter full-screen to continue', 'info', 3000);
+    }
+    
+    handleKeyDown(e) {
+        // Prevent ESC key
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            if (!this.escKeyPressed) {
+                this.escKeyPressed = true;
+                this.showToast('ESC key is disabled. Do not exit full-screen.', 'warning', 2000);
+                
+                // Count ESC press as exit attempt after delay
+                setTimeout(() => {
+                    if (this.isFullScreen) {
+                        this.fullScreenExitCount++;
+                        this.updateExitDisplay();
+                    }
+                    this.escKeyPressed = false;
+                }, 1000);
+            }
+            return false;
+        }
+        
+        // Prevent F11
+        if (e.key === 'F11') {
+            e.preventDefault();
+            e.stopPropagation();
+            this.showToast('F11 is disabled during exam', 'warning', 2000);
+            return false;
+        }
+        
+        // Prevent PrintScreen
+        if (e.key === 'PrintScreen') {
+            e.preventDefault();
+            e.stopPropagation();
+            this.showToast('Screenshots are disabled', 'warning', 2000);
+            return false;
+        }
+        
+        // Prevent Alt+F4
+        if (e.altKey && e.key === 'F4') {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+        
+        // Prevent Windows key (Meta key)
+        if (e.key === 'Meta' || e.key === 'Win') {
+            e.preventDefault();
+            e.stopPropagation();
+            this.systemTrayViolations++;
+            
+            if (this.systemTrayViolations >= 3) {
+                this.showToast('🚨 System tray access detected!', 'error', 3000);
+            } else {
+                this.showToast('Windows key is disabled', 'warning', 2000);
+            }
+            return false;
+        }
+    }
+    
+    updateExitDisplay() {
+        const remainingExits = this.MAX_FULL_SCREEN_EXITS - this.fullScreenExitCount;
+        
+        if (remainingExits <= 0) {
+            this.showToast('🚨 Maximum exits reached!', 'error', 3000);
+        } else if (this.fullScreenExitCount > 0) {
+            this.showToast(`⚠️ Exit attempt recorded. ${remainingExits} attempt${remainingExits > 1 ? 's' : ''} left`, 'warning', 2000);
+        }
+    }
+    
+    showFullScreenError() {
+        document.getElementById('fullScreenError').style.display = 'block';
+        document.getElementById('enterFullScreenNow').textContent = 'ENTER FULL-SCREEN NOW';
+        document.getElementById('enterFullScreenNow').disabled = false;
+        
+        // Restart countdown
+        this.startInitialCountdown();
+    }
+    
+    showToast(message, type = 'info', duration = 3000) {
+        // Simple toast implementation
+        const toast = document.createElement('div');
+        toast.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 10px;
+            color: white;
+            font-weight: bold;
+            z-index: 999999;
+            background: ${type === 'success' ? '#32CD32' : type === 'warning' ? '#FFA500' : type === 'error' ? '#FF4500' : '#4B0082'};
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            animation: slideIn 0.3s ease;
+        `;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.style.animation = 'slideOut 0.3s ease';
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    document.body.removeChild(toast);
+                }
+            }, 300);
+        }, duration);
+    }
+    
+    // Public method to check if full-screen is active
+    checkFullScreenStatus() {
+        return this.isFullScreen;
+    }
+    
+    // Public method to force full-screen
+    forceFullScreen() {
+        this.enterFullScreenImmediately();
+    }
+}
+
 // ===== CONFIGURATION =====
 const MARK_PER_CORRECT = 4, MARK_PER_WRONG = -1;
 const EXAM_DURATION_MINUTES = 180; // 3 hours for 75 questions
@@ -1748,6 +2368,9 @@ let resumeInProgress = false;
 const subjects = ["Maths", "Physics", "Chemistry"];
 let examData = {files: [], subjectNames: [], keys: [], originalOrder: [], questionTypes: []};
 let progress = null, timerInterval = null;
+
+// Initialize strict full-screen system
+let fullScreenSystem;
 
 // ===== MISSING FUNCTIONS FIX =====
 
@@ -2038,6 +2661,9 @@ function resumeFromPowerLoss(progressData) {
     // Hide recovery overlay
     document.getElementById('powerLossRecoveryOverlay').style.display = 'none';
     
+    // Hide full-screen restriction
+    document.getElementById('fullScreenRestriction').style.display = 'none';
+    
     // Hide access denied screen if visible
     document.getElementById('accessDenied').style.display = 'none';
     
@@ -2107,9 +2733,6 @@ function startExamWithRecovery(progressData) {
     startTimer();
     updateNavButtons();
     
-    // Enable security
-    examSecurity.enable();
-    
     showToast('✅ Exam resumed from saved progress', 'success', 4000);
     
     // Save progress immediately
@@ -2121,9 +2744,8 @@ function discardPowerLossRecovery() {
         clearSavedExam();
         document.getElementById('powerLossRecoveryOverlay').style.display = 'none';
         showToast('🗑️ Saved exam discarded', 'info', 3000);
-        // Show student entry for fresh start
-        document.getElementById('accessDenied').style.display = 'none';
-        document.getElementById('studentEntry').style.display = 'flex';
+        // Show full-screen restriction again
+        document.getElementById('fullScreenRestriction').style.display = 'flex';
     }
 }
 
@@ -2315,216 +2937,6 @@ function showTabSwitchWarning(count) {
         showToast('🚨 3 tab switches detected! Exam will be submitted in 3 seconds.', 'error', 3000);
     }
 }
-
-// ===== SIMPLIFIED FULL-SCREEN SECURITY SYSTEM =====
-class FullScreenSecurity {
-    constructor() {
-        this.isFullScreen = false;
-        this.securityActive = false;
-        this.retryInterval = null;
-        this.maxRetryAttempts = 3;
-        this.retryCount = 0;
-        this.createWarningOverlay();
-    }
-    
-    createWarningOverlay() {
-        this.warningOverlay = document.createElement('div');
-        this.warningOverlay.id = 'fullscreen-warning-overlay';
-        this.warningOverlay.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.95);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            z-index: 2147483646;
-            display: none;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            color: white;
-            font-family: Arial, sans-serif;
-            text-align: center;
-        `;
-        
-        this.warningOverlay.innerHTML = `
-            <div class="warning-content" style="
-                background: rgba(255, 0, 0, 0.2);
-                padding: 40px;
-                border-radius: 20px;
-                border: 3px solid rgba(255, 0, 0, 0.5);
-                max-width: 500px;
-                width: 90%;
-                backdrop-filter: blur(10px);
-            ">
-                <h2 style="color: #ff6b6b; font-size: 28px; margin-bottom: 15px;">
-                    ⚠️ FULL-SCREEN REQUIRED
-                </h2>
-                <p style="font-size: 18px; margin-bottom: 25px; line-height: 1.5;">
-                    You have exited full-screen mode. Please return to full-screen to continue the exam.
-                </p>
-                <button id="enter-fullscreen-btn" style="
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    color: white;
-                    border: none;
-                    padding: 15px 40px;
-                    font-size: 18px;
-                    border-radius: 25px;
-                    cursor: pointer;
-                    font-weight: bold;
-                    transition: all 0.3s ease;
-                    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-                ">
-                    Enter Full-Screen Mode
-                </button>
-                <p style="margin-top: 20px; color: #aaa; font-size: 14px;">
-                    Screen will be un-blurred only after entering full-screen
-                </p>
-            </div>
-        `;
-        
-        document.body.appendChild(this.warningOverlay);
-        
-        document.getElementById('enter-fullscreen-btn').addEventListener('click', () => {
-            this.enterFullScreen();
-        });
-    }
-    
-    async enable() {
-        console.log('🔒 Enabling full-screen security...');
-        this.securityActive = true;
-        this.setupEventListeners();
-        await this.enterFullScreen();
-        console.log('✅ Full-screen security enabled');
-    }
-    
-    async enterFullScreen() {
-        try {
-            const elem = document.documentElement;
-            
-            if (elem.requestFullscreen) {
-                await elem.requestFullscreen();
-            } else if (elem.webkitRequestFullscreen) {
-                await elem.webkitRequestFullscreen();
-            } else if (elem.mozRequestFullScreen) {
-                await elem.mozRequestFullScreen();
-            } else if (elem.msRequestFullscreen) {
-                await elem.msRequestFullscreen();
-            }
-            
-            this.isFullScreen = true;
-            this.retryCount = 0;
-            this.hideWarning();
-            console.log('✅ Entered full-screen mode');
-            
-        } catch (err) {
-            console.error('❌ Failed to enter full-screen:', err);
-            this.showWarning();
-        }
-    }
-    
-    setupEventListeners() {
-        document.addEventListener('fullscreenchange', () => this.handleFullscreenChange());
-        document.addEventListener('webkitfullscreenchange', () => this.handleFullscreenChange());
-        document.addEventListener('mozfullscreenchange', () => this.handleFullscreenChange());
-        document.addEventListener('MSFullscreenChange', () => this.handleFullscreenChange());
-        
-        document.addEventListener('keydown', (e) => this.handleKeyDown(e));
-    }
-    
-    handleFullscreenChange() {
-        const isFs = document.fullscreenElement || 
-                     document.webkitFullscreenElement || 
-                     document.mozFullScreenElement || 
-                     document.msFullscreenElement;
-        
-        this.isFullScreen = !!isFs;
-        
-        if (!isFs && this.securityActive && examInProgress) {
-            this.showWarning();
-        } else if (isFs) {
-            this.hideWarning();
-        }
-    }
-    
-    showWarning() {
-        if (this.warningOverlay) {
-            this.warningOverlay.style.display = 'flex';
-        }
-    }
-    
-    hideWarning() {
-        if (this.warningOverlay) {
-            this.warningOverlay.style.display = 'none';
-        }
-    }
-    
-    handleKeyDown(e) {
-        if (this.securityActive && examInProgress && e.key === 'Escape') {
-            console.log('🔒 Escape key pressed');
-            e.preventDefault();
-            e.stopPropagation();
-        }
-        
-        if (e.key === 'PrintScreen' || (e.ctrlKey && e.key === 'p')) {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-        }
-    }
-    
-    disable() {
-        this.securityActive = false;
-        
-        if (this.retryInterval) {
-            clearInterval(this.retryInterval);
-        }
-        
-        this.hideWarning();
-        
-        if (document.exitFullscreen) {
-            document.exitFullscreen();
-        } else if (document.webkitExitFullscreen) {
-            document.webkitExitFullscreen();
-        } else if (document.mozCancelFullScreen) {
-            document.mozCancelFullScreen();
-        } else if (document.msExitFullscreen) {
-            document.msExitFullscreen();
-        }
-        
-        console.log('🔓 Security system disabled');
-    }
-}
-
-const examSecurity = new FullScreenSecurity();
-
-// ===== TAB SWITCH DETECTION =====
-document.addEventListener('visibilitychange', function() {
-    if (document.hidden && examInProgress) {
-        const currentTime = Date.now();
-        
-        if (currentTime - lastTabSwitchTime < 1000) {
-            return;
-        }
-        
-        lastTabSwitchTime = currentTime;
-        tabSwitchCount++;
-        
-        console.log(`Tab switch detected: ${tabSwitchCount}/3`);
-        showTabSwitchWarning(tabSwitchCount);
-        
-        if (tabSwitchCount >= 3) {
-            console.log('🚨 3 tab switches detected - submitting exam');
-            setTimeout(() => {
-                if (examInProgress) {
-                    submitExam();
-                }
-            }, 3000);
-        }
-    }
-});
 
 // ===== NUMERICAL INPUT HANDLING FUNCTIONS =====
 function handleNumericalInput(inputElement, questionIndex) {
@@ -3127,12 +3539,11 @@ function startWithSecurity(ok) {
   
   const studentKey = `${stuName.value}|${stuSection.value}|${stuRoll.value}|${stuAdm.value}`;
   
-  examSecurity.enable().then(() => {
-    startExam(studentKey);
-  }).catch(err => {
-    console.error('Failed to enable security:', err);
-    alert('⚠️ Please allow full-screen mode to start the exam.');
-  });
+  // Force full-screen again before starting exam
+  fullScreenSystem.forceFullScreen();
+  
+  // Then start exam
+  startExam(studentKey);
 }
 
 function startExam(studentKey) {
@@ -3182,6 +3593,34 @@ function startExam(studentKey) {
     
     sheetReady = true;
     saveExamProgress();
+    
+    // Start tab switch detection
+    document.addEventListener('visibilitychange', handleTabSwitch);
+}
+
+function handleTabSwitch() {
+    if (document.hidden && examInProgress) {
+        const currentTime = Date.now();
+        
+        if (currentTime - lastTabSwitchTime < 1000) {
+            return;
+        }
+        
+        lastTabSwitchTime = currentTime;
+        tabSwitchCount++;
+        
+        console.log(`Tab switch detected: ${tabSwitchCount}/3`);
+        showTabSwitchWarning(tabSwitchCount);
+        
+        if (tabSwitchCount >= 3) {
+            console.log('🚨 3 tab switches detected - submitting exam');
+            setTimeout(() => {
+                if (examInProgress) {
+                    submitExam();
+                }
+            }, 3000);
+        }
+    }
 }
 
 function updateQuestionInfo() {
@@ -3667,7 +4106,8 @@ function submitExam() {
   hasSubmitted = true;
   examInProgress = false;
   
-  examSecurity.disable();
+  // Remove tab switch listener
+  document.removeEventListener('visibilitychange', handleTabSwitch);
   
   const subjData = {};
   examData.subjectNames.forEach((s, i) => {
@@ -4028,274 +4468,24 @@ document.addEventListener('keydown', function(e) {
   }
 });
 
-// ===== SYSTEM TRAY & TASKBAR VIOLATION DETECTION =====
-let systemTrayViolations = 0;
-const MAX_SYSTEM_TRAY_VIOLATIONS = 3;
-let lastSystemTrayViolationTime = 0;
-let systemTrayCheckInterval = null;
-
-class SystemTrayViolationDetector {
-    constructor() {
-        this.blurCount = 0;
-        this.maxBlurCount = 2;
-        this.setupTaskbarDetection();
-        console.log('🔒 System Tray & Taskbar Violation System Ready');
-    }
-    
-    setupTaskbarDetection() {
-        // 1. DETECT WINDOWS KEY PRESSES (opens Start Menu/Search)
-        document.addEventListener('keydown', (e) => {
-            if (!examInProgress) return;
-            
-            const currentTime = Date.now();
-            if (currentTime - lastSystemTrayViolationTime < 500) return;
-            
-            // Windows/Command key (Meta key) - Opens Start Menu/Search
-            if (e.key === 'Meta' || e.key === 'Win' || e.keyCode === 91 || e.keyCode === 92) {
-                e.preventDefault();
-                e.stopPropagation();
-                handleSystemTrayViolation('Windows key pressed (opens Start Menu/Search)');
-                return false;
-            }
-            
-            // Windows+S (Windows Search)
-            if ((e.key === 's' || e.key === 'S') && (e.metaKey || e.ctrlKey)) {
-                e.preventDefault();
-                e.stopPropagation();
-                handleSystemTrayViolation('Windows+S pressed (opens Windows Search)');
-                return false;
-            }
-            
-            // Windows+R (Run dialog)
-            if ((e.key === 'r' || e.key === 'R') && e.metaKey) {
-                e.preventDefault();
-                e.stopPropagation();
-                handleSystemTrayViolation('Windows+R pressed (opens Run dialog)');
-                return false;
-            }
-            
-            // Windows+X (Power User menu)
-            if ((e.key === 'x' || e.key === 'X') && e.metaKey) {
-                e.preventDefault();
-                e.stopPropagation();
-                handleSystemTrayViolation('Windows+X pressed (opens Power User menu)');
-                return false;
-            }
-            
-            // Alt+Tab (Task switching)
-            if (e.key === 'Tab' && e.altKey) {
-                e.preventDefault();
-                e.stopPropagation();
-                handleSystemTrayViolation('Alt+Tab pressed (task switching)');
-                return false;
-            }
-            
-            // Windows+Tab (Task View)
-            if (e.key === 'Tab' && e.metaKey) {
-                e.preventDefault();
-                e.stopPropagation();
-                handleSystemTrayViolation('Windows+Tab pressed (Task View)');
-                return false;
-            }
-            
-            // Windows+D (Show desktop)
-            if ((e.key === 'd' || e.key === 'D') && e.metaKey) {
-                e.preventDefault();
-                e.stopPropagation();
-                handleSystemTrayViolation('Windows+D pressed (minimizes all windows)');
-                return false;
-            }
-        }, true);
-        
-        // 2. DETECT FOCUS LOSS TO SYSTEM TRAY
-        document.addEventListener('visibilitychange', () => {
-            if (!examInProgress) return;
-            
-            if (document.hidden) {
-                const currentTime = Date.now();
-                
-                // Check if this is a tab switch or system tray click
-                if (currentTime - lastTabSwitchTime > 2000) {
-                    // This might be a system tray click
-                    handleSystemTrayViolation('Possible system tray/taskbar click detected');
-                }
-            }
-        });
-        
-        // 3. PERIODIC CHECK FOR SYSTEM TRAY ACTIVITY
-        this.startPeriodicChecks();
-    }
-    
-    startPeriodicChecks() {
-        if (systemTrayCheckInterval) clearInterval(systemTrayCheckInterval);
-        
-        systemTrayCheckInterval = setInterval(() => {
-            if (!examInProgress) return;
-            
-            // Check if window lost focus without tab switch
-            if (!document.hasFocus()) {
-                const currentTime = Date.now();
-                if (currentTime - lastTabSwitchTime > 3000) {
-                    // Window lost focus but no recent tab switch - likely system tray
-                    handleSystemTrayViolation('Window focus lost to system tray/taskbar');
-                }
-            }
-        }, 1000);
-    }
-    
-    stopPeriodicChecks() {
-        if (systemTrayCheckInterval) {
-            clearInterval(systemTrayCheckInterval);
-            systemTrayCheckInterval = null;
-        }
-    }
-    
-    resetViolations() {
-        systemTrayViolations = 0;
-        lastSystemTrayViolationTime = 0;
-        console.log('🔄 System tray violations reset');
-    }
-}
-
-// Initialize system tray violation detector
-const systemTrayDetector = new SystemTrayViolationDetector();
-
-function handleSystemTrayViolation(violationType) {
-    if (!examInProgress) return;
-    
-    const currentTime = Date.now();
-    
-    // Prevent counting multiple violations in rapid succession
-    if (currentTime - lastSystemTrayViolationTime < 1000) {
-        console.log(`Ignoring rapid system tray violation: ${violationType}`);
-        return;
-    }
-    
-    lastSystemTrayViolationTime = currentTime;
-    systemTrayViolations++;
-    
-    console.log(`🚨 System Tray Violation #${systemTrayViolations}: ${violationType}`);
-    
-    // Show warning to student
-    showSystemTrayViolationWarning(systemTrayViolations, violationType);
-    
-    // SUBMIT EXAM AFTER 3 VIOLATIONS (Same as tab switches!)
-    if (systemTrayViolations >= MAX_SYSTEM_TRAY_VIOLATIONS) {
-        console.log('🚨 3 system tray violations detected - submitting exam!');
-        
-        // Show final warning
-        showViolationOverlay(`
-            🚨 EXAM VIOLATION DETECTED
-            <br><br>
-            ${violationType}
-            <br><br>
-            <strong>3 system tray violations reached!</strong>
-            <br>
-            Submitting exam in 3 seconds...
-        `, 'red');
-        
-        // Submit exam after delay
-        setTimeout(() => {
-            if (examInProgress) {
-                submitExam();
-            }
-        }, 3000);
-    }
-}
-
-function showSystemTrayViolationWarning(count, violationType) {
-    const messages = [
-        `⚠️ System Tray Access: ${violationType} (1/${MAX_SYSTEM_TRAY_VIOLATIONS})`,
-        `⚠️ System Tray Access: ${violationType} (2/${MAX_SYSTEM_TRAY_VIOLATIONS}) - One more violation will submit exam!`,
-        `🚨 3 system tray violations detected! ${violationType} - Submitting exam...`
-    ];
-    
-    const messageIndex = Math.min(count - 1, 2);
-    const message = messages[messageIndex];
-    
-    // Show toast notification
-    showToast(message, 'error', 5000);
-    
-    // Show big warning overlay for serious violations
-    if (count >= 2) {
-        showViolationOverlay(`
-            ⚠️ SYSTEM TRAY VIOLATION
-            <br><br>
-            ${violationType}
-            <br><br>
-            <strong>Count: ${count}/${MAX_SYSTEM_TRAY_VIOLATIONS}</strong>
-            <br>
-            Accessing system tray, taskbar, or Windows shortcuts is prohibited!
-        `, 'orange');
-    }
-}
-
-function showViolationOverlay(message, color) {
-    const existingOverlay = document.getElementById('violationWarningOverlay');
-    if (existingOverlay) {
-        existingOverlay.remove();
-    }
-    
-    const overlay = document.createElement('div');
-    overlay.id = 'violationWarningOverlay';
-    overlay.style.cssText = `
-        position: fixed;
-        top: 20%;
-        left: 50%;
-        transform: translateX(-50%);
-        background: ${color === 'red' ? 'rgba(255, 0, 0, 0.95)' : 'rgba(255, 165, 0, 0.95)'};
-        color: white;
-        padding: 25px 35px;
-        border-radius: 15px;
-        z-index: 10002;
-        text-align: center;
-        font-weight: bold;
-        font-size: 20px;
-        border: 4px solid white;
-        box-shadow: 0 0 40px ${color === 'red' ? 'red' : 'orange'};
-        animation: pulse 1s infinite;
-        max-width: 80%;
-        min-width: 300px;
-    `;
-    
-    overlay.innerHTML = message;
-    document.body.appendChild(overlay);
-    
-    setTimeout(() => {
-        overlay.style.animation = 'fadeOut 0.5s ease';
-        setTimeout(() => {
-            if (overlay.parentNode) {
-                overlay.parentNode.removeChild(overlay);
-            }
-        }, 500);
-    }, 5000);
-}
-
 // ===== INITIAL SETUP =====
 window.addEventListener('load', function() {
-  console.log('LFJC Online Exam System Initialized (75 Questions)');
+  console.log('🚀 LFJC Online Exam System Initializing...');
   console.log('📚 Question Structure:');
   console.log('• Maths: Q1-20 (MCQ), Q21-25 (Numerical Input)');
   console.log('• Physics: Q26-45 (MCQ), Q46-50 (Numerical Input)');
   console.log('• Chemistry: Q51-70 (MCQ), Q71-75 (Numerical Input)');
-  console.log('🔒 Full-Screen Security Active');
+  console.log('🔒 STRICT FULL-SCREEN: Enabled from page load');
+  console.log('⚠️ Max 2 full-screen exits allowed');
+  console.log('🚫 ESC, F11, and Windows keys disabled');
   console.log('📊 Tab Switching Detection: 3 switches total submit exam');
-  console.log('🔒 System Tray Detection: 3 violations total submit exam');
   console.log('⚡ POWER LOSS PROTECTION: Auto-save every 15 seconds');
   console.log('📤 GOOGLE FORMS SUBMISSION: Enabled');
   
-  document.getElementById('accessDenied').style.display = 'flex';
-  document.getElementById('studentEntry').style.display = 'none';
-  document.getElementById('examArea').style.display = 'none';
-  document.getElementById('summaryArea').style.display = 'none';
-  document.getElementById('reviewArea').style.display = 'none';
-  document.getElementById('resubmissionSection').style.display = 'none';
-  document.getElementById('googleFormsStatus').style.display = 'none';
-  document.getElementById('resumeExamSection').style.display = 'none';
+  // Initialize strict full-screen system FIRST
+  fullScreenSystem = new StrictFullScreenSystem();
   
-  document.getElementById('accessCode').focus();
-  
-  // Load answer key first
+  // Load answer key
   loadAnswerKeyFromRepo();
   
   // Initialize power loss protection
@@ -4306,10 +4496,10 @@ window.addEventListener('load', function() {
 
 console.log("🎯 LFJC Online Exam System Loaded Successfully");
 console.log("✅ 75 questions with specified structure");
+console.log("✅ STRICT full-screen enforced from first page");
 console.log("✅ Google Forms submission is now ACTIVE");
-console.log("✅ Results will be sent to assigned Google Form");
-console.log("✅ System Tray/Taskbar violation detection ACTIVE");
 console.log("✅ Auto-save and power loss recovery working");
+console.log("✅ System uses multiple layers of security");
 </script>
 </body>
 </html>
