@@ -1713,7 +1713,7 @@ table td, table th {
 
 <script>
 // ===== UNIVERSAL FULL-SCREEN ENFORCEMENT =====
-// THIS IS THE ONLY MODIFICATION - Adds immediate full-screen
+// FIXED: Fullscreen button now works properly
 
 class UniversalFullScreenEnforcer {
     constructor() {
@@ -1735,6 +1735,15 @@ class UniversalFullScreenEnforcer {
         document.addEventListener('MSFullscreenChange', () => this.handleFullscreenChange());
         
         document.addEventListener('keydown', (e) => this.handleKeyDown(e));
+        
+        // FIX: Add click event listener to the fullscreen button
+        document.addEventListener('click', (e) => {
+            if (e.target && e.target.id === 'enter-fullscreen-btn') {
+                e.preventDefault();
+                e.stopPropagation();
+                this.enterFullScreen();
+            }
+        });
     }
     
     async enable() {
@@ -1748,6 +1757,10 @@ class UniversalFullScreenEnforcer {
         try {
             const elem = document.documentElement;
             
+            // Hide warning overlay first
+            this.hideWarning();
+            
+            // Request fullscreen
             if (elem.requestFullscreen) {
                 await elem.requestFullscreen();
             } else if (elem.webkitRequestFullscreen) {
@@ -1790,6 +1803,12 @@ class UniversalFullScreenEnforcer {
         const overlay = document.getElementById('fullscreen-warning-overlay');
         if (overlay) {
             overlay.style.display = 'flex';
+            // Ensure the button is clickable
+            const btn = document.getElementById('enter-fullscreen-btn');
+            if (btn) {
+                btn.style.pointerEvents = 'auto';
+                btn.style.cursor = 'pointer';
+            }
         }
     }
     
@@ -1845,8 +1864,41 @@ class UniversalFullScreenEnforcer {
 // Initialize universal full-screen enforcer
 window.universalEnforcer = new UniversalFullScreenEnforcer();
 
-// ===== ORIGINAL EXAM CODE (NO CHANGES) =====
-// ALL THE ORIGINAL CODE FROM THE EXAM SYSTEM FOLLOWS...
+// ===== STANDALONE FULLSCREEN FUNCTION =====
+// FIX: Add global fullscreen function for direct button click
+function requestFullScreen() {
+    console.log('🖱️ Fullscreen button clicked');
+    
+    const elem = document.documentElement;
+    
+    // Hide warning overlay first
+    const overlay = document.getElementById('fullscreen-warning-overlay');
+    if (overlay) {
+        overlay.style.display = 'none';
+    }
+    
+    // Request fullscreen
+    if (elem.requestFullscreen) {
+        elem.requestFullscreen();
+    } else if (elem.webkitRequestFullscreen) {
+        elem.webkitRequestFullscreen();
+    } else if (elem.mozRequestFullScreen) {
+        elem.mozRequestFullScreen();
+    } else if (elem.msRequestFullscreen) {
+        elem.msRequestfullscreen();
+    }
+    
+    // Update universal enforcer status
+    if (window.universalEnforcer) {
+        window.universalEnforcer.isFullScreen = true;
+        window.universalEnforcer.updateSecurityStatus(true);
+    }
+}
+
+// Make function globally available
+window.requestFullScreen = requestFullScreen;
+
+// ===== ORIGINAL EXAM CODE =====
 // CONFIGURATION
 const MARK_PER_CORRECT = 4, MARK_PER_WRONG = -1;
 const EXAM_DURATION_MINUTES = 180;
@@ -1968,10 +2020,7 @@ const ANSWERS_FIELDS = {
     'J': "entry.1279707071"
 };
 
-// ===== ORIGINAL FUNCTIONS (ALL INCLUDED) =====
-// Note: Only showing key functions due to space constraints
-// ALL ORIGINAL FUNCTIONS ARE PRESERVED
-
+// ===== ORIGINAL FUNCTIONS =====
 function handleSimpleImageError(imgElement, questionIndex) {
     console.error(`Image failed to load: ${imgElement.src}`);
     imgElement.outerHTML = `
@@ -4313,6 +4362,7 @@ console.log("🎯 LFJC Online Exam System Loaded Successfully");
 console.log("✅ 75 questions with specified structure");
 console.log("✅ Google Forms submission is now ACTIVE");
 console.log("✅ Universal full-screen security from page load");
+console.log("✅ FIXED: Fullscreen button now works properly");
 console.log("✅ All original features preserved");
 </script>
 </body>
