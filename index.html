@@ -1208,6 +1208,13 @@ table td, table th {
   transform: translateY(0);
 }
 
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+  20% { opacity: 1; transform: translateX(-50%) translateY(0); }
+  80% { opacity: 1; transform: translateX(-50%) translateY(0); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+}
+
 #chromeMenuWarning {
   font-size: 16px;
   border: 2px solid white;
@@ -1425,50 +1432,10 @@ table td, table th {
     width: 80%;
   }
 }
-
-/* ===== UNIVERSAL SECURITY STATUS ===== */
-#universalSecurityStatus {
-  position: fixed;
-  top: 10px;
-  right: 10px;
-  background: rgba(0, 0, 0, 0.85);
-  color: white;
-  padding: 8px 15px;
-  border-radius: 20px;
-  font-size: 14px;
-  font-weight: 600;
-  z-index: 10000;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-  border-left: 3px solid #32CD32;
-  transition: all 0.3s ease;
-}
-
-#universalSecurityStatus .status-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #32CD32;
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0% { opacity: 1; }
-  50% { opacity: 0.5; }
-  100% { opacity: 1; }
-}
 </style>
 </head>
 
 <body>
-
-<!-- Universal Security Status -->
-<div id="universalSecurityStatus">
-  <div class="status-dot"></div>
-  <span>FULL-SCREEN ACTIVE</span>
-</div>
 
 <!-- Power Loss Recovery Overlay -->
 <div id="powerLossRecoveryOverlay">
@@ -1500,7 +1467,7 @@ table td, table th {
   </div>
 </div>
 
-<!-- Access Denied Screen - SHOWS FIRST -->
+<!-- Access Denied Screen - ALWAYS SHOWS FIRST -->
 <div id="accessDenied" class="access-denied">
     <h1>LFJC ONLINE EXAMINATION</h1>
     <p style="font-size: 1.2em; margin: 10px 0;">TOTAL 75 QUESTIONS</p>
@@ -1515,7 +1482,7 @@ table td, table th {
         2. If you spend more than 2-3 minutes on a question without a clear path to the answer, immediately click Mark for Review and move on<br>
         3. Second Tackle marked/review questions
     </p>
-    <input type="password" id="accessCode" class="access-code-input" placeholder="Enter Access Code" value="lfjc2025">
+    <input type="password" id="accessCode" class="access-code-input" placeholder="Enter Access Code">
     <button id="verifyAccess" class="verify-btn">VERIFY ACCESS</button>
     <div id="accessError" class="access-error">❌ Invalid access code. Please try again.</div>
 </div>
@@ -1696,212 +1663,13 @@ table td, table th {
 <!-- Chrome Menu Blur Overlay -->
 <div id="chromeMenuBlurOverlay"></div>
 
-<!-- Full-Screen Warning Overlay -->
-<div id="fullscreen-warning-overlay">
-  <div class="warning-content">
-    <h2>⚠️ FULL-SCREEN REQUIRED</h2>
-    <p>You have exited full-screen mode. Please return to full-screen to continue the exam.</p>
-    <button id="enter-fullscreen-btn">Enter Full-Screen Mode</button>
-    <p style="margin-top: 20px; color: #aaa; font-size: 14px;">
-      Screen will be un-blurred only after entering full-screen
-    </p>
-  </div>
-</div>
-
 <!-- Connection Status Indicator (will be created by JavaScript) -->
 <div id="autoSaveIndicator">Auto-saved ✓</div>
 
 <script>
-// ===== UNIVERSAL FULL-SCREEN ENFORCEMENT =====
-// FIXED: Fullscreen button now works properly
-
-class UniversalFullScreenEnforcer {
-    constructor() {
-        this.isFullScreen = false;
-        this.securityActive = false;
-        this.createWarningOverlay();
-        this.setupEventListeners();
-        console.log('🔒 Universal Full-Screen Enforcer Initialized');
-    }
-    
-    createWarningOverlay() {
-        // Overlay already exists in HTML
-    }
-    
-    setupEventListeners() {
-        document.addEventListener('fullscreenchange', () => this.handleFullscreenChange());
-        document.addEventListener('webkitfullscreenchange', () => this.handleFullscreenChange());
-        document.addEventListener('mozfullscreenchange', () => this.handleFullscreenChange());
-        document.addEventListener('MSFullscreenChange', () => this.handleFullscreenChange());
-        
-        document.addEventListener('keydown', (e) => this.handleKeyDown(e));
-        
-        // FIX: Add click event listener to the fullscreen button
-        document.addEventListener('click', (e) => {
-            if (e.target && e.target.id === 'enter-fullscreen-btn') {
-                e.preventDefault();
-                e.stopPropagation();
-                this.enterFullScreen();
-            }
-        });
-    }
-    
-    async enable() {
-        console.log('🔒 Enabling universal full-screen security...');
-        this.securityActive = true;
-        await this.enterFullScreen();
-        console.log('✅ Universal full-screen security enabled');
-    }
-    
-    async enterFullScreen() {
-        try {
-            const elem = document.documentElement;
-            
-            // Hide warning overlay first
-            this.hideWarning();
-            
-            // Request fullscreen
-            if (elem.requestFullscreen) {
-                await elem.requestFullscreen();
-            } else if (elem.webkitRequestFullscreen) {
-                await elem.webkitRequestFullscreen();
-            } else if (elem.mozRequestFullScreen) {
-                await elem.mozRequestFullScreen();
-            } else if (elem.msRequestFullscreen) {
-                await elem.msRequestFullscreen();
-            }
-            
-            this.isFullScreen = true;
-            this.updateSecurityStatus(true);
-            this.hideWarning();
-            console.log('✅ Entered full-screen mode');
-            
-        } catch (err) {
-            console.error('❌ Failed to enter full-screen:', err);
-            this.showWarning();
-        }
-    }
-    
-    handleFullscreenChange() {
-        const isFs = document.fullscreenElement || 
-                     document.webkitFullscreenElement || 
-                     document.mozFullScreenElement || 
-                     document.msFullscreenElement;
-        
-        this.isFullScreen = !!isFs;
-        
-        if (!isFs && this.securityActive) {
-            this.showWarning();
-        } else if (isFs) {
-            this.hideWarning();
-        }
-        
-        this.updateSecurityStatus(this.isFullScreen);
-    }
-    
-    showWarning() {
-        const overlay = document.getElementById('fullscreen-warning-overlay');
-        if (overlay) {
-            overlay.style.display = 'flex';
-            // Ensure the button is clickable
-            const btn = document.getElementById('enter-fullscreen-btn');
-            if (btn) {
-                btn.style.pointerEvents = 'auto';
-                btn.style.cursor = 'pointer';
-            }
-        }
-    }
-    
-    hideWarning() {
-        const overlay = document.getElementById('fullscreen-warning-overlay');
-        if (overlay) {
-            overlay.style.display = 'none';
-        }
-    }
-    
-    updateSecurityStatus(isFullScreen) {
-        const statusElement = document.getElementById('universalSecurityStatus');
-        if (!statusElement) return;
-        
-        const statusDot = statusElement.querySelector('.status-dot');
-        const statusText = statusElement.querySelector('span');
-        
-        if (isFullScreen) {
-            statusDot.style.background = '#32CD32';
-            statusText.textContent = 'FULL-SCREEN ACTIVE';
-            statusElement.style.borderLeftColor = '#32CD32';
-        } else {
-            statusDot.style.background = '#FFA500';
-            statusText.textContent = 'NOT IN FULL-SCREEN';
-            statusElement.style.borderLeftColor = '#FFA500';
-        }
-    }
-    
-    handleKeyDown(e) {
-        if (this.securityActive && e.key === 'Escape') {
-            console.log('🔒 Escape key pressed - blocked');
-            e.preventDefault();
-            e.stopPropagation();
-        }
-    }
-    
-    disable() {
-        this.securityActive = false;
-        this.hideWarning();
-        
-        if (document.exitFullscreen) {
-            document.exitFullscreen();
-        } else if (document.webkitExitFullscreen) {
-            document.webkitExitFullscreen();
-        } else if (document.mozCancelFullScreen) {
-            document.mozCancelFullScreen();
-        } else if (document.msExitFullscreen) {
-            document.msExitFullscreen();
-        }
-    }
-}
-
-// Initialize universal full-screen enforcer
-window.universalEnforcer = new UniversalFullScreenEnforcer();
-
-// ===== STANDALONE FULLSCREEN FUNCTION =====
-// FIX: Add global fullscreen function for direct button click
-function requestFullScreen() {
-    console.log('🖱️ Fullscreen button clicked');
-    
-    const elem = document.documentElement;
-    
-    // Hide warning overlay first
-    const overlay = document.getElementById('fullscreen-warning-overlay');
-    if (overlay) {
-        overlay.style.display = 'none';
-    }
-    
-    // Request fullscreen
-    if (elem.requestFullscreen) {
-        elem.requestFullscreen();
-    } else if (elem.webkitRequestFullscreen) {
-        elem.webkitRequestFullscreen();
-    } else if (elem.mozRequestFullScreen) {
-        elem.mozRequestFullScreen();
-    } else if (elem.msRequestFullscreen) {
-        elem.msRequestfullscreen();
-    }
-    
-    // Update universal enforcer status
-    if (window.universalEnforcer) {
-        window.universalEnforcer.isFullScreen = true;
-        window.universalEnforcer.updateSecurityStatus(true);
-    }
-}
-
-// Make function globally available
-window.requestFullScreen = requestFullScreen;
-
-// ===== ORIGINAL EXAM CODE =====
-// CONFIGURATION
+// ===== CONFIGURATION =====
 const MARK_PER_CORRECT = 4, MARK_PER_WRONG = -1;
-const EXAM_DURATION_MINUTES = 180;
+const EXAM_DURATION_MINUTES = 180; // 3 hours for 75 questions
 const EXAM_DURATION_MS = EXAM_DURATION_MINUTES * 60 * 1000;
 const STORAGE_KEY_PREFIX = "lfjc_exam_";
 const MAX_QUESTIONS = 75;
@@ -1911,8 +1679,8 @@ const RESUBMISSION_PASSWORD = "resubmit2025";
 const RESUBMISSION_WINDOW_HOURS = 24;
 
 // POWER LOSS PROTECTION CONFIG
-const AUTO_SAVE_INTERVAL = 15;
-const RECOVERY_WINDOW_HOURS = 4;
+const AUTO_SAVE_INTERVAL = 15; // seconds
+const RECOVERY_WINDOW_HOURS = 4; // Allow recovery within 4 hours
 const STORAGE_KEYS = {
     EXAM_PROGRESS: 'lfjc_exam_progress_v2',
     EXAM_METADATA: 'lfjc_exam_metadata',
@@ -1981,46 +1749,8 @@ const subjects = ["Maths", "Physics", "Chemistry"];
 let examData = {files: [], subjectNames: [], keys: [], originalOrder: [], questionTypes: []};
 let progress = null, timerInterval = null;
 
-// ===== GOOGLE FORMS INTEGRATION =====
-const GOOGLE_FORMS = {
-    'A': "https://docs.google.com/forms/d/e/1FAIpQLSe4uuphhY4-p5jdTZqxG_ZZUKAhQZF1ytyNizPXb0n3L85JIw/formResponse",
-    'B': "https://docs.google.com/forms/d/e/1FAIpQLSc3JIcnUysvUtH12QWpHG9wAF4vd1NgEYqeyHwNP0UEkPqi5w/formResponse", 
-    'C': "https://docs.google.com/forms/d/e/1FAIpQLScqYdTGoD4l0jJvzYw0tdBNRSMPepnGtOOowOXYwDFov43KHg/formResponse",
-    'D': "https://docs.google.com/forms/d/e/1FAIpQLSfjAyDlY-5BAF5rPvzQS0AeTI6Vs2Rkri0V6_miA0mRivZAEg/formResponse",
-    'E': "https://docs.google.com/forms/d/e/1FAIpQLSfK6Skl6Uxj8VyGnhhqfdPHcJ8mbcgpzIKLpWFElzdeQSKMgA/formResponse",
-    'F': "https://docs.google.com/forms/d/e/1FAIpQLSeP-Gx2XnUg_Q17asOOeYzkoGtLykVIcQ2W006YTqTpE7xY6g/formResponse",
-    'G': "https://docs.google.com/forms/d/e/1FAIpQLSe1vg_I5XR3ljr-UNFi-MXxUgjdTDyrVbHxqi_dkvtmYGUTEA/formResponse",
-    'H': "https://docs.google.com/forms/d/e/1FAIpQLScyv8cps4StN2UXrsXqNdLu5UBR7t0Vwk8WSnynU2tvracs1g/formResponse",
-    'I': "https://docs.google.com/forms/d/e/1FAIpQLSeyen2hSdhRwztpWnH6lyuL91ZROqwDMKIaa4gN_e-Xvyvb_g/formResponse",
-    'J': "https://docs.google.com/forms/d/e/1FAIpQLSelbDi1n1EKWu7G0I92hTML6vWUO2c55p2dqrEOQ7cWflaSNg/formResponse"
-};
+// ===== MISSING FUNCTIONS FIX =====
 
-const COMMON_FIELDS = {
-    STUDENT_NAME: "entry.217666919",
-    SECTION: "entry.2006392966", 
-    ROLL_NUMBER: "entry.547275105",
-    ADMISSION_NUMBER: "entry.1234063852",
-    MATHS_MARKS: "entry.1989859216",
-    PHYSICS_MARKS: "entry.1953974928", 
-    CHEMISTRY_MARKS: "entry.296331194",
-    TOTAL_MARKS: "entry.1289040887",
-    TIMESTAMP: "entry.2139100252"
-};
-
-const ANSWERS_FIELDS = {
-    'A': "entry.224183536",
-    'B': "entry.2135062491",
-    'C': "entry.66262823",
-    'D': "entry.762314240",
-    'E': "entry.109746612",
-    'F': "entry.813348755",
-    'G': "entry.1184321804",
-    'H': "entry.64526224",
-    'I': "entry.1618336199",
-    'J': "entry.1279707071"
-};
-
-// ===== ORIGINAL FUNCTIONS =====
 function handleSimpleImageError(imgElement, questionIndex) {
     console.error(`Image failed to load: ${imgElement.src}`);
     imgElement.outerHTML = `
@@ -2045,6 +1775,7 @@ function selectOption(opt) {
     updateOptionButtons();
     updatePalette();
     
+    // Auto-save on answer change
     if (examInProgress) {
         setTimeout(() => saveExamProgress(), 500);
     }
@@ -2060,13 +1791,25 @@ function updateOptionButtons() {
     });
 }
 
+// ===== POWER LOSS PROTECTION SYSTEM =====
 function initPowerLossProtection() {
     console.log('⚡ Initializing Power Loss Protection System');
+    
+    // Create connection status element
     createConnectionStatusElement();
+    
+    // Create auto-save indicator
     createAutoSaveIndicator();
+    
+    // Setup event listeners
     setupPowerLossEventListeners();
+    
+    // Check for recovery on page load
     setTimeout(() => checkForPowerLossRecovery(), 1000);
+    
+    // Start auto-save timer
     startAutoSaveTimer();
+    
     console.log('✅ Power Loss Protection System Ready');
 }
 
@@ -2092,6 +1835,7 @@ function createAutoSaveIndicator() {
 }
 
 function setupPowerLossEventListeners() {
+    // Online/offline detection
     window.addEventListener('online', () => {
         updateConnectionStatus(true);
         showToast('✅ Internet connection restored', 'success', 3000);
@@ -2104,15 +1848,18 @@ function setupPowerLossEventListeners() {
         forceSaveProgress();
     });
     
+    // Beforeunload (browser/tab close)
     window.addEventListener('beforeunload', (e) => {
         if (examInProgress) {
             forceSaveProgress();
+            // Optional: Show warning
             e.preventDefault();
             e.returnValue = 'Your exam progress is being saved. Are you sure you want to leave?';
             return e.returnValue;
         }
     });
     
+    // Visibility change (tab switch/minimize)
     document.addEventListener('visibilitychange', () => {
         if (document.hidden && examInProgress) {
             saveExamProgress();
@@ -2190,6 +1937,7 @@ function saveExamProgress() {
             }
         };
         
+        // MULTIPLE REDUNDANT SAVES
         localStorage.setItem(STORAGE_KEYS.EXAM_PROGRESS, JSON.stringify(saveData));
         localStorage.setItem(STORAGE_KEYS.ANSWERS_BACKUP, JSON.stringify(progress.answers));
         localStorage.setItem(STORAGE_KEYS.EXAM_STATE, JSON.stringify({
@@ -2234,6 +1982,7 @@ function checkForPowerLossRecovery() {
     try {
         const savedProgress = localStorage.getItem(STORAGE_KEYS.EXAM_PROGRESS);
         if (!savedProgress) {
+            // Also check for resume exam in student entry
             checkResumeExam();
             return;
         }
@@ -2286,59 +2035,84 @@ function showPowerLossRecoveryDialog(progressData, lastSaveTime) {
 function resumeFromPowerLoss(progressData) {
     console.log('🔄 Resuming exam from power loss recovery...');
     
+    // Hide recovery overlay
     document.getElementById('powerLossRecoveryOverlay').style.display = 'none';
+    
+    // Hide access denied screen if visible
     document.getElementById('accessDenied').style.display = 'none';
+    
+    // Show student entry screen
     document.getElementById('studentEntry').style.display = 'flex';
     
+    // Auto-fill student information from saved progress
     const student = progressData.progress.student;
     document.getElementById('stuName').value = student.name || '';
     document.getElementById('stuSection').value = student.sec || '';
     document.getElementById('stuRoll').value = student.roll || '';
     document.getElementById('stuAdm').value = student.adm || '';
     
+    // Show form assignment
     updateFormAssignmentDisplay(student);
+    
+    // Hide the resume section (we're already resuming)
     document.getElementById('resumeExamSection').style.display = 'none';
+    
+    // Store recovery data globally
     window.pendingRecoveryData = progressData;
     
+    // Show start button and modify it for resume
     document.getElementById('stuStartBtn').style.display = 'inline-block';
+    
+    // Change start button text
     const startBtn = document.getElementById('stuStartBtn');
     startBtn.textContent = 'Continue Exam';
     
+    // Store original click handler
     const originalClick = startBtn.onclick;
+    
+    // Override click handler for resume
     startBtn.onclick = function() {
         if (validateStudentInputs()) {
             startExamWithRecovery(progressData);
         }
     };
     
+    // Validate to show start button
     validateStudentInputs();
+    
     showToast('✅ Recovery data loaded. Click "Continue Exam" to resume.', 'success', 5000);
 }
 
 function startExamWithRecovery(progressData) {
     console.log('🚀 Starting exam with recovery data...');
     
+    // Use the recovery data
     progress = progressData.progress;
     examData = progressData.examData;
     examStartTime = progressData.metadata.examStartTime;
     assignedForm = progressData.metadata.assignedForm;
     examInProgress = true;
     
+    // Calculate adjusted time based on elapsed time
     const timeElapsed = Math.floor((Date.now() - examStartTime) / 1000);
     progress.timeLeftSec = Math.max(0, EXAM_DURATION_MINUTES * 60 - timeElapsed);
     
+    // Hide student entry and show exam area
     document.getElementById('studentEntry').style.display = 'none';
     document.getElementById('examArea').style.display = 'block';
     
+    // Initialize exam
     renderQuestion();
     renderPalette();
     startTimer();
     updateNavButtons();
     
-    // Enable universal security
-    window.universalEnforcer.enable();
+    // Enable security
+    examSecurity.enable();
     
     showToast('✅ Exam resumed from saved progress', 'success', 4000);
+    
+    // Save progress immediately
     saveExamProgress();
 }
 
@@ -2347,6 +2121,7 @@ function discardPowerLossRecovery() {
         clearSavedExam();
         document.getElementById('powerLossRecoveryOverlay').style.display = 'none';
         showToast('🗑️ Saved exam discarded', 'info', 3000);
+        // Show student entry for fresh start
         document.getElementById('accessDenied').style.display = 'none';
         document.getElementById('studentEntry').style.display = 'flex';
     }
@@ -2362,8 +2137,10 @@ function checkResumeExam() {
         const hoursSinceSave = (Date.now() - lastSaveTime) / (1000 * 60 * 60);
         
         if (hoursSinceSave < RECOVERY_WINDOW_HOURS) {
+            // Show resume section in student entry
             document.getElementById('resumeExamSection').style.display = 'block';
             
+            // Fill resume info
             const student = progressData.progress.student;
             const answeredQuestions = progressData.progress.answers.filter(a => a !== null).length;
             const totalQuestions = progressData.progress.answers.length;
@@ -2376,10 +2153,12 @@ function checkResumeExam() {
             document.getElementById('resumeProgress').textContent = `${answeredQuestions}/${totalQuestions} questions`;
             document.getElementById('resumeTimeLeft').textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
             
+            // Setup resume button
             document.getElementById('resumeExamBtn').onclick = function() {
                 resumeFromPowerLoss(progressData);
             };
             
+            // Setup start new button
             document.getElementById('startNewBtn').onclick = function() {
                 if (confirm('Are you sure you want to start a new exam? The current progress will be lost.')) {
                     clearSavedExam();
@@ -2432,6 +2211,7 @@ function syncPendingSubmissions() {
     }
 }
 
+// ===== TOAST NOTIFICATION FUNCTION =====
 function showToast(message, type = 'info', duration = 3000) {
     const existingToasts = document.querySelectorAll('.toast');
     existingToasts.forEach(toast => {
@@ -2474,6 +2254,7 @@ function showToast(message, type = 'info', duration = 3000) {
     }, duration);
 }
 
+// ===== TAB SWITCH WARNING FUNCTION =====
 function showTabSwitchWarning(count) {
     const existingWarning = document.querySelector('.tab-switch-warning');
     if (existingWarning) {
@@ -2509,7 +2290,7 @@ function showTabSwitchWarning(count) {
         z-index: 10001;
         text-align: center;
         box-shadow: 0 5px 20px rgba(255, 165, 0, 0.3);
-        animation: slideDown 0.5s ease;
+        animation: slideDown 0.5s ease, shakeWarning 0.5s ease;
         font-size: 18px;
         min-width: 350px;
         max-width: 80%;
@@ -2535,7 +2316,7 @@ function showTabSwitchWarning(count) {
     }
 }
 
-// ===== ORIGINAL EXAM SECURITY SYSTEM =====
+// ===== SIMPLIFIED FULL-SCREEN SECURITY SYSTEM =====
 class FullScreenSecurity {
     constructor() {
         this.isFullScreen = false;
@@ -2543,6 +2324,72 @@ class FullScreenSecurity {
         this.retryInterval = null;
         this.maxRetryAttempts = 3;
         this.retryCount = 0;
+        this.createWarningOverlay();
+    }
+    
+    createWarningOverlay() {
+        this.warningOverlay = document.createElement('div');
+        this.warningOverlay.id = 'fullscreen-warning-overlay';
+        this.warningOverlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 2147483646;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        `;
+        
+        this.warningOverlay.innerHTML = `
+            <div class="warning-content" style="
+                background: rgba(255, 0, 0, 0.2);
+                padding: 40px;
+                border-radius: 20px;
+                border: 3px solid rgba(255, 0, 0, 0.5);
+                max-width: 500px;
+                width: 90%;
+                backdrop-filter: blur(10px);
+            ">
+                <h2 style="color: #ff6b6b; font-size: 28px; margin-bottom: 15px;">
+                    ⚠️ FULL-SCREEN REQUIRED
+                </h2>
+                <p style="font-size: 18px; margin-bottom: 25px; line-height: 1.5;">
+                    You have exited full-screen mode. Please return to full-screen to continue the exam.
+                </p>
+                <button id="enter-fullscreen-btn" style="
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    border: none;
+                    padding: 15px 40px;
+                    font-size: 18px;
+                    border-radius: 25px;
+                    cursor: pointer;
+                    font-weight: bold;
+                    transition: all 0.3s ease;
+                    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+                ">
+                    Enter Full-Screen Mode
+                </button>
+                <p style="margin-top: 20px; color: #aaa; font-size: 14px;">
+                    Screen will be un-blurred only after entering full-screen
+                </p>
+            </div>
+        `;
+        
+        document.body.appendChild(this.warningOverlay);
+        
+        document.getElementById('enter-fullscreen-btn').addEventListener('click', () => {
+            this.enterFullScreen();
+        });
     }
     
     async enable() {
@@ -2569,10 +2416,12 @@ class FullScreenSecurity {
             
             this.isFullScreen = true;
             this.retryCount = 0;
+            this.hideWarning();
             console.log('✅ Entered full-screen mode');
             
         } catch (err) {
             console.error('❌ Failed to enter full-screen:', err);
+            this.showWarning();
         }
     }
     
@@ -2594,8 +2443,21 @@ class FullScreenSecurity {
         this.isFullScreen = !!isFs;
         
         if (!isFs && this.securityActive && examInProgress) {
-            // Show universal warning overlay
-            window.universalEnforcer.showWarning();
+            this.showWarning();
+        } else if (isFs) {
+            this.hideWarning();
+        }
+    }
+    
+    showWarning() {
+        if (this.warningOverlay) {
+            this.warningOverlay.style.display = 'flex';
+        }
+    }
+    
+    hideWarning() {
+        if (this.warningOverlay) {
+            this.warningOverlay.style.display = 'none';
         }
     }
     
@@ -2619,6 +2481,8 @@ class FullScreenSecurity {
         if (this.retryInterval) {
             clearInterval(this.retryInterval);
         }
+        
+        this.hideWarning();
         
         if (document.exitFullscreen) {
             document.exitFullscreen();
@@ -2748,6 +2612,44 @@ function submitNumericalAnswer(questionIndex) {
 }
 
 // ===== GOOGLE FORMS INTEGRATION =====
+const GOOGLE_FORMS = {
+    'A': "https://docs.google.com/forms/d/e/1FAIpQLSe4uuphhY4-p5jdTZqxG_ZZUKAhQZF1ytyNizPXb0n3L85JIw/formResponse",
+    'B': "https://docs.google.com/forms/d/e/1FAIpQLSc3JIcnUysvUtH12QWpHG9wAF4vd1NgEYqeyHwNP0UEkPqi5w/formResponse", 
+    'C': "https://docs.google.com/forms/d/e/1FAIpQLScqYdTGoD4l0jJvzYw0tdBNRSMPepnGtOOowOXYwDFov43KHg/formResponse",
+    'D': "https://docs.google.com/forms/d/e/1FAIpQLSfjAyDlY-5BAF5rPvzQS0AeTI6Vs2Rkri0V6_miA0mRivZAEg/formResponse",
+    'E': "https://docs.google.com/forms/d/e/1FAIpQLSfK6Skl6Uxj8VyGnhhqfdPHcJ8mbcgpzIKLpWFElzdeQSKMgA/formResponse",
+    'F': "https://docs.google.com/forms/d/e/1FAIpQLSeP-Gx2XnUg_Q17asOOeYzkoGtLykVIcQ2W006YTqTpE7xY6g/formResponse",
+    'G': "https://docs.google.com/forms/d/e/1FAIpQLSe1vg_I5XR3ljr-UNFi-MXxUgjdTDyrVbHxqi_dkvtmYGUTEA/formResponse",
+    'H': "https://docs.google.com/forms/d/e/1FAIpQLScyv8cps4StN2UXrsXqNdLu5UBR7t0Vwk8WSnynU2tvracs1g/formResponse",
+    'I': "https://docs.google.com/forms/d/e/1FAIpQLSeyen2hSdhRwztpWnH6lyuL91ZROqwDMKIaa4gN_e-Xvyvb_g/formResponse",
+    'J': "https://docs.google.com/forms/d/e/1FAIpQLSelbDi1n1EKWu7G0I92hTML6vWUO2c55p2dqrEOQ7cWflaSNg/formResponse"
+};
+
+const COMMON_FIELDS = {
+    STUDENT_NAME: "entry.217666919",
+    SECTION: "entry.2006392966", 
+    ROLL_NUMBER: "entry.547275105",
+    ADMISSION_NUMBER: "entry.1234063852",
+    MATHS_MARKS: "entry.1989859216",
+    PHYSICS_MARKS: "entry.1953974928", 
+    CHEMISTRY_MARKS: "entry.296331194",
+    TOTAL_MARKS: "entry.1289040887",
+    TIMESTAMP: "entry.2139100252"
+};
+
+const ANSWERS_FIELDS = {
+    'A': "entry.224183536",
+    'B': "entry.2135062491",
+    'C': "entry.66262823",
+    'D': "entry.762314240",
+    'E': "entry.109746612",
+    'F': "entry.813348755",
+    'G': "entry.1184321804",
+    'H': "entry.64526224",
+    'I': "entry.1618336199",
+    'J': "entry.1279707071"
+};
+
 function getFormFields(section) {
     return {
         ...COMMON_FIELDS,
@@ -2808,6 +2710,8 @@ function initializeDemoData() {
 async function loadAnswerKeyFromRepo() {
     try {
         console.log("📥 Loading answer key for 75 questions...");
+        
+        // Try to load from Answers/Key
         const response = await fetch('Answers/Key');
         
         if (!response.ok) {
@@ -2817,6 +2721,7 @@ async function loadAnswerKeyFromRepo() {
         const text = await response.text();
         console.log("✅ Answer key loaded");
         
+        // Simple parsing
         const lines = text.trim().split('\n').filter(line => line.trim() !== '');
         const parsedAnswers = [];
         
@@ -3141,10 +3046,6 @@ function verifyAccessCode() {
         document.getElementById('studentEntry').style.display = 'flex';
         document.getElementById('accessCode').value = '';
         document.getElementById('stuName').focus();
-        
-        // ENABLE UNIVERSAL FULL-SCREEN AFTER ACCESS CODE
-        window.universalEnforcer.enable();
-        
     } else {
         errorElement.style.display = 'block';
         document.getElementById('accessCode').value = '';
@@ -3226,11 +3127,7 @@ function startWithSecurity(ok) {
   
   const studentKey = `${stuName.value}|${stuSection.value}|${stuRoll.value}|${stuAdm.value}`;
   
-  // Enable both security systems
-  Promise.all([
-    examSecurity.enable(),
-    window.universalEnforcer.enable()
-  ]).then(() => {
+  examSecurity.enable().then(() => {
     startExam(studentKey);
   }).catch(err => {
     console.error('Failed to enable security:', err);
@@ -3252,15 +3149,18 @@ function startExam(studentKey) {
     localStorage.setItem(studentKey, Date.now());
     prepareExamData();
     
+    // Check if we have recovery data
     if (window.pendingRecoveryData) {
         progress = window.pendingRecoveryData.progress;
         examData = window.pendingRecoveryData.examData;
         examStartTime = window.pendingRecoveryData.metadata.examStartTime;
         assignedForm = window.pendingRecoveryData.metadata.assignedForm;
         
+        // Calculate adjusted time
         const timeElapsed = Math.floor((Date.now() - examStartTime) / 1000);
         progress.timeLeftSec = Math.max(0, EXAM_DURATION_MINUTES * 60 - timeElapsed);
     } else {
+        // Start fresh exam
         progress = {
             answers: Array(examData.files.length).fill(null),
             review: Array(examData.files.length).fill(false),
@@ -3489,12 +3389,13 @@ function captureAllAnswersData() {
         structure: QUESTION_STRUCTURE
     };
     
+    // Capture all 75 answers in original order
     for (let i = 0; i < examData.files.length; i++) {
         const originalIndex = examData.originalOrder[i];
         const questionType = examData.questionTypes[i];
         const answerRecord = {
-            questionNumber: originalIndex + 1,
-            shuffledPosition: i + 1,
+            questionNumber: originalIndex + 1, // Original Q1-Q75
+            shuffledPosition: i + 1, // Current position in exam
             subject: examData.subjectNames[i],
             questionType: questionType,
             studentAnswer: progress.answers[i] || 'N',
@@ -3506,8 +3407,10 @@ function captureAllAnswersData() {
         answersData.answers.push(answerRecord);
     }
     
+    // Sort by original question number (Q1-Q75)
     answersData.answers.sort((a, b) => a.questionNumber - b.questionNumber);
     
+    // Calculate subject-wise summary
     const subjectSummary = {};
     answersData.answers.forEach(answer => {
         const subject = answer.subject;
@@ -3525,6 +3428,7 @@ function captureAllAnswersData() {
         
         subjectSummary[subject].total++;
         
+        // Track by question type
         if (answer.questionType === 'mcq') {
             subjectSummary[subject].mcq.total++;
             if (answer.isCorrect) subjectSummary[subject].mcq.correct++;
@@ -3559,13 +3463,16 @@ function captureAllAnswersData() {
 function formatAllAnswersString(answers) {
     console.log("🎯 Formatting 75 answers in ORIGINAL sequence...");
     
+    // Create array for original order answers (Q1 to Q75)
     const originalOrderAnswers = new Array(75);
     
+    // Map shuffled answers back to ORIGINAL order Q1-Q75
     examData.originalOrder.forEach((originalIndex, shuffledIndex) => {
         const studentAnswer = answers[shuffledIndex] || 'N';
         originalOrderAnswers[originalIndex] = studentAnswer;
     });
     
+    // Join with commas
     const result = originalOrderAnswers.join(',');
     
     console.log("✅ Answers formatted:");
@@ -3600,33 +3507,43 @@ async function submitToGoogleForms(answersData) {
     }
 
     try {
+        // Get the correct form fields for this section
         const formFields = getFormFields(assignedForm);
+        
+        // Prepare the form data
         const formData = new URLSearchParams();
         
+        // Basic student information
         formData.append(formFields.STUDENT_NAME, answersData.student.name);
         formData.append(formFields.SECTION, answersData.student.sec);
         formData.append(formFields.ROLL_NUMBER, answersData.student.roll);
         formData.append(formFields.ADMISSION_NUMBER, answersData.student.adm);
         
+        // Calculate and add marks
         const marks = calculateSubjectMarks(answersData.summary);
         formData.append(formFields.MATHS_MARKS, marks.maths.toFixed(2));
         formData.append(formFields.PHYSICS_MARKS, marks.physics.toFixed(2));
         formData.append(formFields.CHEMISTRY_MARKS, marks.chemistry.toFixed(2));
         formData.append(formFields.TOTAL_MARKS, marks.total.toFixed(2));
         
+        // Add timestamp
         formData.append(formFields.TIMESTAMP, new Date().toLocaleString());
         
+        // ADD ALL ANSWERS
         const allAnswersString = formatAllAnswersString(progress.answers);
         formData.append(formFields.ALL_ANSWERS, allAnswersString);
         
         console.log("📤 Submitting to Google Forms:");
         console.log("Form:", assignedForm);
         console.log("Student:", answersData.student.name);
+        console.log("Answers String:", allAnswersString.substring(0, 100) + "...");
 
+        // Show pending status
         updateSubmissionStatus('pending', 'Submitting to Google Forms...');
 
+        // Submit to Google Forms with timeout
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000);
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
         
         const response = await fetch(FORM_URL, {
             method: "POST",
@@ -3643,6 +3560,7 @@ async function submitToGoogleForms(answersData) {
         console.log("✅ Google Forms submission completed");
         updateSubmissionStatus('success', '✅ Answers successfully submitted to Google Forms!');
         
+        // Clear local storage after successful submission
         clearSavedExam();
         
         return true;
@@ -3656,6 +3574,7 @@ async function submitToGoogleForms(answersData) {
             updateSubmissionStatus('error', '❌ Failed to submit to Google Forms. Your answers have been saved locally.');
         }
         
+        // Save locally for manual recovery
         saveSubmissionLocally(answersData);
         
         return false;
@@ -3715,6 +3634,7 @@ async function submitToGoogleFormsWithRetry(answersData, maxRetries = 3) {
             }
             
             if (attempt < maxRetries) {
+                // Wait before retry (exponential backoff)
                 const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000);
                 console.log(`⏳ Retrying in ${delay/1000} seconds...`);
                 await new Promise(resolve => setTimeout(resolve, delay));
@@ -3724,6 +3644,7 @@ async function submitToGoogleFormsWithRetry(answersData, maxRetries = 3) {
             console.error(`❌ Submission error (attempt ${attempt}):`, error);
             
             if (attempt === maxRetries) {
+                // Last attempt failed, save locally
                 saveSubmissionLocally(answersData);
                 return { success: false, error: error.message, savedLocally: true };
             }
@@ -3747,7 +3668,6 @@ function submitExam() {
   examInProgress = false;
   
   examSecurity.disable();
-  window.universalEnforcer.disable();
   
   const subjData = {};
   examData.subjectNames.forEach((s, i) => {
@@ -3792,8 +3712,11 @@ function submitExam() {
   console.log("Subject Data:", subjData);
   console.log("Tab switches:", tabSwitchCount);
 
+  // ===== GOOGLE FORMS SUBMISSION =====
+  // Capture all answers data
   const answersData = captureAllAnswersData();
   
+  // Submit to Google Forms with retry logic
   submitToGoogleFormsWithRetry(answersData).then(result => {
     if (result.success) {
       console.log('✅ Google Forms submission successful');
@@ -3807,6 +3730,7 @@ function submitExam() {
     }
   });
 
+  // Show summary immediately
   showSummaryInterface(subjData);
 }
 
@@ -4086,7 +4010,9 @@ document.addEventListener('keydown', function(e) {
     const questionType = examData.questionTypes[idx];
     
     if (questionType === 'fill-blank') {
+      // Allow number keys
       if ((e.key >= '0' && e.key <= '9') || e.key === '.' || e.key === '-') {
+        // Already handled by input field
       }
     } else {
       const keyMap = {'1': 'A', '2': 'B', '3': 'C', '4': 'D'};
@@ -4102,7 +4028,7 @@ document.addEventListener('keydown', function(e) {
   }
 });
 
-// ===== SYSTEM TRAY VIOLATION DETECTION =====
+// ===== SYSTEM TRAY & TASKBAR VIOLATION DETECTION =====
 let systemTrayViolations = 0;
 const MAX_SYSTEM_TRAY_VIOLATIONS = 3;
 let lastSystemTrayViolationTime = 0;
@@ -4117,12 +4043,14 @@ class SystemTrayViolationDetector {
     }
     
     setupTaskbarDetection() {
+        // 1. DETECT WINDOWS KEY PRESSES (opens Start Menu/Search)
         document.addEventListener('keydown', (e) => {
             if (!examInProgress) return;
             
             const currentTime = Date.now();
             if (currentTime - lastSystemTrayViolationTime < 500) return;
             
+            // Windows/Command key (Meta key) - Opens Start Menu/Search
             if (e.key === 'Meta' || e.key === 'Win' || e.keyCode === 91 || e.keyCode === 92) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -4130,6 +4058,7 @@ class SystemTrayViolationDetector {
                 return false;
             }
             
+            // Windows+S (Windows Search)
             if ((e.key === 's' || e.key === 'S') && (e.metaKey || e.ctrlKey)) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -4137,6 +4066,7 @@ class SystemTrayViolationDetector {
                 return false;
             }
             
+            // Windows+R (Run dialog)
             if ((e.key === 'r' || e.key === 'R') && e.metaKey) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -4144,6 +4074,7 @@ class SystemTrayViolationDetector {
                 return false;
             }
             
+            // Windows+X (Power User menu)
             if ((e.key === 'x' || e.key === 'X') && e.metaKey) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -4151,6 +4082,7 @@ class SystemTrayViolationDetector {
                 return false;
             }
             
+            // Alt+Tab (Task switching)
             if (e.key === 'Tab' && e.altKey) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -4158,6 +4090,7 @@ class SystemTrayViolationDetector {
                 return false;
             }
             
+            // Windows+Tab (Task View)
             if (e.key === 'Tab' && e.metaKey) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -4165,6 +4098,7 @@ class SystemTrayViolationDetector {
                 return false;
             }
             
+            // Windows+D (Show desktop)
             if ((e.key === 'd' || e.key === 'D') && e.metaKey) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -4173,17 +4107,22 @@ class SystemTrayViolationDetector {
             }
         }, true);
         
+        // 2. DETECT FOCUS LOSS TO SYSTEM TRAY
         document.addEventListener('visibilitychange', () => {
             if (!examInProgress) return;
             
             if (document.hidden) {
                 const currentTime = Date.now();
+                
+                // Check if this is a tab switch or system tray click
                 if (currentTime - lastTabSwitchTime > 2000) {
+                    // This might be a system tray click
                     handleSystemTrayViolation('Possible system tray/taskbar click detected');
                 }
             }
         });
         
+        // 3. PERIODIC CHECK FOR SYSTEM TRAY ACTIVITY
         this.startPeriodicChecks();
     }
     
@@ -4193,9 +4132,11 @@ class SystemTrayViolationDetector {
         systemTrayCheckInterval = setInterval(() => {
             if (!examInProgress) return;
             
+            // Check if window lost focus without tab switch
             if (!document.hasFocus()) {
                 const currentTime = Date.now();
                 if (currentTime - lastTabSwitchTime > 3000) {
+                    // Window lost focus but no recent tab switch - likely system tray
                     handleSystemTrayViolation('Window focus lost to system tray/taskbar');
                 }
             }
@@ -4216,6 +4157,7 @@ class SystemTrayViolationDetector {
     }
 }
 
+// Initialize system tray violation detector
 const systemTrayDetector = new SystemTrayViolationDetector();
 
 function handleSystemTrayViolation(violationType) {
@@ -4223,6 +4165,7 @@ function handleSystemTrayViolation(violationType) {
     
     const currentTime = Date.now();
     
+    // Prevent counting multiple violations in rapid succession
     if (currentTime - lastSystemTrayViolationTime < 1000) {
         console.log(`Ignoring rapid system tray violation: ${violationType}`);
         return;
@@ -4233,11 +4176,14 @@ function handleSystemTrayViolation(violationType) {
     
     console.log(`🚨 System Tray Violation #${systemTrayViolations}: ${violationType}`);
     
+    // Show warning to student
     showSystemTrayViolationWarning(systemTrayViolations, violationType);
     
+    // SUBMIT EXAM AFTER 3 VIOLATIONS (Same as tab switches!)
     if (systemTrayViolations >= MAX_SYSTEM_TRAY_VIOLATIONS) {
         console.log('🚨 3 system tray violations detected - submitting exam!');
         
+        // Show final warning
         showViolationOverlay(`
             🚨 EXAM VIOLATION DETECTED
             <br><br>
@@ -4248,6 +4194,7 @@ function handleSystemTrayViolation(violationType) {
             Submitting exam in 3 seconds...
         `, 'red');
         
+        // Submit exam after delay
         setTimeout(() => {
             if (examInProgress) {
                 submitExam();
@@ -4266,8 +4213,10 @@ function showSystemTrayViolationWarning(count, violationType) {
     const messageIndex = Math.min(count - 1, 2);
     const message = messages[messageIndex];
     
+    // Show toast notification
     showToast(message, 'error', 5000);
     
+    // Show big warning overlay for serious violations
     if (count >= 2) {
         showViolationOverlay(`
             ⚠️ SYSTEM TRAY VIOLATION
@@ -4329,7 +4278,7 @@ window.addEventListener('load', function() {
   console.log('• Maths: Q1-20 (MCQ), Q21-25 (Numerical Input)');
   console.log('• Physics: Q26-45 (MCQ), Q46-50 (Numerical Input)');
   console.log('• Chemistry: Q51-70 (MCQ), Q71-75 (Numerical Input)');
-  console.log('🔒 Universal Full-Screen Security Active');
+  console.log('🔒 Full-Screen Security Active');
   console.log('📊 Tab Switching Detection: 3 switches total submit exam');
   console.log('🔒 System Tray Detection: 3 violations total submit exam');
   console.log('⚡ POWER LOSS PROTECTION: Auto-save every 15 seconds');
@@ -4353,17 +4302,14 @@ window.addEventListener('load', function() {
   setTimeout(() => {
     initPowerLossProtection();
   }, 1000);
-  
-  // Initialize system tray detection
-  systemTrayDetector;
 });
 
 console.log("🎯 LFJC Online Exam System Loaded Successfully");
 console.log("✅ 75 questions with specified structure");
 console.log("✅ Google Forms submission is now ACTIVE");
-console.log("✅ Universal full-screen security from page load");
-console.log("✅ FIXED: Fullscreen button now works properly");
-console.log("✅ All original features preserved");
+console.log("✅ Results will be sent to assigned Google Form");
+console.log("✅ System Tray/Taskbar violation detection ACTIVE");
+console.log("✅ Auto-save and power loss recovery working");
 </script>
 </body>
 </html>
