@@ -1751,16 +1751,16 @@ const subjects = ["Physics", "Chemistry", "Maths"];
 let examData = {files: [], subjectNames: [], keys: [], originalOrder: [], questionTypes: []};
 let progress = null, timerInterval = null;
 
-// ===== LOAD ANSWER KEY FROM EXTERNAL TEXT FILE =====
+// ===== LOAD ANSWER KEY FROM EXTERNAL TEXT FILE (27-LINE FORMAT) =====
 async function loadAnswerKeyFromTextFile() {
     try {
-        console.log("📥 LOADING ANSWER KEY FROM TEXT FILE...");
+        console.log("📥 LOADING ANSWER KEY FROM TEXT FILE (27-line format)...");
         
         // Try different possible file locations
         const possibleFiles = [
             'key.txt',           // Same folder
             './key.txt',         // Current folder
-            'answers/key.txt',   // Subfolder
+            'questions/key.txt', // Questions folder
             'data/key.txt',      // Data subfolder
             '../key.txt',        // Parent folder
             'KEY.TXT',           // Uppercase
@@ -1793,16 +1793,32 @@ async function loadAnswerKeyFromTextFile() {
         console.log(`✅ Text file loaded from: ${fileUsed}`);
         console.log("📄 File content (first 200 chars):", text.substring(0, 200));
         
-        // Parse your exact format (25 lines for 75 answers)
-        const lines = text.trim().split('\n').filter(line => line.trim() !== '');
+        // Parse the 27-line format for 75 answers
+        const lines = text.trim().split('\n').map(line => line.trim());
         console.log(`📊 Found ${lines.length} lines in text file`);
         
-        if (lines.length !== 25) {
-            throw new Error(`❌ Expected 25 lines for 75 answers, but found ${lines.length} lines. 
-            Your file should have exactly 25 lines (4×5 MCQ + 5 numerical = 25 lines for each subject)`);
+        if (lines.length !== 27) {
+            throw new Error(`❌ Expected 27 lines for 75 answers (9 lines per subject), but found ${lines.length} lines. 
+            
+            YOUR FILE SHOULD HAVE EXACTLY 27 LINES:
+            
+            ===== PHYSICS =====
+            Line 1-4:   Physics MCQ Q1-20 (5 answers per line, 4 lines × 5 = 20 answers)
+            Line 5-9:   Physics Numerical Q21-25 (5 answers, one per line)
+            
+            ===== CHEMISTRY =====
+            Line 10-13: Chemistry MCQ Q26-45 (5 answers per line, 4 lines × 5 = 20 answers)
+            Line 14-18: Chemistry Numerical Q46-50 (5 answers, one per line)
+            
+            ===== MATHS =====
+            Line 19-22: Maths MCQ Q51-70 (5 answers per line, 4 lines × 5 = 20 answers)
+            Line 23-27: Maths Numerical Q71-75 (5 answers, one per line)
+            
+            Example MCQ line: "BAAAB" (5 MCQ answers)
+            Example Numerical line: "12.5" (one numerical answer per line)`);
         }
         
-        // Parse your exact format
+        // Parse your exact 27-line format
         const parsedAnswers = [];
         let lineIndex = 0;
         
@@ -1815,27 +1831,29 @@ async function loadAnswerKeyFromTextFile() {
             console.log(`  Physics MCQ Line ${i+1}: "${line}"`);
             
             if (line.length !== 5) {
-                throw new Error(`❌ Line ${lineIndex}: Expected 5 MCQ answers, found "${line}" (${line.length} characters)`);
+                throw new Error(`❌ Line ${lineIndex}: Expected 5 MCQ answers, found "${line}" (${line.length} characters). Each MCQ line should have exactly 5 answers (A/B/C/D).`);
             }
             
             // Validate and add each character as a separate answer
             const answers = line.split('');
             answers.forEach((ans, idx) => {
-                if (!['A', 'B', 'C', 'D'].includes(ans)) {
-                    throw new Error(`❌ Invalid MCQ answer "${ans}" at Physics Q${(i*5)+idx+1}`);
+                const cleanAns = ans.toUpperCase().trim();
+                if (!['A', 'B', 'C', 'D'].includes(cleanAns)) {
+                    throw new Error(`❌ Invalid MCQ answer "${ans}" at Physics Q${(i*5)+idx+1}. Must be A, B, C, or D.`);
                 }
-                parsedAnswers.push(ans);
+                parsedAnswers.push(cleanAns);
             });
         }
         
-        // Physics Numerical Q21-25 (5 answers)
+        // Physics Numerical Q21-25 (5 answers, one per line)
         console.log("🔢 Physics Numerical answers:");
         for (let i = 0; i < 5; i++) {
             const answer = lines[lineIndex++];
             console.log(`  Q${21+i}: "${answer}"`);
             
+            // Allow integer or decimal numbers, with optional negative sign
             if (!/^-?\d+(\.\d+)?$/.test(answer)) {
-                throw new Error(`❌ Invalid numerical answer "${answer}" at Physics Q${21+i}`);
+                throw new Error(`❌ Invalid numerical answer "${answer}" at Physics Q${21+i}. Must be a number (e.g., "12", "3.14", "-5").`);
             }
             parsedAnswers.push(answer);
         }
@@ -1854,21 +1872,22 @@ async function loadAnswerKeyFromTextFile() {
             
             const answers = line.split('');
             answers.forEach((ans, idx) => {
-                if (!['A', 'B', 'C', 'D'].includes(ans)) {
-                    throw new Error(`❌ Invalid MCQ answer "${ans}" at Chemistry Q${26+(i*5)+idx}`);
+                const cleanAns = ans.toUpperCase().trim();
+                if (!['A', 'B', 'C', 'D'].includes(cleanAns)) {
+                    throw new Error(`❌ Invalid MCQ answer "${ans}" at Chemistry Q${26+(i*5)+idx}. Must be A, B, C, or D.`);
                 }
-                parsedAnswers.push(ans);
+                parsedAnswers.push(cleanAns);
             });
         }
         
-        // Chemistry Numerical Q46-50 (5 answers)
+        // Chemistry Numerical Q46-50 (5 answers, one per line)
         console.log("🔢 Chemistry Numerical answers:");
         for (let i = 0; i < 5; i++) {
             const answer = lines[lineIndex++];
             console.log(`  Q${46+i}: "${answer}"`);
             
             if (!/^-?\d+(\.\d+)?$/.test(answer)) {
-                throw new Error(`❌ Invalid numerical answer "${answer}" at Chemistry Q${46+i}`);
+                throw new Error(`❌ Invalid numerical answer "${answer}" at Chemistry Q${46+i}. Must be a number.`);
             }
             parsedAnswers.push(answer);
         }
@@ -1887,34 +1906,41 @@ async function loadAnswerKeyFromTextFile() {
             
             const answers = line.split('');
             answers.forEach((ans, idx) => {
-                if (!['A', 'B', 'C', 'D'].includes(ans)) {
-                    throw new Error(`❌ Invalid MCQ answer "${ans}" at Maths Q${51+(i*5)+idx}`);
+                const cleanAns = ans.toUpperCase().trim();
+                if (!['A', 'B', 'C', 'D'].includes(cleanAns)) {
+                    throw new Error(`❌ Invalid MCQ answer "${ans}" at Maths Q${51+(i*5)+idx}. Must be A, B, C, or D.`);
                 }
-                parsedAnswers.push(ans);
+                parsedAnswers.push(cleanAns);
             });
         }
         
-        // Maths Numerical Q71-75 (5 answers)
+        // Maths Numerical Q71-75 (5 answers, one per line)
         console.log("🔢 Maths Numerical answers:");
         for (let i = 0; i < 5; i++) {
             const answer = lines[lineIndex++];
             console.log(`  Q${71+i}: "${answer}"`);
             
             if (!/^-?\d+(\.\d+)?$/.test(answer)) {
-                throw new Error(`❌ Invalid numerical answer "${answer}" at Maths Q${71+i}`);
+                throw new Error(`❌ Invalid numerical answer "${answer}" at Maths Q${71+i}. Must be a number.`);
             }
             parsedAnswers.push(answer);
         }
         
         // Verify we have exactly 75 answers
         if (parsedAnswers.length !== 75) {
-            throw new Error(`❌ Expected 75 answers, got ${parsedAnswers.length}`);
+            throw new Error(`❌ Expected 75 answers, got ${parsedAnswers.length}. Please check your key.txt format.`);
         }
         
         console.log("✅ ANSWER KEY LOADED SUCCESSFULLY FROM TEXT FILE!");
         console.log("📊 Total answers:", parsedAnswers.length);
         console.log("📋 First 10 answers:", parsedAnswers.slice(0, 10));
+        console.log("📋 Middle 10 answers:", parsedAnswers.slice(30, 40));
         console.log("📋 Last 10 answers:", parsedAnswers.slice(65, 75));
+        
+        // Summary of answers by type
+        const mcqCount = parsedAnswers.filter(ans => ['A','B','C','D'].includes(ans)).length;
+        const numericalCount = parsedAnswers.filter(ans => /^-?\d+(\.\d+)?$/.test(ans)).length;
+        console.log(`📈 Answer type summary: ${mcqCount} MCQ, ${numericalCount} Numerical`);
         
         // Save to global variables
         answerKey = parsedAnswers;
@@ -1926,7 +1952,7 @@ async function loadAnswerKeyFromTextFile() {
             images.push(`questions/${i}.png`);
         }
         
-        showToast('✅ Answer key loaded successfully from key.txt!', 'success', 3000);
+        showToast('✅ Answer key loaded successfully from key.txt! (27-line format)', 'success', 3000);
         
         clearErrors();
         validateStudentInputs();
@@ -1935,16 +1961,28 @@ async function loadAnswerKeyFromTextFile() {
     } catch (error) {
         console.error("❌ ERROR LOADING ANSWER KEY FROM TEXT FILE:", error);
         
-        // Show clear error message
+        // Show clear error message with format details
         showError(`
-            <div style="color: red; padding: 15px; border: 2px solid red; border-radius: 5px;">
+            <div style="color: red; padding: 15px; border: 2px solid red; border-radius: 5px; text-align: left;">
                 <strong>❌ ANSWER KEY FILE ERROR</strong><br><br>
                 ${error.message}<br><br>
-                <small>Please ensure you have a file named 'key.txt' in the same folder with this format:<br>
-                1. 25 lines total<br>
-                2. First 4 lines: 5 MCQ answers each (like "BAAAB")<br>
-                3. Next 5 lines: Numerical answers<br>
-                4. Repeat for Chemistry and Maths</small>
+                <strong>📋 REQUIRED FORMAT (27 lines total):</strong><br>
+                <div style="margin-left: 20px; font-size: 14px;">
+                    <strong>Physics (Lines 1-9):</strong><br>
+                    • Line 1-4: 5 MCQ answers each (e.g., "BAAAB") for Q1-20<br>
+                    • Line 5-9: 5 numerical answers (one per line) for Q21-25<br><br>
+                    
+                    <strong>Chemistry (Lines 10-18):</strong><br>
+                    • Line 10-13: 5 MCQ answers each for Q26-45<br>
+                    • Line 14-18: 5 numerical answers for Q46-50<br><br>
+                    
+                    <strong>Maths (Lines 19-27):</strong><br>
+                    • Line 19-22: 5 MCQ answers each for Q51-70<br>
+                    • Line 23-27: 5 numerical answers for Q71-75<br>
+                </div>
+                <br>
+                <small>Example first line: "BAAAB" (Physics Q1-5 answers: B, A, A, A, B)<br>
+                Example numerical line: "12.5" (one answer per line)</small>
             </div>
         `);
         
@@ -1962,6 +2000,7 @@ function handleSimpleImageError(imgElement, questionIndex) {
         <div style="padding: 20px; text-align: center; color: red; border: 2px solid red; border-radius: 8px;">
             <h3>⚠️ Image Not Available</h3>
             <p>Question image could not be loaded. Please continue with the question.</p>
+            <p><small>Question ${questionIndex + 1} - ${examData.subjectNames[questionIndex]}</small></p>
         </div>
     `;
 }
@@ -2628,8 +2667,8 @@ class FullScreenSecurity {
             console.error('❌ Failed to enter full-screen:', err);
             this.showWarning();
         }
-}
-
+    }
+    
     setupEventListeners() {
         document.addEventListener('fullscreenchange', () => this.handleFullscreenChange());
         document.addEventListener('webkitfullscreenchange', () => this.handleFullscreenChange());
@@ -2950,6 +2989,9 @@ function prepareExamData() {
   console.log("- Physics:", examData.subjectNames.filter(s => s === "Physics").length);
   console.log("- Chemistry:", examData.subjectNames.filter(s => s === "Chemistry").length);
   console.log("- Maths:", examData.subjectNames.filter(s => s === "Maths").length);
+  
+  // Verify answer key matches
+  console.log("✅ Exam data prepared successfully with 27-line answer key format");
 }
 
 // ===== RENDER QUESTION =====
@@ -3604,6 +3646,7 @@ function formatAllAnswersString(answers) {
     console.log("✅ Answers formatted:");
     console.log("Total answers: 75");
     console.log("Answered:", answers.filter(a => a !== null).length);
+    console.log("First 10 answers in original order:", originalOrderAnswers.slice(0, 10));
     
     return result;
 }
@@ -4409,7 +4452,7 @@ window.addEventListener('load', function() {
   console.log('🔒 System Tray Detection: 3 violations total submit exam');
   console.log('⚡ POWER LOSS PROTECTION: Auto-save every 15 seconds');
   console.log('📤 GOOGLE FORMS SUBMISSION: Enabled');
-  console.log('📁 Loading answer key from external text file...');
+  console.log('📁 Loading answer key from external text file (27-line format)...');
   
   document.getElementById('accessDenied').style.display = 'flex';
   document.getElementById('studentEntry').style.display = 'none';
@@ -4422,14 +4465,14 @@ window.addEventListener('load', function() {
   
   document.getElementById('accessCode').focus();
   
-  // Load answer key from external text file
+  // Load answer key from external text file (27-line format)
   loadAnswerKeyFromTextFile().then(success => {
     if (success) {
-      console.log("✅ Answer key loaded successfully from external file!");
+      console.log("✅ Answer key loaded successfully from external file (27-line format)!");
       showToast('✅ Answer key loaded from key.txt! System ready.', 'success', 3000);
     } else {
       console.error("❌ Failed to load answer key from external file");
-      showToast('❌ Failed to load answer key. Check key.txt file.', 'error', 5000);
+      showToast('❌ Failed to load answer key. Check key.txt file format.', 'error', 5000);
     }
   });
   
@@ -4440,9 +4483,9 @@ window.addEventListener('load', function() {
 });
 
 console.log("🎯 LFJC Online Exam System Loaded Successfully");
-console.log("✅ Loading answer key from external key.txt file");
-console.log("✅ System will read your exact 75 answers from the text file");
-console.log("✅ No demo data fallback - file or error only");
+console.log("✅ Loading answer key from external key.txt file (27-line format)");
+console.log("✅ System expects exactly 27 lines in key.txt");
+console.log("✅ Format: 9 lines per subject (4 MCQ lines + 5 Numerical lines)");
 </script>
 </body>
 </html>
