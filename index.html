@@ -1907,7 +1907,7 @@ async function loadAnswerKeyFromTextFile() {
         answerKey = parsedAnswers;
         keyLoaded = true;
         
-        // Initialize images
+        // Initialize images - EXACTLY FROM SECOND CODE
         images = [];
         for (let i = 1; i <= 75; i++) {
             images.push(`questions/${i}.png`);
@@ -3055,6 +3055,7 @@ function renderQuestion() {
     `;
   }
   
+  // COMPLETE IMAGE DISPLAY LOGIC FROM SECOND CODE
   container.innerHTML = `
     <div class="question-transition question-fade-in">
       <div class="question-number">Question ${questionNumber} of 75</div>
@@ -3070,7 +3071,8 @@ function renderQuestion() {
       </div>
       
       ${optionsHTML}
-    `;
+    </div>
+  `;
   
   if (questionType !== 'fill-blank') {
     document.querySelectorAll('.optBtn').forEach(btn => {
