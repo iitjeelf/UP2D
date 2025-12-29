@@ -1907,11 +1907,21 @@ async function loadAnswerKeyFromTextFile() {
         answerKey = parsedAnswers;
         keyLoaded = true;
         
-        // Initialize images - EXACTLY FROM SECOND CODE
+        // Initialize images - FIXED PATH
         images = [];
         for (let i = 1; i <= 75; i++) {
-            images.push(`questions/${i}.png`);
+            // Try multiple possible paths
+            const possiblePaths = [
+                `questions/${i}.png`,
+                `./questions/${i}.png`,
+                `/questions/${i}.png`,
+                `questions/${i}.jpg`,
+                `./questions/${i}.jpg`
+            ];
+            images.push(`questions/${i}.png`); // Default path
         }
+        
+        console.log(`✅ Images initialized: ${images.length} image paths`);
         
         showToast('✅ Answer key loaded successfully from key.txt!', 'success', 3000);
         clearErrors();
@@ -1954,6 +1964,265 @@ async function loadAnswerKeyFromTextFile() {
         
         return false;
     }
+}
+
+// ===== FIXED: PREPARE EXAM DATA FUNCTION =====
+function prepareExamData() {
+  console.log("🖼️ Preparing exam data with image paths...");
+  
+  examData.files = []; 
+  examData.subjectNames = []; 
+  examData.keys = []; 
+  examData.originalOrder = []; 
+  examData.questionTypes = [];
+  
+  const subjectRanges = [
+    { name: "Physics", start: 1, end: 25 },
+    { name: "Chemistry", start: 26, end: 50 },
+    { name: "Maths", start: 51, end: 75 }
+  ];
+  
+  let groups = [];
+  
+  subjectRanges.forEach(subject => {
+    const subjectQuestions = [];
+    const subjectKeys = [];
+    const subjectOriginalOrder = [];
+    const subjectTypes = [];
+    
+    for (let i = subject.start; i <= subject.end; i++) {
+      const imgIndex = i - 1;
+      if (imgIndex < images.length && answerKey[imgIndex]) {
+        // Use the image path from our initialized images array
+        subjectQuestions.push(images[imgIndex]);
+        subjectKeys.push(answerKey[imgIndex]);
+        subjectOriginalOrder.push(imgIndex);
+        
+        let questionType = 'mcq';
+        if ((subject.name === "Physics" && i >= 21 && i <= 25) ||
+            (subject.name === "Chemistry" && i >= 46 && i <= 50) ||
+            (subject.name === "Maths" && i >= 71 && i <= 75)) {
+          questionType = 'fill-blank';
+        }
+        subjectTypes.push(questionType);
+      } else {
+        console.warn(`⚠️ Missing data for question ${i} (${subject.name})`);
+      }
+    }
+    
+    // Only shuffle if we have questions
+    if (subjectQuestions.length > 0) {
+      const shuffledIndices = shuffleArray([...Array(subjectQuestions.length).keys()]);
+      
+      groups.push({
+        name: subject.name,
+        imgs: shuffledIndices.map(i => subjectQuestions[i]),
+        keys: shuffledIndices.map(i => subjectKeys[i]),
+        originalOrder: shuffledIndices.map(i => subjectOriginalOrder[i]),
+        types: shuffledIndices.map(i => subjectTypes[i])
+      });
+    }
+  });
+  
+  // Shuffle groups
+  const shuffledGroups = shuffleArray(groups);
+  
+  // Combine all groups
+  shuffledGroups.forEach(g => {
+    g.imgs.forEach((img, i) => {
+      examData.files.push(img);
+      examData.keys.push(g.keys[i]);
+      examData.subjectNames.push(g.name);
+      examData.originalOrder.push(g.originalOrder[i]);
+      examData.questionTypes.push(g.types[i]);
+    });
+  });
+  
+  console.log("🎯 EXAM DATA VERIFICATION:");
+  console.log("Total Questions:", examData.files.length);
+  console.log("Subject distribution:");
+  console.log("- Physics:", examData.subjectNames.filter(s => s === "Physics").length);
+  console.log("- Chemistry:", examData.subjectNames.filter(s => s === "Chemistry").length);
+  console.log("- Maths:", examData.subjectNames.filter(s => s === "Maths").length);
+  console.log("First 5 image paths:", examData.files.slice(0, 5));
+  
+  return true;
+}
+
+// ===== FIXED: RENDER QUESTION FUNCTION =====
+function renderQuestion() {
+  const idx = progress.currentIndex;
+  const container = document.getElementById('questionContainer');
+  
+  if (idx >= examData.files.length) {
+    console.error(`❌ Invalid question index: ${idx}`);
+    return;
+  }
+  
+  const imagePath = examData.files[idx];
+  const questionNumber = idx + 1;
+  const questionType = examData.questionTypes[idx];
+  const subject = examData.subjectNames[idx];
+  
+  console.log(`🖼️ Loading: ${imagePath} (Q${questionNumber}/75) - ${subject} - ${questionType}`);
+  
+  let optionsHTML = '';
+  
+  if (questionType === 'fill-blank') {
+    optionsHTML = `
+      <div class="fill-blank-container">
+        <div style="margin: 20px 0; font-weight: bold; color: #4B0082; font-size: 18px;">
+          Enter numerical answer:
+        </div>
+        <div style="display: flex; justify-content: center; align-items: center; gap: 15px; margin: 25px 0;">
+          <input type="number" 
+                 id="fillBlankInput" 
+                 class="fill-blank-input"
+                 placeholder="Enter number"
+                 value="${progress.answers[idx] || ''}"
+                 min="0"
+                 step="any"
+                 style="
+                   padding: 12px 18px;
+                   font-size: 22px;
+                   border: 2px solid #4B0082;
+                   border-radius: 8px;
+                   width: 200px;
+                   text-align: center;
+                   outline: none;
+                   font-weight: bold;
+                 "
+                 oninput="handleNumericalInput(this, ${idx})"
+                 onkeypress="handleNumericalKeyPress(event, ${idx})"
+                 tabindex="0">
+          <button class="submit-fill-blank-btn" 
+                  onclick="submitNumericalAnswer(${idx})"
+                  tabindex="0"
+                  style="
+                    padding: 12px 24px;
+                    background: linear-gradient(145deg, #32CD32, #228B22);
+                    color: white;
+                    border: none;
+                    border-radius: 8px;
+                    font-size: 16px;
+                    font-weight: bold;
+                    cursor: pointer;
+                  ">
+            Submit
+          </button>
+        </div>
+        
+        <!-- Numerical Keypad -->
+        <div class="numerical-keypad">
+          <div class="keypad-grid">
+            ${[1,2,3,4,5,6,7,8,9].map(num => `
+              <button class="num-key-btn" 
+                      onclick="handleKeypadButton('${num}', ${idx})"
+                      tabindex="0">
+                ${num}
+              </button>
+            `).join('')}
+            <button class="num-key-btn special-btn" 
+                    onclick="handleKeypadButton('0', ${idx})"
+                    tabindex="0">
+              0
+            </button>
+            <button class="num-key-btn special-btn clear-btn" 
+                    onclick="handleKeypadButton('C', ${idx})"
+                    tabindex="0">
+              C
+            </button>
+            <button class="num-key-btn special-btn submit-num-btn" 
+                    onclick="handleKeypadButton('✓', ${idx})"
+                    tabindex="0">
+              ✓
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  } else {
+    optionsHTML = `
+      <div class="options-container">
+        <button class="optBtn ${progress.answers[idx] === 'A' ? 'selected' : ''}" data-opt="A" tabindex="0">A</button>
+        <button class="optBtn ${progress.answers[idx] === 'B' ? 'selected' : ''}" data-opt="B" tabindex="0">B</button>
+        <button class="optBtn ${progress.answers[idx] === 'C' ? 'selected' : ''}" data-opt="C" tabindex="0">C</button>
+        <button class="optBtn ${progress.answers[idx] === 'D' ? 'selected' : ''}" data-opt="D" tabindex="0">D</button>
+      </div>
+    `;
+  }
+  
+  // FIXED: Image display with better error handling
+  container.innerHTML = `
+    <div class="question-transition question-fade-in">
+      <div class="question-number">Question ${questionNumber} of 75</div>
+      <div class="sectionTitle">${subject} ${questionType === 'fill-blank' ? '(Numerical Input)' : '(MCQ)'}</div>
+      
+      <div id="imageContainer" style="width: 100%; overflow: auto; min-height: 300px; display: flex; justify-content: center; align-items: center; margin: 20px 0;">
+        <img src="${imagePath}" 
+             class="questionImg" 
+             alt="Question ${questionNumber} - ${subject}"
+             style="max-width: 100%; max-height: 500px; height: auto; border: 2px solid #E6E6FA; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"
+             onload="console.log('✅ Image loaded successfully: ${imagePath}')"
+             onerror="handleImageError(this, ${idx}, '${imagePath}')"
+             id="questionImage-${idx}">
+      </div>
+      
+      ${optionsHTML}
+    </div>
+  `;
+  
+  if (questionType !== 'fill-blank') {
+    document.querySelectorAll('.optBtn').forEach(btn => {
+      btn.onclick = function() { 
+        selectOption(this.getAttribute('data-opt')); 
+      };
+    });
+  } else {
+    setTimeout(() => {
+      const input = document.getElementById('fillBlankInput');
+      if (input) input.focus();
+    }, 100);
+  }
+  
+  updateQuestionInfo();
+  updatePalette();
+}
+
+// ===== FIXED: IMAGE ERROR HANDLER =====
+function handleImageError(imgElement, questionIndex, imagePath) {
+  console.error(`❌ Image failed to load: ${imagePath}`);
+  
+  const container = imgElement.parentElement;
+  if (container) {
+    container.innerHTML = `
+      <div class="image-error">
+        <h3>⚠️ Image Not Available</h3>
+        <p>Question image could not be loaded. Please continue with the question.</p>
+        <p><small>Question ${questionIndex + 1} - ${examData.subjectNames[questionIndex]}</small></p>
+        <p><small>Path: ${imagePath}</small></p>
+        <div style="margin-top: 10px;">
+          <button onclick="retryImageLoad(${questionIndex})" style="padding: 8px 16px; background: #4B0082; color: white; border: none; border-radius: 5px; cursor: pointer;">
+            Retry Loading Image
+          </button>
+        </div>
+      </div>
+    `;
+  }
+}
+
+function retryImageLoad(questionIndex) {
+  const imgElement = document.getElementById(`questionImage-${questionIndex}`);
+  if (imgElement) {
+    // Force reload by adding timestamp
+    const originalSrc = imgElement.src;
+    imgElement.src = originalSrc.split('?')[0] + '?t=' + Date.now();
+    
+    // Restore original onerror handler
+    imgElement.onerror = function() {
+      handleImageError(this, questionIndex, originalSrc);
+    };
+  }
 }
 
 // ===== MISSING FUNCTIONS FIX =====
@@ -2888,209 +3157,6 @@ function updateFormAssignmentDisplay(studentData) {
     document.getElementById('formAssignment').style.display = 'block';
 }
 
-// ===== PREPARE EXAM DATA =====
-function prepareExamData() {
-  examData.files = []; examData.subjectNames = []; examData.keys = []; examData.originalOrder = []; examData.questionTypes = [];
-  
-  const subjectRanges = [
-    { name: "Physics", start: 1, end: 25 },
-    { name: "Chemistry", start: 26, end: 50 },
-    { name: "Maths", start: 51, end: 75 }
-  ];
-  
-  let groups = [];
-  
-  subjectRanges.forEach(subject => {
-    const subjectQuestions = [];
-    const subjectKeys = [];
-    const subjectOriginalOrder = [];
-    const subjectTypes = [];
-    
-    for (let i = subject.start; i <= subject.end; i++) {
-      const imgIndex = i - 1;
-      if (images[imgIndex] && answerKey[imgIndex]) {
-        subjectQuestions.push(images[imgIndex]);
-        subjectKeys.push(answerKey[imgIndex]);
-        subjectOriginalOrder.push(imgIndex);
-        
-        let questionType = 'mcq';
-        if ((subject.name === "Physics" && i >= 21 && i <= 25) ||
-            (subject.name === "Chemistry" && i >= 46 && i <= 50) ||
-            (subject.name === "Maths" && i >= 71 && i <= 75)) {
-          questionType = 'fill-blank';
-        }
-        subjectTypes.push(questionType);
-      }
-    }
-    
-    const shuffledIndices = shuffleArray([...Array(subjectQuestions.length).keys()]);
-    
-    groups.push({
-      name: subject.name,
-      imgs: shuffledIndices.map(i => subjectQuestions[i]),
-      keys: shuffledIndices.map(i => subjectKeys[i]),
-      originalOrder: shuffledIndices.map(i => subjectOriginalOrder[i]),
-      types: shuffledIndices.map(i => subjectTypes[i])
-    });
-  });
-  
-  const shuffledGroups = shuffleArray(groups);
-  
-  shuffledGroups.forEach(g => {
-    g.imgs.forEach((img, i) => {
-      examData.files.push(img);
-      examData.keys.push(g.keys[i]);
-      examData.subjectNames.push(g.name);
-      examData.originalOrder.push(g.originalOrder[i]);
-      examData.questionTypes.push(g.types[i]);
-    });
-  });
-  
-  console.log("🎯 EXAM DATA VERIFICATION:");
-  console.log("Total Questions:", examData.files.length);
-  console.log("Subject distribution:");
-  console.log("- Physics:", examData.subjectNames.filter(s => s === "Physics").length);
-  console.log("- Chemistry:", examData.subjectNames.filter(s => s === "Chemistry").length);
-  console.log("- Maths:", examData.subjectNames.filter(s => s === "Maths").length);
-  
-  // Verify answer key matches
-  console.log("✅ Exam data prepared successfully with 27-line answer key format");
-}
-
-// ===== RENDER QUESTION =====
-function renderQuestion() {
-  const idx = progress.currentIndex;
-  const container = document.getElementById('questionContainer');
-  
-  const imagePath = examData.files[idx];
-  const questionNumber = idx + 1;
-  const questionType = examData.questionTypes[idx];
-  const subject = examData.subjectNames[idx];
-  
-  console.log(`🖼️ Loading: ${imagePath} (Q${questionNumber}/75) - ${subject} - ${questionType}`);
-  
-  let optionsHTML = '';
-  
-  if (questionType === 'fill-blank') {
-    optionsHTML = `
-      <div class="fill-blank-container">
-        <div style="margin: 20px 0; font-weight: bold; color: #4B0082; font-size: 18px;">
-          Enter numerical answer:
-        </div>
-        <div style="display: flex; justify-content: center; align-items: center; gap: 15px; margin: 25px 0;">
-          <input type="number" 
-                 id="fillBlankInput" 
-                 class="fill-blank-input"
-                 placeholder="Enter number"
-                 value="${progress.answers[idx] || ''}"
-                 min="0"
-                 step="any"
-                 style="
-                   padding: 12px 18px;
-                   font-size: 22px;
-                   border: 2px solid #4B0082;
-                   border-radius: 8px;
-                   width: 200px;
-                   text-align: center;
-                   outline: none;
-                   font-weight: bold;
-                 "
-                 oninput="handleNumericalInput(this, ${idx})"
-                 onkeypress="handleNumericalKeyPress(event, ${idx})"
-                 tabindex="0">
-          <button class="submit-fill-blank-btn" 
-                  onclick="submitNumericalAnswer(${idx})"
-                  tabindex="0"
-                  style="
-                    padding: 12px 24px;
-                    background: linear-gradient(145deg, #32CD32, #228B22);
-                    color: white;
-                    border: none;
-                    border-radius: 8px;
-                    font-size: 16px;
-                    font-weight: bold;
-                    cursor: pointer;
-                  ">
-            Submit
-          </button>
-        </div>
-        
-        <!-- Numerical Keypad -->
-        <div class="numerical-keypad">
-          <div class="keypad-grid">
-            ${[1,2,3,4,5,6,7,8,9].map(num => `
-              <button class="num-key-btn" 
-                      onclick="handleKeypadButton('${num}', ${idx})"
-                      tabindex="0">
-                ${num}
-              </button>
-            `).join('')}
-            <button class="num-key-btn special-btn" 
-                    onclick="handleKeypadButton('0', ${idx})"
-                    tabindex="0">
-              0
-            </button>
-            <button class="num-key-btn special-btn clear-btn" 
-                    onclick="handleKeypadButton('C', ${idx})"
-                    tabindex="0">
-              C
-            </button>
-            <button class="num-key-btn special-btn submit-num-btn" 
-                    onclick="handleKeypadButton('✓', ${idx})"
-                    tabindex="0">
-              ✓
-            </button>
-          </div>
-        </div>
-      </div>
-    `;
-  } else {
-    optionsHTML = `
-      <div class="options-container">
-        <button class="optBtn ${progress.answers[idx] === 'A' ? 'selected' : ''}" data-opt="A" tabindex="0">A</button>
-        <button class="optBtn ${progress.answers[idx] === 'B' ? 'selected' : ''}" data-opt="B" tabindex="0">B</button>
-        <button class="optBtn ${progress.answers[idx] === 'C' ? 'selected' : ''}" data-opt="C" tabindex="0">C</button>
-        <button class="optBtn ${progress.answers[idx] === 'D' ? 'selected' : ''}" data-opt="D" tabindex="0">D</button>
-      </div>
-    `;
-  }
-  
-  // COMPLETE IMAGE DISPLAY LOGIC FROM SECOND CODE
-  container.innerHTML = `
-    <div class="question-transition question-fade-in">
-      <div class="question-number">Question ${questionNumber} of 75</div>
-      <div class="sectionTitle">${subject} ${questionType === 'fill-blank' ? '(Numerical Input)' : '(MCQ)'}</div>
-      
-      <div style="width: 100%; overflow: auto; min-height: 300px; display: flex; justify-content: center; align-items: center;">
-        <img src="${imagePath}" 
-             class="questionImg" 
-             alt="Question ${questionNumber}"
-             style="max-width: 100%; height: auto;"
-             onload="console.log('✅ Image loaded: ${imagePath}')"
-             onerror="handleSimpleImageError(this, ${idx})">
-      </div>
-      
-      ${optionsHTML}
-    </div>
-  `;
-  
-  if (questionType !== 'fill-blank') {
-    document.querySelectorAll('.optBtn').forEach(btn => {
-      btn.onclick = function() { 
-        selectOption(this.getAttribute('data-opt')); 
-      };
-    });
-  } else {
-    setTimeout(() => {
-      const input = document.getElementById('fillBlankInput');
-      if (input) input.focus();
-    }, 100);
-  }
-  
-  updateQuestionInfo();
-  updatePalette();
-}
-
 // ===== INPUT VALIDATION =====
 function validateStudentInputs() {
   const n = document.getElementById('stuName'), 
@@ -3280,7 +3346,12 @@ function startExam(studentKey) {
     const stuAdm = document.getElementById('stuAdm');
 
     localStorage.setItem(studentKey, Date.now());
-    prepareExamData();
+    
+    // Prepare exam data
+    if (!prepareExamData()) {
+        alert('Failed to prepare exam data. Please contact administrator.');
+        return;
+    }
     
     // Check if we have recovery data
     if (window.pendingRecoveryData) {
