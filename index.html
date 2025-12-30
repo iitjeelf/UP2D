@@ -900,7 +900,7 @@ table td, table th {
 .submission-error {
   background: #f8d7da;
   color: #721c24;
-  border: 1px solid #f5c6cb);
+  border: 1px solid #f5c6cb;
 }
 
 .submission-pending {
@@ -1477,7 +1477,7 @@ table td, table th {
     <p style="margin: 10px 0; font-weight: bold;">CORRECT ANSWER + 4 MARKS</p>
     <p style="margin: 5px 0; font-weight: bold;">WRONG ANSWER -1 MARK</p>
     <p style="margin: 15px 0; max-width: 600px; line-height: 1.5;">
-        <strong>Instructions:</strong><br>
+       
     <input type="password" id="accessCode" class="access-code-input" placeholder="Enter Access Code">
     <button id="verifyAccess" class="verify-btn">VERIFY ACCESS</button>
     <div id="accessError" class="access-error">❌ Invalid access code. Please try again.</div>
@@ -1623,7 +1623,7 @@ table td, table th {
   </div>
 </div>
 
-<footer>©2025 LFJC </footer>
+<footer>@LFJC2025 All Rights Reserved</footer>
 
 <!-- Security Overlays -->
 <div id="fullRedOverlay"></div>
@@ -1673,6 +1673,11 @@ const ACCESS_CODE = "lfjc2025";
 const ADMIN_PASSWORD = "admin2025";
 const RESUBMISSION_PASSWORD = "resubmit2025";
 const RESUBMISSION_WINDOW_HOURS = 24;
+
+// ===== EXTERNAL KEY CONFIGURATION =====
+const USE_EXTERNAL_KEY = true; // Set to true to load key from external file
+const EXTERNAL_KEY_URL = 'Answers/Key'; // Path to external key file
+const EMBEDDED_KEY_FALLBACK = true; // Use embedded key if external fails
 
 // POWER LOSS PROTECTION CONFIG
 const AUTO_SAVE_INTERVAL = 15; // seconds
@@ -1745,484 +1750,181 @@ const subjects = ["Physics", "Chemistry", "Maths"];
 let examData = {files: [], subjectNames: [], keys: [], originalOrder: [], questionTypes: []};
 let progress = null, timerInterval = null;
 
-// ===== LOAD ANSWER KEY FROM EXTERNAL TEXT FILE (27-LINE FORMAT) =====
-async function loadAnswerKeyFromTextFile() {
+// ===== YOUR EXACT ANSWER KEY =====
+const YOUR_EXACT_ANSWER_KEY = [
+    // Physics MCQ Q1-20 (4 lines × 5)
+    "B","A","A","A","B",      // Line 1: BAAAB
+    "B","A","B","C","C",      // Line 2: BABCC
+    "B","A","D","C","A",      // Line 3: BADCA
+    "A","A","C","B","A",      // Line 4: AACBA
+    
+    // Physics Numerical Q21-25
+    "7","125","4","7","770",
+    
+    // Chemistry MCQ Q26-45 (4 lines × 5)
+    "B","B","C","A","D",      // Line 1: BBCAD
+    "C","B","B","C","A",      // Line 2: CBBCA
+    "C","C","A","C","D",      // Line 3: CCACD
+    "A","A","B","C","A",      // Line 4: AABCA
+    
+    // Chemistry Numerical Q46-50
+    "3","11","3","4","2",
+    
+    // Maths MCQ Q51-70 (4 lines × 5)
+    "A","A","B","B","A",      // Line 1: AABBA
+    "A","C","B","D","A",      // Line 2: ACBDA
+    "C","B","C","B","A",      // Line 3: CBCBA
+    "A","D","D","C","B",      // Line 4: ADDCB
+    
+    // Maths Numerical Q71-75
+    "1328","0","15","0","8"
+];
+
+// ===== LOAD ANSWER KEY (WITH EXTERNAL SUPPORT) =====
+async function loadAnswerKey() {
     try {
-        console.log("🔍 DEBUG: Starting answer key load...");
+        console.log("📥 LOADING ANSWER KEY...");
         
-        // Try to fetch the key.txt file
-        const response = await fetch('key.txt');
-        
-        console.log("🔍 DEBUG: Fetch response status:", response.status, response.ok);
-        
-        if (!response.ok) {
-            console.error("❌ DEBUG: File not found or inaccessible");
-            console.error("❌ Check: Is key.txt in same folder as HTML?");
-            console.error("❌ Check: File permissions?");
-            throw new Error("Could not fetch key.txt");
-        }
-        
-        const text = await response.text();
-        console.log("🔍 DEBUG: File loaded successfully");
-        console.log("🔍 DEBUG: File size:", text.length, "characters");
-        console.log("🔍 DEBUG: First 100 chars:", text.substring(0, 100));
-        
-        // Show all lines with line numbers
-        const lines = text.trim().split('\n').map(line => line.trim());
-        console.log("🔍 DEBUG: Total lines found:", lines.length);
-        
-        console.log("🔍 DEBUG: Line-by-line content:");
-        lines.forEach((line, index) => {
-            console.log(`  Line ${index + 1}: "${line}" (${line.length} chars)`);
-        });
-        
-        // Check if we have exactly 27 lines
-        if (lines.length !== 27) {
-            console.error(`❌ DEBUG: Expected 27 lines, got ${lines.length}`);
-            console.error("❌ Your key.txt must have EXACTLY 27 lines:");
-            console.error("   - Lines 1-4: Physics MCQ (5 answers each)");
-            console.error("   - Lines 5-9: Physics Numerical (one per line)");
-            console.error("   - Lines 10-13: Chemistry MCQ (5 answers each)");
-            console.error("   - Lines 14-18: Chemistry Numerical (one per line)");
-            console.error("   - Lines 19-22: Maths MCQ (5 answers each)");
-            console.error("   - Lines 23-27: Maths Numerical (one per line)");
-            throw new Error(`Expected 27 lines but found ${lines.length}`);
-        }
-        
-        // Now parse the 27-line format
-        const parsedAnswers = [];
-        let lineIndex = 0;
-        
-        // Physics MCQ Q1-20 (4 lines × 5 answers = 20)
-        console.log("🔍 DEBUG: Parsing Physics MCQ...");
-        for (let i = 0; i < 4; i++) {
-            const line = lines[lineIndex++];
-            console.log(`  Line ${lineIndex}: "${line}" for Physics Q${(i*5)+1}-${(i*5)+5}`);
+        if (USE_EXTERNAL_KEY) {
+            console.log("🔗 Attempting to load external key from:", EXTERNAL_KEY_URL);
             
-            if (line.length !== 5) {
-                throw new Error(`Line ${lineIndex} has ${line.length} chars, expected 5 for MCQ`);
-            }
-            
-            const answers = line.split('');
-            answers.forEach((ans, idx) => {
-                const cleanAns = ans.toUpperCase().trim();
-                if (!['A', 'B', 'C', 'D'].includes(cleanAns)) {
-                    throw new Error(`Invalid MCQ answer "${ans}" at Physics Q${(i*5)+idx+1}. Must be A, B, C, or D.`);
+            try {
+                const response = await fetch(EXTERNAL_KEY_URL);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
-                parsedAnswers.push(cleanAns);
-            });
-        }
-        
-        // Physics Numerical Q21-25 (5 answers, one per line)
-        console.log("🔍 DEBUG: Parsing Physics Numerical...");
-        for (let i = 0; i < 5; i++) {
-            const answer = lines[lineIndex++];
-            console.log(`  Line ${lineIndex}: "${answer}" for Physics Q${21+i}`);
-            
-            // Allow integer or decimal numbers, with optional negative sign
-            if (!/^-?\d+(\.\d+)?$/.test(answer)) {
-                throw new Error(`Invalid numerical answer "${answer}" at Physics Q${21+i}. Must be a number.`);
-            }
-            parsedAnswers.push(answer);
-        }
-        
-        // ===== CHEMISTRY =====
-        console.log("🔍 DEBUG: Parsing Chemistry...");
-        
-        // Chemistry MCQ Q26-45 (4 lines × 5 answers = 20)
-        for (let i = 0; i < 4; i++) {
-            const line = lines[lineIndex++];
-            console.log(`  Line ${lineIndex}: "${line}" for Chemistry Q${26+(i*5)+1}-${26+(i*5)+5}`);
-            
-            if (line.length !== 5) {
-                throw new Error(`Line ${lineIndex}: Expected 5 MCQ answers, found "${line}"`);
-            }
-            
-            const answers = line.split('');
-            answers.forEach((ans, idx) => {
-                const cleanAns = ans.toUpperCase().trim();
-                if (!['A', 'B', 'C', 'D'].includes(cleanAns)) {
-                    throw new Error(`Invalid MCQ answer "${ans}" at Chemistry Q${26+(i*5)+idx+1}. Must be A, B, C, or D.`);
+                
+                const text = await response.text();
+                console.log("📄 Raw key file content:", text);
+                
+                // Parse your exact format (one answer per line)
+                const lines = text.trim().split('\n').map(line => line.trim()).filter(line => line);
+                console.log("📊 Lines parsed:", lines.length);
+                
+                // Your format: each line contains either 5 letters or a number
+                const externalKey = [];
+                
+                lines.forEach(line => {
+                    if (/^[A-D]+$/.test(line)) {
+                        // This is a line with multiple letters (e.g., "BAAAB")
+                        const letters = line.split('');
+                        externalKey.push(...letters);
+                    } else if (/^\d+$/.test(line)) {
+                        // This is a single number
+                        externalKey.push(line);
+                    } else {
+                        // Single letter answer
+                        externalKey.push(line);
+                    }
+                });
+                
+                console.log(`📊 External key processed: ${externalKey.length} answers`);
+                
+                if (externalKey.length === 75) {
+                    answerKey = externalKey;
+                    console.log("✅ EXTERNAL ANSWER KEY LOADED SUCCESSFULLY!");
+                    console.log("📋 First 10 answers:", answerKey.slice(0, 10));
+                    console.log("📋 Last 10 answers:", answerKey.slice(65, 75));
+                    
+                    // Validate external key
+                    validateAnswerKey(answerKey);
+                    
+                } else {
+                    throw new Error(`External key has ${externalKey.length} answers, expected 75`);
                 }
-                parsedAnswers.push(cleanAns);
-            });
-        }
-        
-        // Chemistry Numerical Q46-50 (5 answers, one per line)
-        console.log("🔍 DEBUG: Parsing Chemistry Numerical...");
-        for (let i = 0; i < 5; i++) {
-            const answer = lines[lineIndex++];
-            console.log(`  Line ${lineIndex}: "${answer}" for Chemistry Q${46+i}`);
-            
-            if (!/^-?\d+(\.\d+)?$/.test(answer)) {
-                throw new Error(`Invalid numerical answer "${answer}" at Chemistry Q${46+i}. Must be a number.`);
-            }
-            parsedAnswers.push(answer);
-        }
-        
-        // ===== MATHS =====
-        console.log("🔍 DEBUG: Parsing Maths...");
-        
-        // Maths MCQ Q51-70 (4 lines × 5 answers = 20)
-        for (let i = 0; i < 4; i++) {
-            const line = lines[lineIndex++];
-            console.log(`  Line ${lineIndex}: "${line}" for Maths Q${51+(i*5)+1}-${51+(i*5)+5}`);
-            
-            if (line.length !== 5) {
-                throw new Error(`Line ${lineIndex}: Expected 5 MCQ answers, found "${line}"`);
-            }
-            
-            const answers = line.split('');
-            answers.forEach((ans, idx) => {
-                const cleanAns = ans.toUpperCase().trim();
-                if (!['A', 'B', 'C', 'D'].includes(cleanAns)) {
-                    throw new Error(`Invalid MCQ answer "${ans}" at Maths Q${51+(i*5)+idx+1}. Must be A, B, C, or D.`);
+                
+            } catch (externalError) {
+                console.warn("❌ Failed to load external key:", externalError.message);
+                
+                if (EMBEDDED_KEY_FALLBACK) {
+                    console.log("🔄 Falling back to embedded key...");
+                    answerKey = [...YOUR_EXACT_ANSWER_KEY];
+                    console.log("✅ Using embedded answer key as fallback");
+                    validateAnswerKey(answerKey);
+                } else {
+                    throw externalError;
                 }
-                parsedAnswers.push(cleanAns);
-            });
-        }
-        
-        // Maths Numerical Q71-75 (5 answers, one per line)
-        console.log("🔍 DEBUG: Parsing Maths Numerical...");
-        for (let i = 0; i < 5; i++) {
-            const answer = lines[lineIndex++];
-            console.log(`  Line ${lineIndex}: "${answer}" for Maths Q${71+i}`);
-            
-            if (!/^-?\d+(\.\d+)?$/.test(answer)) {
-                throw new Error(`Invalid numerical answer "${answer}" at Maths Q${71+i}. Must be a number.`);
             }
-            parsedAnswers.push(answer);
+            
+        } else {
+            // Use embedded key
+            console.log("📋 Using embedded answer key");
+            answerKey = [...YOUR_EXACT_ANSWER_KEY];
+            validateAnswerKey(answerKey);
         }
         
-        // Verify we have exactly 75 answers
-        if (parsedAnswers.length !== 75) {
-            throw new Error(`Expected 75 answers, got ${parsedAnswers.length}. Please check your key.txt format.`);
-        }
-        
-        console.log("✅ DEBUG: Answer key parsed successfully!");
-        console.log("📊 DEBUG: Total answers parsed:", parsedAnswers.length);
-        console.log("📋 DEBUG: First 10 answers:", parsedAnswers.slice(0, 10));
-        
-        // Save to global variable
-        answerKey = parsedAnswers;
-        keyLoaded = true;
-        
-        // Initialize images - FIXED PATH
+        // Initialize images
         images = [];
         for (let i = 1; i <= 75; i++) {
-            // Try multiple possible paths
-            const possiblePaths = [
-                `questions/${i}.png`,
-                `./questions/${i}.png`,
-                `/questions/${i}.png`,
-                `questions/${i}.jpg`,
-                `./questions/${i}.jpg`
-            ];
-            images.push(`questions/${i}.png`); // Default path
+            images.push(`questions/${i}.png`);
         }
         
-        console.log(`✅ Images initialized: ${images.length} image paths`);
+        console.log("✅ ANSWER KEY LOADED SUCCESSFULLY!");
+        console.log("📊 Total answers:", answerKey.length);
         
-        showToast('✅ Answer key loaded successfully from key.txt!', 'success', 3000);
+        showToast('✅ Answer key loaded successfully!', 'success', 3000);
+        
         clearErrors();
         validateStudentInputs();
-        
         return true;
         
     } catch (error) {
         console.error("❌ ERROR LOADING ANSWER KEY:", error);
         
-        // Show clear error message with format details
         showError(`
-            <div style="color: red; padding: 15px; border: 2px solid red; border-radius: 5px; text-align: left;">
+            <div style="color: red; padding: 15px; border: 2px solid red; border-radius: 5px;">
                 <strong>❌ ANSWER KEY ERROR</strong><br><br>
                 ${error.message}<br><br>
-                <strong>📋 REQUIRED FORMAT (27 lines total):</strong><br>
-                <div style="margin-left: 20px; font-size: 14px;">
-                    <strong>Physics (Lines 1-9):</strong><br>
-                    • Lines 1-4: 5 MCQ answers each (e.g., "BAAAB") for Q1-20<br>
-                    • Lines 5-9: 5 numerical answers (one per line) for Q21-25<br><br>
-                    
-                    <strong>Chemistry (Lines 10-18):</strong><br>
-                    • Lines 10-13: 5 MCQ answers each for Q26-45<br>
-                    • Lines 14-18: 5 numerical answers for Q46-50<br><br>
-                    
-                    <strong>Maths (Lines 19-27):</strong><br>
-                    • Lines 19-22: 5 MCQ answers each for Q51-70<br>
-                    • Lines 23-27: 5 numerical answers for Q71-75<br>
-                </div>
-                <br>
-                <button onclick="loadAnswerKeyFromTextFile()" 
-                        style="padding: 8px 16px; background: #4B0082; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px;">
-                    Retry Loading Key
-                </button>
+                ${USE_EXTERNAL_KEY ? 
+                    `<small>Please check if the external key file exists at: ${EXTERNAL_KEY_URL}</small><br>
+                     <small>Or contact administrator to enable embedded key.</small>` : 
+                    `<small>Please check the embedded answer key in the code.</small>`
+                }
             </div>
         `);
         
-        // Disable start button
         document.getElementById('stuStartBtn').style.display = 'none';
-        
         return false;
     }
 }
 
-// ===== FIXED: PREPARE EXAM DATA FUNCTION =====
-function prepareExamData() {
-  console.log("🖼️ Preparing exam data with image paths...");
-  
-  examData.files = []; 
-  examData.subjectNames = []; 
-  examData.keys = []; 
-  examData.originalOrder = []; 
-  examData.questionTypes = [];
-  
-  const subjectRanges = [
-    { name: "Physics", start: 1, end: 25 },
-    { name: "Chemistry", start: 26, end: 50 },
-    { name: "Maths", start: 51, end: 75 }
-  ];
-  
-  let groups = [];
-  
-  subjectRanges.forEach(subject => {
-    const subjectQuestions = [];
-    const subjectKeys = [];
-    const subjectOriginalOrder = [];
-    const subjectTypes = [];
+// ===== VALIDATE ANSWER KEY =====
+function validateAnswerKey(key) {
+    console.log("🔍 Validating answer key...");
     
-    for (let i = subject.start; i <= subject.end; i++) {
-      const imgIndex = i - 1;
-      if (imgIndex < images.length && answerKey[imgIndex]) {
-        // Use the image path from our initialized images array
-        subjectQuestions.push(images[imgIndex]);
-        subjectKeys.push(answerKey[imgIndex]);
-        subjectOriginalOrder.push(imgIndex);
+    // Check total length
+    if (key.length !== 75) {
+        throw new Error(`Expected 75 answers, got ${key.length}`);
+    }
+    
+    // Validate each answer
+    for (let i = 0; i < 75; i++) {
+        const qNum = i + 1;
+        const answer = key[i];
         
-        let questionType = 'mcq';
-        if ((subject.name === "Physics" && i >= 21 && i <= 25) ||
-            (subject.name === "Chemistry" && i >= 46 && i <= 50) ||
-            (subject.name === "Maths" && i >= 71 && i <= 75)) {
-          questionType = 'fill-blank';
+        // Determine question type based on position
+        const isNumerical = 
+            (qNum >= 21 && qNum <= 25) ||    // Physics numerical
+            (qNum >= 46 && qNum <= 50) ||    // Chemistry numerical
+            (qNum >= 71 && qNum <= 75);      // Maths numerical
+        
+        if (isNumerical) {
+            // Numerical validation
+            if (!/^-?\d+(\.\d+)?$/.test(answer)) {
+                throw new Error(`Invalid numerical answer at Q${qNum}: "${answer}"`);
+            }
+        } else {
+            // MCQ validation
+            if (!['A', 'B', 'C', 'D'].includes(answer.toUpperCase())) {
+                throw new Error(`Invalid MCQ answer at Q${qNum}: "${answer}"`);
+            }
+            // Normalize to uppercase
+            key[i] = answer.toUpperCase();
         }
-        subjectTypes.push(questionType);
-      } else {
-        console.warn(`⚠️ Missing data for question ${i} (${subject.name})`);
-      }
     }
     
-    // Only shuffle if we have questions
-    if (subjectQuestions.length > 0) {
-      const shuffledIndices = shuffleArray([...Array(subjectQuestions.length).keys()]);
-      
-      groups.push({
-        name: subject.name,
-        imgs: shuffledIndices.map(i => subjectQuestions[i]),
-        keys: shuffledIndices.map(i => subjectKeys[i]),
-        originalOrder: shuffledIndices.map(i => subjectOriginalOrder[i]),
-        types: shuffledIndices.map(i => subjectTypes[i])
-      });
-    }
-  });
-  
-  // Shuffle groups
-  const shuffledGroups = shuffleArray(groups);
-  
-  // Combine all groups
-  shuffledGroups.forEach(g => {
-    g.imgs.forEach((img, i) => {
-      examData.files.push(img);
-      examData.keys.push(g.keys[i]);
-      examData.subjectNames.push(g.name);
-      examData.originalOrder.push(g.originalOrder[i]);
-      examData.questionTypes.push(g.types[i]);
-    });
-  });
-  
-  console.log("🎯 EXAM DATA VERIFICATION:");
-  console.log("Total Questions:", examData.files.length);
-  console.log("Subject distribution:");
-  console.log("- Physics:", examData.subjectNames.filter(s => s === "Physics").length);
-  console.log("- Chemistry:", examData.subjectNames.filter(s => s === "Chemistry").length);
-  console.log("- Maths:", examData.subjectNames.filter(s => s === "Maths").length);
-  console.log("First 5 image paths:", examData.files.slice(0, 5));
-  
-  return true;
-}
-
-// ===== FIXED: RENDER QUESTION FUNCTION =====
-function renderQuestion() {
-  const idx = progress.currentIndex;
-  const container = document.getElementById('questionContainer');
-  
-  if (idx >= examData.files.length) {
-    console.error(`❌ Invalid question index: ${idx}`);
-    return;
-  }
-  
-  const imagePath = examData.files[idx];
-  const questionNumber = idx + 1;
-  const questionType = examData.questionTypes[idx];
-  const subject = examData.subjectNames[idx];
-  
-  console.log(`🖼️ Loading: ${imagePath} (Q${questionNumber}/75) - ${subject} - ${questionType}`);
-  
-  let optionsHTML = '';
-  
-  if (questionType === 'fill-blank') {
-    optionsHTML = `
-      <div class="fill-blank-container">
-        <div style="margin: 20px 0; font-weight: bold; color: #4B0082; font-size: 18px;">
-          Enter numerical answer:
-        </div>
-        <div style="display: flex; justify-content: center; align-items: center; gap: 15px; margin: 25px 0;">
-          <input type="number" 
-                 id="fillBlankInput" 
-                 class="fill-blank-input"
-                 placeholder="Enter number"
-                 value="${progress.answers[idx] || ''}"
-                 min="0"
-                 step="any"
-                 style="
-                   padding: 12px 18px;
-                   font-size: 22px;
-                   border: 2px solid #4B0082;
-                   border-radius: 8px;
-                   width: 200px;
-                   text-align: center;
-                   outline: none;
-                   font-weight: bold;
-                 "
-                 oninput="handleNumericalInput(this, ${idx})"
-                 onkeypress="handleNumericalKeyPress(event, ${idx})"
-                 tabindex="0">
-          <button class="submit-fill-blank-btn" 
-                  onclick="submitNumericalAnswer(${idx})"
-                  tabindex="0"
-                  style="
-                    padding: 12px 24px;
-                    background: linear-gradient(145deg, #32CD32, #228B22);
-                    color: white;
-                    border: none;
-                    border-radius: 8px;
-                    font-size: 16px;
-                    font-weight: bold;
-                    cursor: pointer;
-                  ">
-            Submit
-          </button>
-        </div>
-        
-        <!-- Numerical Keypad -->
-        <div class="numerical-keypad">
-          <div class="keypad-grid">
-            ${[1,2,3,4,5,6,7,8,9].map(num => `
-              <button class="num-key-btn" 
-                      onclick="handleKeypadButton('${num}', ${idx})"
-                      tabindex="0">
-                ${num}
-              </button>
-            `).join('')}
-            <button class="num-key-btn special-btn" 
-                    onclick="handleKeypadButton('0', ${idx})"
-                    tabindex="0">
-              0
-            </button>
-            <button class="num-key-btn special-btn clear-btn" 
-                    onclick="handleKeypadButton('C', ${idx})"
-                    tabindex="0">
-              C
-            </button>
-            <button class="num-key-btn special-btn submit-num-btn" 
-                    onclick="handleKeypadButton('✓', ${idx})"
-                    tabindex="0">
-              ✓
-            </button>
-          </div>
-        </div>
-      </div>
-    `;
-  } else {
-    optionsHTML = `
-      <div class="options-container">
-        <button class="optBtn ${progress.answers[idx] === 'A' ? 'selected' : ''}" data-opt="A" tabindex="0">A</button>
-        <button class="optBtn ${progress.answers[idx] === 'B' ? 'selected' : ''}" data-opt="B" tabindex="0">B</button>
-        <button class="optBtn ${progress.answers[idx] === 'C' ? 'selected' : ''}" data-opt="C" tabindex="0">C</button>
-        <button class="optBtn ${progress.answers[idx] === 'D' ? 'selected' : ''}" data-opt="D" tabindex="0">D</button>
-      </div>
-    `;
-  }
-  
-  // FIXED: Image display with better error handling
-  container.innerHTML = `
-    <div class="question-transition question-fade-in">
-      <div class="question-number">Question ${questionNumber} of 75</div>
-      <div class="sectionTitle">${subject} ${questionType === 'fill-blank' ? '(Numerical Input)' : '(MCQ)'}</div>
-      
-      <div id="imageContainer" style="width: 100%; overflow: auto; min-height: 300px; display: flex; justify-content: center; align-items: center; margin: 20px 0;">
-        <img src="${imagePath}" 
-             class="questionImg" 
-             alt="Question ${questionNumber} - ${subject}"
-             style="max-width: 100%; max-height: 500px; height: auto; border: 2px solid #E6E6FA; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"
-             onload="console.log('✅ Image loaded successfully: ${imagePath}')"
-             onerror="handleImageError(this, ${idx}, '${imagePath}')"
-             id="questionImage-${idx}">
-      </div>
-      
-      ${optionsHTML}
-    </div>
-  `;
-  
-  if (questionType !== 'fill-blank') {
-    document.querySelectorAll('.optBtn').forEach(btn => {
-      btn.onclick = function() { 
-        selectOption(this.getAttribute('data-opt')); 
-      };
-    });
-  } else {
-    setTimeout(() => {
-      const input = document.getElementById('fillBlankInput');
-      if (input) input.focus();
-    }, 100);
-  }
-  
-  updateQuestionInfo();
-  updatePalette();
-}
-
-// ===== FIXED: IMAGE ERROR HANDLER =====
-function handleImageError(imgElement, questionIndex, imagePath) {
-  console.error(`❌ Image failed to load: ${imagePath}`);
-  
-  const container = imgElement.parentElement;
-  if (container) {
-    container.innerHTML = `
-      <div class="image-error">
-        <h3>⚠️ Image Not Available</h3>
-        <p>Question image could not be loaded. Please continue with the question.</p>
-        <p><small>Question ${questionIndex + 1} - ${examData.subjectNames[questionIndex]}</small></p>
-        <p><small>Path: ${imagePath}</small></p>
-        <div style="margin-top: 10px;">
-          <button onclick="retryImageLoad(${questionIndex})" style="padding: 8px 16px; background: #4B0082; color: white; border: none; border-radius: 5px; cursor: pointer;">
-            Retry Loading Image
-          </button>
-        </div>
-      </div>
-    `;
-  }
-}
-
-function retryImageLoad(questionIndex) {
-  const imgElement = document.getElementById(`questionImage-${questionIndex}`);
-  if (imgElement) {
-    // Force reload by adding timestamp
-    const originalSrc = imgElement.src;
-    imgElement.src = originalSrc.split('?')[0] + '?t=' + Date.now();
-    
-    // Restore original onerror handler
-    imgElement.onerror = function() {
-      handleImageError(this, questionIndex, originalSrc);
-    };
-  }
+    console.log("✅ Answer key validation passed!");
 }
 
 // ===== MISSING FUNCTIONS FIX =====
@@ -2232,7 +1934,6 @@ function handleSimpleImageError(imgElement, questionIndex) {
         <div style="padding: 20px; text-align: center; color: red; border: 2px solid red; border-radius: 8px;">
             <h3>⚠️ Image Not Available</h3>
             <p>Question image could not be loaded. Please continue with the question.</p>
-            <p><small>Question ${questionIndex + 1} - ${examData.subjectNames[questionIndex]}</small></p>
         </div>
     `;
 }
@@ -2899,8 +2600,8 @@ class FullScreenSecurity {
             console.error('❌ Failed to enter full-screen:', err);
             this.showWarning();
         }
-    }
-    
+}
+
     setupEventListeners() {
         document.addEventListener('fullscreenchange', () => this.handleFullscreenChange());
         document.addEventListener('webkitfullscreenchange', () => this.handleFullscreenChange());
@@ -3157,6 +2858,205 @@ function updateFormAssignmentDisplay(studentData) {
     document.getElementById('formAssignment').style.display = 'block';
 }
 
+// ===== PREPARE EXAM DATA =====
+function prepareExamData() {
+  examData.files = []; examData.subjectNames = []; examData.keys = []; examData.originalOrder = []; examData.questionTypes = [];
+  
+  const subjectRanges = [
+    { name: "Physics", start: 1, end: 25 },
+    { name: "Chemistry", start: 26, end: 50 },
+    { name: "Maths", start: 51, end: 75 }
+  ];
+  
+  let groups = [];
+  
+  subjectRanges.forEach(subject => {
+    const subjectQuestions = [];
+    const subjectKeys = [];
+    const subjectOriginalOrder = [];
+    const subjectTypes = [];
+    
+    for (let i = subject.start; i <= subject.end; i++) {
+      const imgIndex = i - 1;
+      if (images[imgIndex] && answerKey[imgIndex]) {
+        subjectQuestions.push(images[imgIndex]);
+        subjectKeys.push(answerKey[imgIndex]);
+        subjectOriginalOrder.push(imgIndex);
+        
+        let questionType = 'mcq';
+        if ((subject.name === "Physics" && i >= 21 && i <= 25) ||
+            (subject.name === "Chemistry" && i >= 46 && i <= 50) ||
+            (subject.name === "Maths" && i >= 71 && i <= 75)) {
+          questionType = 'fill-blank';
+        }
+        subjectTypes.push(questionType);
+      }
+    }
+    
+    const shuffledIndices = shuffleArray([...Array(subjectQuestions.length).keys()]);
+    
+    groups.push({
+      name: subject.name,
+      imgs: shuffledIndices.map(i => subjectQuestions[i]),
+      keys: shuffledIndices.map(i => subjectKeys[i]),
+      originalOrder: shuffledIndices.map(i => subjectOriginalOrder[i]),
+      types: shuffledIndices.map(i => subjectTypes[i])
+    });
+  });
+  
+  const shuffledGroups = shuffleArray(groups);
+  
+  shuffledGroups.forEach(g => {
+    g.imgs.forEach((img, i) => {
+      examData.files.push(img);
+      examData.keys.push(g.keys[i]);
+      examData.subjectNames.push(g.name);
+      examData.originalOrder.push(g.originalOrder[i]);
+      examData.questionTypes.push(g.types[i]);
+    });
+  });
+  
+  console.log("🎯 EXAM DATA VERIFICATION:");
+  console.log("Total Questions:", examData.files.length);
+  console.log("Subject distribution:");
+  console.log("- Physics:", examData.subjectNames.filter(s => s === "Physics").length);
+  console.log("- Chemistry:", examData.subjectNames.filter(s => s === "Chemistry").length);
+  console.log("- Maths:", examData.subjectNames.filter(s => s === "Maths").length);
+}
+
+// ===== RENDER QUESTION =====
+function renderQuestion() {
+  const idx = progress.currentIndex;
+  const container = document.getElementById('questionContainer');
+  
+  const imagePath = examData.files[idx];
+  const questionNumber = idx + 1;
+  const questionType = examData.questionTypes[idx];
+  const subject = examData.subjectNames[idx];
+  
+  console.log(`🖼️ Loading: ${imagePath} (Q${questionNumber}/75) - ${subject} - ${questionType}`);
+  
+  let optionsHTML = '';
+  
+  if (questionType === 'fill-blank') {
+    optionsHTML = `
+      <div class="fill-blank-container">
+        <div style="margin: 20px 0; font-weight: bold; color: #4B0082; font-size: 18px;">
+          Enter numerical answer:
+        </div>
+        <div style="display: flex; justify-content: center; align-items: center; gap: 15px; margin: 25px 0;">
+          <input type="number" 
+                 id="fillBlankInput" 
+                 class="fill-blank-input"
+                 placeholder="Enter number"
+                 value="${progress.answers[idx] || ''}"
+                 min="0"
+                 step="any"
+                 style="
+                   padding: 12px 18px;
+                   font-size: 22px;
+                   border: 2px solid #4B0082;
+                   border-radius: 8px;
+                   width: 200px;
+                   text-align: center;
+                   outline: none;
+                   font-weight: bold;
+                 "
+                 oninput="handleNumericalInput(this, ${idx})"
+                 onkeypress="handleNumericalKeyPress(event, ${idx})"
+                 tabindex="0">
+          <button class="submit-fill-blank-btn" 
+                  onclick="submitNumericalAnswer(${idx})"
+                  tabindex="0"
+                  style="
+                    padding: 12px 24px;
+                    background: linear-gradient(145deg, #32CD32, #228B22);
+                    color: white;
+                    border: none;
+                    border-radius: 8px;
+                    font-size: 16px;
+                    font-weight: bold;
+                    cursor: pointer;
+                  ">
+            Submit
+          </button>
+        </div>
+        
+        <!-- Numerical Keypad -->
+        <div class="numerical-keypad">
+          <div class="keypad-grid">
+            ${[1,2,3,4,5,6,7,8,9].map(num => `
+              <button class="num-key-btn" 
+                      onclick="handleKeypadButton('${num}', ${idx})"
+                      tabindex="0">
+                ${num}
+              </button>
+            `).join('')}
+            <button class="num-key-btn special-btn" 
+                    onclick="handleKeypadButton('0', ${idx})"
+                    tabindex="0">
+              0
+            </button>
+            <button class="num-key-btn special-btn clear-btn" 
+                    onclick="handleKeypadButton('C', ${idx})"
+                    tabindex="0">
+              C
+            </button>
+            <button class="num-key-btn special-btn submit-num-btn" 
+                    onclick="handleKeypadButton('✓', ${idx})"
+                    tabindex="0">
+              ✓
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  } else {
+    optionsHTML = `
+      <div class="options-container">
+        <button class="optBtn ${progress.answers[idx] === 'A' ? 'selected' : ''}" data-opt="A" tabindex="0">A</button>
+        <button class="optBtn ${progress.answers[idx] === 'B' ? 'selected' : ''}" data-opt="B" tabindex="0">B</button>
+        <button class="optBtn ${progress.answers[idx] === 'C' ? 'selected' : ''}" data-opt="C" tabindex="0">C</button>
+        <button class="optBtn ${progress.answers[idx] === 'D' ? 'selected' : ''}" data-opt="D" tabindex="0">D</button>
+      </div>
+    `;
+  }
+  
+  container.innerHTML = `
+    <div class="question-transition question-fade-in">
+      <div class="question-number">Question ${questionNumber} of 75</div>
+      <div class="sectionTitle">${subject} ${questionType === 'fill-blank' ? '(Numerical Input)' : '(MCQ)'}</div>
+      
+      <div style="width: 100%; overflow: auto; min-height: 300px; display: flex; justify-content: center; align-items: center;">
+        <img src="${imagePath}" 
+             class="questionImg" 
+             alt="Question ${questionNumber}"
+             style="max-width: 100%; height: auto;"
+             onload="console.log('✅ Image loaded: ${imagePath}')"
+             onerror="handleSimpleImageError(this, ${idx})">
+      </div>
+      
+      ${optionsHTML}
+    </div>
+  `;
+  
+  if (questionType !== 'fill-blank') {
+    document.querySelectorAll('.optBtn').forEach(btn => {
+      btn.onclick = function() { 
+        selectOption(this.getAttribute('data-opt')); 
+      };
+    });
+  } else {
+    setTimeout(() => {
+      const input = document.getElementById('fillBlankInput');
+      if (input) input.focus();
+    }, 100);
+  }
+  
+  updateQuestionInfo();
+  updatePalette();
+}
+
 // ===== INPUT VALIDATION =====
 function validateStudentInputs() {
   const n = document.getElementById('stuName'), 
@@ -3346,12 +3246,7 @@ function startExam(studentKey) {
     const stuAdm = document.getElementById('stuAdm');
 
     localStorage.setItem(studentKey, Date.now());
-    
-    // Prepare exam data
-    if (!prepareExamData()) {
-        alert('Failed to prepare exam data. Please contact administrator.');
-        return;
-    }
+    prepareExamData();
     
     // Check if we have recovery data
     if (window.pendingRecoveryData) {
@@ -3682,7 +3577,6 @@ function formatAllAnswersString(answers) {
     console.log("✅ Answers formatted:");
     console.log("Total answers: 75");
     console.log("Answered:", answers.filter(a => a !== null).length);
-    console.log("First 10 answers in original order:", originalOrderAnswers.slice(0, 10));
     
     return result;
 }
@@ -4478,7 +4372,7 @@ function showViolationOverlay(message, color) {
 
 // ===== INITIAL SETUP =====
 window.addEventListener('load', function() {
-  console.log('🚀 LFJC Online Exam System Initialized (75 Questions)');
+  console.log('LFJC Online Exam System Initialized (75 Questions)');
   console.log('📚 Question Structure:');
   console.log('• Physics: Q1-20 (MCQ), Q21-25 (Numerical Input)');
   console.log('• Chemistry: Q26-45 (MCQ), Q46-50 (Numerical Input)');
@@ -4488,7 +4382,10 @@ window.addEventListener('load', function() {
   console.log('🔒 System Tray Detection: 3 violations total submit exam');
   console.log('⚡ POWER LOSS PROTECTION: Auto-save every 15 seconds');
   console.log('📤 GOOGLE FORMS SUBMISSION: Enabled');
-  console.log('📁 Loading answer key from external text file (27-line format)...');
+  console.log('🔑 EXTERNAL KEY SUPPORT: Enabled');
+  console.log('   - Use External Key: ' + USE_EXTERNAL_KEY);
+  console.log('   - External Key URL: ' + EXTERNAL_KEY_URL);
+  console.log('   - Embedded Fallback: ' + EMBEDDED_KEY_FALLBACK);
   
   document.getElementById('accessDenied').style.display = 'flex';
   document.getElementById('studentEntry').style.display = 'none';
@@ -4501,14 +4398,11 @@ window.addEventListener('load', function() {
   
   document.getElementById('accessCode').focus();
   
-  // Load answer key from external text file (27-line format)
-  loadAnswerKeyFromTextFile().then(success => {
+  // Load answer key with external support
+  loadAnswerKey().then(success => {
     if (success) {
-      console.log("✅ Answer key loaded successfully from external file!");
-      showToast('✅ Answer key loaded from key.txt! System ready.', 'success', 3000);
-    } else {
-      console.error("❌ Failed to load answer key from external file");
-      showToast('❌ Failed to load answer key. Check key.txt file format.', 'error', 5000);
+      console.log("✅ Answer key loaded successfully!");
+      showToast('✅ Answer key is ready! Enter access code.', 'success', 3000);
     }
   });
   
@@ -4519,9 +4413,7 @@ window.addEventListener('load', function() {
 });
 
 console.log("🎯 LFJC Online Exam System Loaded Successfully");
-console.log("✅ Loading answer key from external key.txt file (27-line format)");
-console.log("✅ System expects exactly 27 lines in key.txt");
-console.log("✅ Format: 9 lines per subject (4 MCQ lines + 5 Numerical lines)");
+console.log("✅ Complete first code with external key validation");
 </script>
 </body>
 </html>
