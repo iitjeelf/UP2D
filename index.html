@@ -111,15 +111,86 @@ footer {
   bottom: 0;
 }
 
+/* ===== ACCESS DENIED SCREEN - ALWAYS SHOWS FIRST ===== */
+#accessDenied {
+  display: flex;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #4B0082, #8A2BE2);
+  z-index: 10000;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  text-align: center;
+  padding: 20px;
+}
+
+#accessDenied h1 {
+  font-size: 3em;
+  margin-bottom: 20px;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.access-code-input {
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  width: 300px;
+  text-align: center;
+  margin: 20px 0;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.verify-btn {
+  background: white;
+  color: #4B0082;
+  border: none;
+  padding: 12px 30px;
+  font-size: 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.verify-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px rgba(0,0,0,0.15);
+}
+
+.access-error {
+  color: #ffeb3b;
+  margin-top: 10px;
+  font-weight: 600;
+  display: none;
+}
+
 /* ===== STUDENT ENTRY SECTION ===== */
 #studentEntry {
-  display: flex;
+  display: none;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   min-height: calc(100vh - 140px);
   padding: 16px;
   text-align: center;
+}
+
+.warning-banner {
+  background: #ffcccc;
+  color: #721c24;
+  padding: 15px;
+  text-align: center;
+  font-weight: bold;
+  border: 1px solid #f5c6cb;
+  border-radius: 8px;
+  margin: 20px 0;
 }
 
 .form-group {
@@ -359,39 +430,27 @@ button:focus {
   margin-bottom: 8px;
 }
 
-/* ===== SIMPLE & CLEAN IMAGE STYLES ===== */
-.questionImg {
-  max-width: 100%;
-  height: auto;
+/* ===== PROPER IMAGE DISPLAY STYLES ===== */
+img.questionImg {
+  max-width: 95vw;  /* Use viewport width */
+  width: auto;      /* Maintain aspect ratio */
+  height: auto;     /* Maintain aspect ratio */
   border-radius: 10px;
+  /* Prevent image dragging and selection */
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+  user-drag: none;
   display: block;
-  margin: 0 auto;
+  margin-left: auto;
+  margin-right: auto;
+  transition: opacity 0.3s ease;
   border: 2px solid #E6E6FA;
   box-shadow: 0 4px 8px rgba(0,0,0,0.1);
   min-height: 300px;
   background: #f9f9f9;
   object-fit: contain;
-}
-
-.image-error {
-  background: #ffebee;
-  border: 2px solid #ffcdd2;
-  color: #c62828;
-  padding: 20px;
-  border-radius: 8px;
-  margin: 20px 0;
-  text-align: center;
-  font-weight: bold;
-  min-height: 300px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-
-.image-error h3 {
-  margin: 0 0 10px 0;
-  color: #c62828;
 }
 
 /* ===== ANIMATIONS ===== */
@@ -786,66 +845,6 @@ table td, table th {
   margin: 10px 0;
 }
 
-/* ===== ACCESS DENIED SCREEN STYLES ===== */
-.access-denied {
-  display: flex;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, #4B0082, #8A2BE2);
-  z-index: 10000;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  color: white;
-  text-align: center;
-  padding: 20px;
-}
-
-.access-denied h1 {
-  font-size: 3em;
-  margin-bottom: 20px;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-}
-
-.access-code-input {
-  padding: 12px;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  width: 300px;
-  text-align: center;
-  margin-bottom: 20px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-}
-
-.verify-btn {
-  background: white;
-  color: #4B0082;
-  border: none;
-  padding: 12px 30px;
-  font-size: 16px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-}
-
-.verify-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 8px rgba(0,0,0,0.15);
-}
-
-.access-error {
-  color: #ffeb3b;
-  margin-top: 10px;
-  font-weight: 600;
-  display: none;
-}
-
 /* ===== FORM ASSIGNMENT STYLES ===== */
 .form-assignment {
   background: #e8f4fd;
@@ -1023,45 +1022,6 @@ table td, table th {
   font-size: 20px;
 }
 
-/* Tab navigation focus styles */
-.fill-blank-input:focus {
-  outline: 2px solid #4B0082 !important;
-  outline-offset: 1px;
-  box-shadow: 0 0 0 2px rgba(75, 0, 130, 0.2) !important;
-}
-
-.optBtn:focus {
-  outline: 2px solid #4B0082 !important;
-  outline-offset: 1px;
-  box-shadow: 0 0 0 2px rgba(75, 0, 130, 0.2) !important;
-}
-
-.navBtn:focus {
-  outline: 2px solid #4B0082 !important;
-  outline-offset: 1px;
-  box-shadow: 0 0 0 2px rgba(75, 0, 130, 0.2) !important;
-}
-
-.palette-btn:focus {
-  outline: 2px solid #4B0082 !important;
-  outline-offset: 1px;
-  box-shadow: 0 0 0 2px rgba(75, 0, 130, 0.2) !important;
-}
-
-/* Responsive keypad */
-@media (max-width: 400px) {
-  .keypad-grid {
-    gap: 5px;
-    padding: 6px;
-  }
-  
-  .num-key-btn {
-    width: 40px;
-    height: 40px;
-    font-size: 16px;
-  }
-}
-
 /* ===== TOAST NOTIFICATION STYLES ===== */
 .toast {
   position: fixed;
@@ -1137,120 +1097,6 @@ table td, table th {
   0%, 100% { transform: translateX(-50%); }
   10%, 30%, 50%, 70%, 90% { transform: translateX(calc(-50% - 5px)); }
   20%, 40%, 60%, 80% { transform: translateX(calc(-50% + 5px)); }
-}
-
-@keyframes slideIn {
-  from { transform: translateY(-20px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
-@keyframes slideOut {
-  from { transform: translateY(0); opacity: 1; }
-  to { transform: translateY(-20px); opacity: 0; }
-}
-
-@keyframes fadeInOut {
-  0% { opacity: 0; transform: translateY(-10px); }
-  20% { opacity: 1; transform: translateY(0); }
-  80% { opacity: 1; transform: translateY(0); }
-  100% { opacity: 0; transform: translateY(-10px); }
-}
-
-/* ===== CHROME MENU BLUR OVERLAY STYLES ===== */
-#chromeMenuBlurOverlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 50%;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  z-index: 2147483647;
-  pointer-events: none;
-  display: none;
-  transition: opacity 0.3s ease;
-}
-
-/* ===== FULL-SCREEN WARNING OVERLAY STYLES ===== */
-#fullscreen-warning-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.95);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  z-index: 2147483646;
-  display: none;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  color: white;
-  font-family: Arial, sans-serif;
-  text-align: center;
-}
-
-#fullscreen-warning-overlay .warning-content {
-  background: rgba(255, 0, 0, 0.2);
-  padding: 40px;
-  border-radius: 20px;
-  border: 3px solid rgba(255, 0, 0, 0.5);
-  max-width: 500px;
-  width: 90%;
-  backdrop-filter: blur(10px);
-}
-
-#fullscreen-warning-overlay h2 {
-  color: #ff6b6b;
-  font-size: 28px;
-  margin-bottom: 15px;
-}
-
-#fullscreen-warning-overlay p {
-  font-size: 18px;
-  margin-bottom: 25px;
-  line-height: 1.5;
-}
-
-#enter-fullscreen-btn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border: none;
-  padding: 15px 40px;
-  font-size: 18px;
-  border-radius: 25px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: all 0.3s ease;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-}
-
-#enter-fullscreen-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
-}
-
-#enter-fullscreen-btn:active {
-  transform: translateY(0);
-}
-
-@keyframes fadeInOut {
-  0% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
-  20% { opacity: 1; transform: translateX(-50%) translateY(0); }
-  80% { opacity: 1; transform: translateX(-50%) translateY(0); }
-  100% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
-}
-
-#chromeMenuWarning {
-  font-size: 16px;
-  border: 2px solid white;
-}
-
-#chromeMenuWarning small {
-  font-size: 12px;
-  opacity: 0.9;
 }
 
 /* ===== POWER LOSS RECOVERY OVERLAY STYLES ===== */
@@ -1450,29 +1296,6 @@ table td, table th {
   color: white;
 }
 
-@media (max-width: 600px) {
-  .resume-options {
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .resume-btn {
-    width: 80%;
-  }
-}
-
-/* ===== QUESTION NUMBER STYLES ===== */
-.question-number {
-  font-size: 24px;
-  font-weight: bold;
-  color: #4B0082;
-  margin: 15px 0;
-  padding: 10px;
-  background: #f0f0ff;
-  border-radius: 8px;
-  display: inline-block;
-}
-
 /* ===== IMAGE LOADING PLACEHOLDER ===== */
 .image-loading {
   min-height: 300px;
@@ -1499,28 +1322,155 @@ table td, table th {
   100% { transform: rotate(360deg); }
 }
 
-/* ===== ALTERNATIVE QUESTION DISPLAY ===== */
-.alternative-question {
-  background: white;
-  border: 2px solid #4B0082;
-  border-radius: 10px;
-  padding: 30px;
-  margin: 20px auto;
-  max-width: 800px;
+/* ===== IMAGE ERROR STYLES ===== */
+.image-error {
+  background: #ffebee;
+  border: 2px solid #ffcdd2;
+  color: #c62828;
+  padding: 20px;
+  border-radius: 8px;
+  margin: 20px 0;
+  text-align: center;
+  font-weight: bold;
   min-height: 300px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+}
+
+.image-error h3 {
+  margin: 0 0 10px 0;
+  color: #c62828;
+}
+
+/* ===== QUESTION TRANSITION STYLES ===== */
+.question-transition {
+  transition: all 0.3s ease-in-out;
+}
+
+.question-fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== FILL BLANK INPUT STYLES ===== */
+.fill-blank-input {
+  padding: 12px 18px;
+  font-size: 22px;
+  border: 2px solid #4B0082;
+  border-radius: 8px;
+  width: 200px;
+  text-align: center;
+  outline: none;
+  font-weight: bold;
+}
+
+.submit-fill-blank-btn {
+  padding: 12px 24px;
+  background: linear-gradient(145deg, #32CD32, #228B22);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* ===== QUESTION NUMBER STYLES ===== */
+.question-number {
+  font-size: 24px;
+  font-weight: bold;
+  color: #4B0082;
+  margin: 15px 0;
+  padding: 10px;
+  background: #f0f0ff;
+  border-radius: 8px;
+  display: inline-block;
+}
+
+/* ===== FULL-SCREEN WARNING OVERLAY STYLES ===== */
+#fullscreen-warning-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  z-index: 2147483646;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  color: white;
+  font-family: Arial, sans-serif;
   text-align: center;
 }
 
-.question-text {
-  font-size: 20px;
-  font-weight: bold;
-  color: #4B0082;
-  margin-bottom: 30px;
+#fullscreen-warning-overlay .warning-content {
+  background: rgba(255, 0, 0, 0.2);
+  padding: 40px;
+  border-radius: 20px;
+  border: 3px solid rgba(255, 0, 0, 0.5);
+  max-width: 500px;
+  width: 90%;
+  backdrop-filter: blur(10px);
+}
+
+#fullscreen-warning-overlay h2 {
+  color: #ff6b6b;
+  font-size: 28px;
+  margin-bottom: 15px;
+}
+
+#fullscreen-warning-overlay p {
+  font-size: 18px;
+  margin-bottom: 25px;
   line-height: 1.5;
+}
+
+#enter-fullscreen-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 15px 40px;
+  font-size: 18px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+#enter-fullscreen-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+}
+
+#enter-fullscreen-btn:active {
+  transform: translateY(0);
+}
+
+/* ===== CHROME MENU BLUR OVERLAY STYLES ===== */
+#chromeMenuBlurOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 50%;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 2147483647;
+  pointer-events: none;
+  display: none;
+  transition: opacity 0.3s ease;
 }
 </style>
 </head>
@@ -1558,7 +1508,7 @@ table td, table th {
 </div>
 
 <!-- Access Denied Screen - ALWAYS SHOWS FIRST -->
-<div id="accessDenied" class="access-denied">
+<div id="accessDenied">
     <h1>LFJC ONLINE EXAMINATION</h1>
     <p style="font-size: 1.2em; margin: 10px 0;">TOTAL 75 QUESTIONS</p>
     <p style="margin: 5px 0;">• Maths: 20 (MCQ), 5 (Numerical Input)</p>
@@ -1575,7 +1525,7 @@ table td, table th {
 
 <header>LFJC ONLINE EXAMINATION</header>
 
-<div id="studentEntry" style="display:none;">
+<div id="studentEntry">
   <div class="warning-banner" id="examWarning" style="display:none;">
     <p>⚠️ WARNING: Exam in progress. Do not refresh or close this window!</p>
   </div>
@@ -1748,6 +1698,9 @@ table td, table th {
 
 <!-- Chrome Menu Blur Overlay -->
 <div id="chromeMenuBlurOverlay"></div>
+
+<!-- Full-screen Warning Overlay -->
+<div id="fullscreen-warning-overlay"></div>
 
 <!-- Connection Status Indicator (will be created by JavaScript) -->
 <div id="autoSaveIndicator">Auto-saved ✓</div>
@@ -2290,7 +2243,8 @@ function loadQuestionImage(imagePath, questionNumber, questionIndex) {
   const img = new Image();
   img.className = 'questionImg';
   img.alt = `Question ${questionNumber}`;
-  img.style.maxWidth = '100%';
+  img.style.maxWidth = '95vw';
+  img.style.width = 'auto';
   img.style.height = 'auto';
   img.style.display = 'none'; // Hide until loaded
   
@@ -2326,7 +2280,8 @@ function loadQuestionImage(imagePath, questionNumber, questionIndex) {
         altImg.style.display = 'block';
         altImg.className = 'questionImg';
         altImg.alt = `Question ${questionNumber}`;
-        altImg.style.maxWidth = '100%';
+        altImg.style.maxWidth = '95vw';
+        altImg.style.width = 'auto';
         altImg.style.height = 'auto';
       };
       altImg.onerror = function() {
@@ -2377,9 +2332,32 @@ function showImageError(container, questionNumber, questionIndex) {
 }
 
 // ===== MISSING FUNCTIONS FIX =====
+function handleNumericalKeyPress(event, questionIndex) {
+  // Allow only numbers, decimal point, minus sign, and control keys
+  const allowedKeys = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '-', 
+                      'Backspace', 'Delete', 'Tab', 'Enter', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
+  
+  if (!allowedKeys.includes(event.key) && !event.ctrlKey && !event.altKey && !event.metaKey) {
+    event.preventDefault();
+    return;
+  }
+  
+  if (event.key === 'Enter') {
+    submitNumericalAnswer(questionIndex);
+    event.preventDefault();
+  }
+}
+
 function selectOption(opt) {
     const idx = progress.currentIndex;
     
+    // Check if it's an MCQ question
+    if (examData.questionTypes[idx] !== 'mcq') {
+        console.log(`Cannot select option for non-MCQ question ${idx + 1}`);
+        return;
+    }
+    
+    // Toggle selection
     if (progress.answers[idx] === opt) {
         progress.answers[idx] = null;
         console.log(`Deselected option ${opt} for question ${idx + 1}`);
@@ -2388,6 +2366,7 @@ function selectOption(opt) {
         console.log(`Selected option ${opt} for question ${idx + 1}`);
     }
     
+    // Update UI
     updateOptionButtons();
     updatePalette();
     
@@ -3160,20 +3139,6 @@ function handleNumericalInput(inputElement, questionIndex) {
       saveExamProgress();
     }
   }, 500);
-}
-
-function handleNumericalKeyPress(event, questionIndex) {
-  const allowedKeys = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '-', 'Enter', 'Backspace', 'Delete', 'Tab'];
-  
-  if (!allowedKeys.includes(event.key) && !event.ctrlKey && !event.altKey && !event.metaKey) {
-    event.preventDefault();
-    return;
-  }
-  
-  if (event.key === 'Enter') {
-    submitNumericalAnswer(questionIndex);
-    event.preventDefault();
-  }
 }
 
 function handleKeypadButton(button, questionIndex) {
@@ -4722,7 +4687,7 @@ window.addEventListener('load', function() {
 });
 
 console.log("🎯 LFJC Online Exam System Loaded Successfully");
-console.log("✅ Complete code with image loading fixes");
+console.log("✅ Complete code with proper image display and all features");
 </script>
 </body>
 </html>
